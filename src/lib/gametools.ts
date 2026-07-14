@@ -245,7 +245,7 @@ export async function fetchStatsById(
   playerId: number,
   platform = "ea"
 ): Promise<GametoolsStatsRaw> {
-  const qs = `categories=multiplayer&raw=false&format_values=true&seperation=true&playerid=${playerId}&nucleus_id=${playerId}&platform=${platform}&skip_battlelog=true&lang=en-us`;
+  const qs = `categories=multiplayer&raw=false&format_values=true&playerid=${playerId}&nucleus_id=${playerId}&platform=${platform}&skip_battlelog=true&lang=en-us`;
   const url = `${GAMETOOLS_BASE}/bf6/stats/?${qs}`;
   return _fetchJson<GametoolsStatsRaw>(url, CACHE_TTL_MS.stats);
 }
