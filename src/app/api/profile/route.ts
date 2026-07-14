@@ -10,7 +10,7 @@ async function tryPlatform(query: string, platform: Platform) {
   try {
     const stats = await fetchStats(query, platform);
     if (stats?.userId) return { stats, platform };
-  } catch { /* continue */ }
+  } catch (e) { console.error(`[tryPlatform] ${platform} error:`, e instanceof Error ? e.message : String(e)); }
   return null;
 }
 
