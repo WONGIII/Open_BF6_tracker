@@ -35,7 +35,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
       setLoading(true); setError(null);
       try {
         const resp = await fetchPlayerProfile(playerId);
-        if (cancelled) return;
+        console.log("[PlayerClient] resp received, has data:", !!resp.data, "segments:", (resp.data as any)?.segments?.length);
+        if (cancelled) { console.log("[PlayerClient] cancelled after fetch"); return; }
         setProfileData(resp.data as Record<string, unknown>);
         const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
         const resIdent = String(resInfo.platformUserIdentifier || "");
@@ -47,6 +48,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         setMatches(md?.matches || []); setSuspicion(sd);
         loadedRef.current = true;
       } catch (err) {
+        console.error("[PlayerClient] fetch error:", err);
         if (cancelled) return;
         setError(err instanceof Error ? err.message : "Failed");
       }
@@ -57,7 +59,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   }, [playerId]);
 
   if (loading) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#e8e8e8] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
-  if (error || !profileData) return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>;
+  if (error || !profileData) { console.log("[PlayerClient] showing error, profileData:", !!profileData, "error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
   
   const info = (profileData.platformInfo || {}) as Record<string, unknown>;
   const handle = String(info.platformUserHandle || "");
