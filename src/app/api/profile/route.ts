@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchStats, fetchFullById } from "@/lib/gametools";
+import { fetchStats, fetchFullById, fetchProfileById } from "@/lib/gametools";
 import { getProfile, upsertProfile, generateUpdateHash } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
     }
 
     const nucleusId = stats.userId;
-    const { stats: fullStats, profile: rawProfile } = await fetchFullById(nucleusId);
+    // Reuse stats from tryPlatform, only fetch profile for rank metadata
+    const fullStats = stats;
+    const rawProfile = await fetchProfileById(nucleusId).catch(() => null);
     const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
       || (rawProfile as any).playerProfiles?.[0]
       || rawProfile || {};
