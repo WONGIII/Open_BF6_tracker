@@ -65,7 +65,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const handle = String(info.platformUserHandle || "");
   const ident = String(info.platformUserIdentifier || "");
   const platformSlug = String(info.platformSlug || "");
-  const platformLogo: Record<string, string> = { steam: "🖥", origin: "🟠", psn: "🎮", xbox: "🟢" };
+  const platformLogo: Record<string, string> = { steam: "/steam-logo.svg", origin: "/ea-logo.svg", psn: "/psn-logo.svg", xbox: "/xbox-logo.svg" };
   const segments = (profileData.segments || []) as Segment[];
   const ov = segments.find(s => s.type === "overview");
   const o = (ov?.stats || {}) as Record<string, { value?: number; displayValue?: string }>;
@@ -115,7 +115,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
             <div className="min-w-0 flex-1">
               <span className="badge bg-[#edf2ff] text-[#4c6ef5] text-sm px-2 py-1 mb-1">rank{sv("careerPlayerRank")}</span>
               <SponsorName userId={ident} name={handle} className="text-[22px] font-bold block"/>
-              <div className="text-xs text-[#aaa] mt-0.5">{platformLogo[platformSlug] || ""} {platformSlug.toUpperCase()} · 唯一ID {ident}</div>
+              <div className="text-xs text-[#aaa] mt-0.5 flex items-center gap-1">{platformLogo[platformSlug] ? <img src={platformLogo[platformSlug]} alt={platformSlug} className="w-4 h-4 object-contain"/> : null}{platformSlug.toUpperCase()} · 唯一ID {ident}</div>
             </div>
           </div>
         </div>
