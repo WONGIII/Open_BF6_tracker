@@ -23,21 +23,26 @@ export async function POST(req: NextRequest) {
   try {
     const row = db.prepare("SELECT value FROM settings WHERE key = 'admin_password'").get() as { value: string } | undefined;
 
-    if (newPassword) {
-      // Changing password
-      if (row) {
-        const valid = await bcrypt.compare(currentPassword || "", row.value);
-        if (!valid) return NextResponse.json({ error: "当前密码错误" }, { status: 403 });
-      }
-      const hash = await bcrypt.hash(newPassword, 10);
-      db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_password', ?)").run(hash);
-      return NextResponse.json({ ok: true });
-    } else {
-      // Checking password (login)
-      if (!row) return NextResponse.json({ ok: false }, { status: 401 });
+    const DEFAULT_PW = process.env.ADMIN_PASSWORD || process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
+
+  if (newPassword) {
+    // Changing password
+    if (row) {
+      const valid = await bcrypt.compare(currentPassword || "", row.value);
+      if (!valid) return NextResponse.json({ error: "当前密码错误" }, { status: 403 });
+    }
+    const hash = await bcrypt.hash(newPassword, 10);
+    db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_password', ?)").run(hash);
+    return NextResponse.json({ ok: true });
+  } else {
+    // Login — fall back to env var if no DB password yet
+    if (row) {
       const valid = await bcrypt.compare(currentPassword || "", row.value);
       if (!valid) return NextResponse.json({ error: "密码错误" }, { status: 401 });
       return NextResponse.json({ ok: true });
     }
+    if (currentPassword === DEFAULT_PW) return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: "密码错误" }, { status: 401 });
+  }
   } finally { db.close(); }
 }
