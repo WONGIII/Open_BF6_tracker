@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
     const response = buildTrnProfileResponse(fullStats as any, profileData, displayName, foundPlatform, hash);
 
     const identifier = String(fullStats.userId || nucleusId);
-    upsertProfile(identifier, displayName, foundPlatform, hash, response);
+  upsertProfile(identifier, displayName, foundPlatform, hash, response);
 
-    return NextResponse.json(response);
+  return NextResponse.json(response);
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 502 });
   }
