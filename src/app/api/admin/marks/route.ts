@@ -37,8 +37,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const { reportId, target, credibility } = await request.json();
-  if (!target || !credibility) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!credibility) {
+    return NextResponse.json({ error: "Missing credibility" }, { status: 400 });
   }
   const db = getDb();
 

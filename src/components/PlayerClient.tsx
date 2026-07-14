@@ -64,6 +64,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const info = (profileData.platformInfo || {}) as Record<string, unknown>;
   const handle = String(info.platformUserHandle || "");
   const ident = String(info.platformUserIdentifier || "");
+  const platformSlug = String(info.platformSlug || "");
+  const platformLogo: Record<string, string> = { steam: "🖥", origin: "🟠", psn: "🎮", xbox: "🟢" };
   const segments = (profileData.segments || []) as Segment[];
   const ov = segments.find(s => s.type === "overview");
   const o = (ov?.stats || {}) as Record<string, { value?: number; displayValue?: string }>;
@@ -113,7 +115,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
             <div className="min-w-0 flex-1">
               <span className="badge bg-[#edf2ff] text-[#4c6ef5] text-sm px-2 py-1 mb-1">rank{sv("careerPlayerRank")}</span>
               <SponsorName userId={ident} name={handle} className="text-[22px] font-bold block"/>
-              <div className="text-xs text-[#aaa] mt-0.5">唯一ID {ident}</div>
+              <div className="text-xs text-[#aaa] mt-0.5">{platformLogo[platformSlug] || ""} {platformSlug.toUpperCase()} · 唯一ID {ident}</div>
             </div>
           </div>
         </div>

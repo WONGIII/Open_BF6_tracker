@@ -216,12 +216,6 @@ export default function HomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {streamers.map((s) => (
                 <div key={s.id} className="card p-4 flex flex-col items-center text-center gap-2">
-                  {s.avatarUrl ? (
-                    <img src={s.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#e8e8e8] flex items-center justify-center text-[#aaa] text-[10px]">BF</div>
-                  )}
-                  <span className="text-[10px] text-[#bbb]">Lv.{s.level}</span>
                   <SponsorName userId={String(s.platformId)} name={s.name} className="text-xs font-medium text-[#333]" />
                   <div className="flex flex-wrap gap-1 justify-center">
                     {s.platforms.map((p, i) => (
