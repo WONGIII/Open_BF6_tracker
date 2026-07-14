@@ -45,7 +45,7 @@ npm start
 |------|------|--------|
 | `BF6_DB_PATH` | SQLite 数据库路径 | `data/bf6.db` |
 | `JWT_SECRET` | JWT 签名密钥 | `bf6-tracker-jwt-secret-dev` |
-| `NEXT_PUBLIC_ADMIN_PASSWORD` | 管理后台密码（初次） | `admin123` |
+| `ADMIN_PASSWORD` | 管理后台初始密码 | `admin123` |
 
 ## 许可证
 
