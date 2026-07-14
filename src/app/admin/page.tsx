@@ -69,14 +69,14 @@ function SponsorsTab() {
 
 function MessagesTab() {
   const [msgs,setMsgs]=useState<{id:number;email:string;message:string;created_at:string}[]>([]);
-  const ld=()=>fetch("/api/admin/messages").then(r=>r.json()).then(d=>setMsgs(d.messages)).catch(()=>{});
+  const ld=()=>fetch("/api/admin/messages").then(r=>r.json()).then(d=>setMsgs(Array.isArray(d)?d:(d.messages||[]))).catch(()=>{});
   useEffect(()=>{ld();},[]);
   return <div className="card overflow-hidden"><table className="w-full text-sm"><thead><tr className="border-b border-[#e8e8e8] bg-[#fafafa]"><th className="py-3 px-4 text-left text-xs text-[#888]">时间</th><th className="py-3 px-4 text-left text-xs text-[#888]">邮箱</th><th className="py-3 px-4 text-left text-xs text-[#888]">内容</th></tr></thead><tbody>{msgs.map(m=><tr key={m.id} className="border-b border-[#f0f0f0]"><td className="py-2.5 px-4 text-xs text-[#999]">{m.created_at?.slice(0,16)}</td><td className="py-2.5 px-4 text-xs text-[#666]">{m.email}</td><td className="py-2.5 px-4 text-xs text-[#333] max-w-xs truncate">{m.message}</td></tr>)}</tbody></table></div>;
 }
 
 function MarksTab() {
   const [marks,setMarks]=useState<{id:number;target:string;reporterKey:string;types:string;credibility:string;createdAt:string}[]>([]);
-  const ld=()=>fetch("/api/admin/marks").then(r=>r.json()).then(d=>setMarks(d.reports)).catch(()=>{});
+  const ld=()=>fetch("/api/admin/marks").then(r=>r.json()).then(d=>setMarks(Array.isArray(d)?d:(d.reports||[]))).catch(()=>{});
   useEffect(()=>{ld();},[]);
   const up=async(id:number,cred:string)=>{await fetch("/api/admin/marks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reportId:id,credibility:cred})});ld();};
   return <div className="card overflow-hidden"><table className="w-full text-sm"><thead><tr className="border-b border-[#e8e8e8] bg-[#fafafa]"><th className="py-3 px-4 text-left text-xs text-[#888]">目标</th><th className="py-3 px-4 text-left text-xs text-[#888]">举报者</th><th className="py-3 px-4 text-left text-xs text-[#888]">类型</th><th className="py-3 px-4 text-left text-xs text-[#888]">可信度</th><th className="py-3 px-4 text-right text-xs text-[#888]">操作</th></tr></thead><tbody>{marks.map(m=><tr key={m.id} className="border-b border-[#f0f0f0]"><td className="py-2.5 px-4 text-xs text-[#333]">{m.target}</td><td className="py-2.5 px-4 text-xs text-[#666]">{m.reporterKey?.slice(0,8)}</td><td className="py-2.5 px-4 text-xs text-[#666]">{m.types}</td><td className="py-2.5 px-4 text-xs text-[#666]">{m.credibility||"-"}</td><td className="py-2.5 px-4 text-right flex gap-1 justify-end"><button onClick={()=>up(m.id,"low")} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ff6b6b]/10 text-[#ff6b6b]">低</button><button onClick={()=>up(m.id,"medium")} className="text-[10px] px-1.5 py-0.5 rounded bg-[#ffa94d]/10 text-[#ffa94d]">中</button><button onClick={()=>up(m.id,"high")} className="text-[10px] px-1.5 py-0.5 rounded bg-[#51cf66]/10 text-[#51cf66]">高</button></td></tr>)}</tbody></table></div>;

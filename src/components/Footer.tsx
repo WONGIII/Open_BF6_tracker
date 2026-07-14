@@ -9,10 +9,10 @@ export default function Footer() {
   const [showSponsorInfo, setShowSponsorInfo] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return <footer className="bg-[#fafafa] border-t border-[#e8e8e8] mt-auto" style={{ minHeight: 80 }} />;
+
   return (
     <>
-      <footer className="bg-[#fafafa] border-t border-[#e8e8e8] text-[#888] mt-auto">
+      <footer className="bg-[#fafafa] border-t border-[#e8e8e8] text-[#888] mt-auto" suppressHydrationWarning>
         <div className="max-w-[1200px] mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
