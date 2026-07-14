@@ -35,7 +35,7 @@ export async function POST(
     reporterKey = createReporterKey(ip.split(",")[0].trim());
   }
 
-  let body: { types?: string[] };
+  let body: { types?: string[]; username?: string };
   try {
     body = await request.json();
   } catch {
@@ -55,7 +55,7 @@ export async function POST(
   }
 
   try {
-    addSuspicionReport(playerId, reporterKey, types);
+    addSuspicionReport(playerId, reporterKey, types, body.username || undefined);
     const summary = getSuspicionSummary(playerId, reporterKey);
 
     const response = NextResponse.json(summary);

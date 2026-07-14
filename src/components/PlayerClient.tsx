@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import SearchBar from "@/components/SearchBar";
 import { SponsorName } from "@/components/SponsorContext";
 import { fetchPlayerProfile, fetchPlayerMatches, fetchSuspicionSummary, submitSuspicionReport } from "@/lib/api";
+import { useAuth } from "@/components/AuthContext";
 import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/types";
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
@@ -24,6 +25,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [markingTypes, setMarkingTypes] = useState<SuspicionType[]>([]);
   const [markingLoading, setMarkingLoading] = useState(false);
+  const { user } = useAuth();
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -35,8 +37,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         const resp = await fetchPlayerProfile(playerId);
         if (cancelled) return;
         setProfileData(resp.data as Record<string, unknown>);
-        const info = (resp.data.platformInfo || {}) as Record<string, unknown>;
-        const ident = String(info.platformUserIdentifier || "");
+        const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
+        const resIdent = String(resInfo.platformUserIdentifier || "");
         const [md, sd] = await Promise.all([
           ident ? fetchPlayerMatches(ident, 30, 0).catch(() => null) : null,
           ident ? fetchSuspicionSummary(ident).catch(() => null) : null,
@@ -123,7 +125,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         {showMatches ? <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
         : l1 === "marks" ? <MarksDetail suspicion={suspicion} markingTypes={markingTypes} setMarkingTypes={setMarkingTypes} onSubmit={async () => {
           if (markingTypes.length === 0) return; setMarkingLoading(true);
-          try { const r = await submitSuspicionReport(ident, markingTypes); setSuspicion(r); setMarkingTypes([]); } catch {} finally { setMarkingLoading(false); }
+          try { const r = await submitSuspicionReport(ident, markingTypes, user?.username || undefined); setSuspicion(r); setMarkingTypes([]); } catch {} finally { setMarkingLoading(false); }
         }} loading={markingLoading}/>
         : showCareerOverview ? <>
           {l3==="overview"?<OverviewMain ov={o} topW={topW} topV={topV} topK={topK} topM={topM} kits={kits} seasonGm={seasonGm}/>

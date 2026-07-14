@@ -74,9 +74,10 @@ export async function fetchSuspicionSummary(
 
 export async function submitSuspicionReport(
   playerId: string,
-  types: SuspicionType[]
+  types: SuspicionType[],
+  username?: string
 ): Promise<SuspicionSummary> {
-  return _post(`/suspicion/${playerId}`, { types });
+  return _post(`/suspicion/${playerId}`, { types, username });
 }
 
 export async function fetchTrackedCounts(): Promise<TrackedCounts> {

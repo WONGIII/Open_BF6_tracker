@@ -20,7 +20,7 @@ export default function ContactPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setError(""); setBusy(true);
     try {
-      const r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, message }) });
+      const r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, message, username: user.username }) });
       if (r.ok) setSent(true);
       else { const d = await r.json(); setError(d.error || "发送失败"); }
     } catch { setError("网络错误"); }

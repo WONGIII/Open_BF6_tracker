@@ -84,6 +84,8 @@ function _migrate(db: Database.Database): void {
       metadata TEXT,
       FOREIGN KEY (target) REFERENCES profiles(platform_user_identifier)
     );
+    -- Add reporter_username if the column doesn't already exist (safe migration)
+    ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT '';
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_suspicion_unique
       ON player_suspicion_reports(target, reporter_key, report_date);
@@ -357,7 +359,8 @@ export function getSuspicionSummary(
 export function addSuspicionReport(
   playerId: string,
   reporterKey: string,
-  types: SuspicionType[]
+  types: SuspicionType[],
+  reporterUsername?: string
 ): SuspicionReport {
   const db = getDb();
   const id = crypto.randomUUID();
@@ -365,8 +368,8 @@ export function addSuspicionReport(
   const now = new Date().toISOString();
 
   db.prepare(
-    "INSERT INTO player_suspicion_reports (id, target, reporter_key, report_date, created_at, credibility, metadata) VALUES (?, ?, ?, ?, ?, 'community', ?)"
-  ).run(id, playerId, reporterKey, today, now, JSON.stringify({ types }));
+    "INSERT INTO player_suspicion_reports (id, target, reporter_key, report_date, created_at, credibility, metadata, reporter_username) VALUES (?, ?, ?, ?, ?, 'community', ?, ?)"
+  ).run(id, playerId, reporterKey, today, now, JSON.stringify({ types }), reporterUsername || "");
 
   const insertType = db.prepare(
     "INSERT OR IGNORE INTO player_suspicion_report_types (report_id, type) VALUES (?, ?)"
@@ -534,4 +537,20 @@ export function getUserByUsername(username: string): UserRow | null {
 export function getUserById(id: string): UserRow | null {
   const db = getDb();
   return (db.prepare("SELECT * FROM users WHERE id = ?").get(id) as UserRow | undefined) || null;
+}
+
+export function getUserSuspicionReports(username: string): Record<string, unknown>[] {
+  const db = getDb();
+  const rows = db.prepare(
+    "SELECT r.id, r.target, r.report_date, r.credibility, group_concat(t.type) as types FROM player_suspicion_reports r LEFT JOIN player_suspicion_report_types t ON t.report_id = r.id WHERE r.reporter_username = ? GROUP BY r.id ORDER BY r.created_at DESC LIMIT 50"
+  ).all(username) as Record<string, unknown>[];
+  return rows;
+}
+
+export function getUserContactMessages(username: string): Record<string, unknown>[] {
+  const db = getDb();
+  const rows = db.prepare(
+    "SELECT id, email, message, created_at, status FROM contact_messages WHERE username = ? ORDER BY created_at DESC LIMIT 20"
+  ).all(username) as Record<string, unknown>[];
+  return rows;
 }
