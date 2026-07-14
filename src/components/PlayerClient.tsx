@@ -41,8 +41,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
         const resIdent = String(resInfo.platformUserIdentifier || "");
         const [md, sd] = await Promise.all([
-          ident ? fetchPlayerMatches(ident, 30, 0).catch(() => null) : null,
-          ident ? fetchSuspicionSummary(ident).catch(() => null) : null,
+          resIdent ? fetchPlayerMatches(resIdent, 30, 0).catch(() => null) : null,
+          resIdent ? fetchSuspicionSummary(resIdent).catch(() => null) : null,
         ]);
         if (cancelled) return;
         setMatches(md?.matches || []); setSuspicion(sd);
