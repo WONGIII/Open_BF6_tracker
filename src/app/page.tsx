@@ -282,7 +282,7 @@ function ServiceCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[600px] mx-auto">
       {groups.map((group) => (
         <div key={group.title} className="card p-4">
           <h3 className="text-[10px] font-semibold text-[#aaa] uppercase tracking-wider mb-3">{group.title}</h3>
