@@ -162,7 +162,7 @@ async function _fetchJson<T>(url: string, ttl?: number): Promise<T> {
   if (data && typeof data === "object" && "errors" in data && Array.isArray((data as Record<string, unknown>).errors) && ((data as Record<string, unknown>).errors as unknown[]).length > 0) {
     throw new Error(`GameTools API error: ${JSON.stringify((data as Record<string, unknown>).errors)}`);
   }
-  if (ttl) _cacheSet(cacheKey, data);
+  if (ttl && data && typeof data === "object" && "userId" in data) _cacheSet(cacheKey, data);
   return data;
 }
 
