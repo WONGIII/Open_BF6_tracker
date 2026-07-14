@@ -7,7 +7,7 @@ import { fetchPlayerProfile, fetchPlayerMatches, fetchSuspicionSummary, submitSu
 import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/types";
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
-type Level1 = "all" | "matches" | "multiplayer" | "redsec";
+type Level1 = "all" | "matches" | "multiplayer" | "redsec" | "marks";
 type Level2 = "career" | "s3" | "s2" | "s1";
 type Level3 = "overview" | "weapons" | "vehicles" | "gadgets" | "classes" | "modes" | "maps" | "melee";
 
@@ -96,7 +96,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const navBtn = (active: boolean) => `text-[15px] font-bold relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#333]" : "text-[#aaa]"}`;
   const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#333]" : "text-[#aaa]"}`;
 
-  const l1Items: { id: Level1; label: string }[] = [{ id: "all", label: "全部" }, { id: "matches", label: `战报 (${matches.length})` }, { id: "multiplayer", label: "全面战争" }, { id: "redsec", label: "禁区冲突" }];
+  const l1Items: { id: Level1; label: string }[] = [{ id: "all", label: "全部" }, { id: "matches", label: `战报 (${matches.length})` }, { id: "multiplayer", label: "全面战争" }, { id: "redsec", label: "禁区冲突" }, { id: "marks", label: `标记 ${suspicion ? `(${suspicion.totalReports})` : ""}` }];
   const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
   const l3Items: { id: Level3; label: string }[] = [{ id: "overview", label: "总览" }, { id: "weapons", label: "武器" }, { id: "vehicles", label: "载具" }, { id: "gadgets", label: "装备" }, { id: "classes", label: "兵种" }, { id: "modes", label: "模式" }, { id: "maps", label: "地图" }, { id: "melee", label: "近战" }];
 
@@ -117,10 +117,14 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">
             {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}
           </div>
-          {!showMatches && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
+          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
             <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[#e8e8e8]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"#333":"#aaa"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
         </div>
         {showMatches ? <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
+        : l1 === "marks" ? <MarksDetail suspicion={suspicion} markingTypes={markingTypes} setMarkingTypes={setMarkingTypes} onSubmit={async () => {
+          if (markingTypes.length === 0) return; setMarkingLoading(true);
+          try { const r = await submitSuspicionReport(ident, markingTypes); setSuspicion(r); setMarkingTypes([]); } catch {} finally { setMarkingLoading(false); }
+        }} loading={markingLoading}/>
         : showCareerOverview ? <>
           {l3==="overview"?<OverviewMain ov={o} topW={topW} topV={topV} topK={topK} topM={topM} kits={kits} seasonGm={seasonGm}/>
           :l3==="weapons"?<WeaponsDetail weapons={weapons} cats={wpCats}/>
@@ -377,6 +381,26 @@ function SeasonBreakdown({ segments }: { segments: Segment[] }) {
         </div>
       ))}</div>
     ))}
+  </div>;
+}
+
+function MarksDetail({ suspicion, markingTypes, setMarkingTypes, onSubmit, loading }: { suspicion: SuspicionSummary | null; markingTypes: SuspicionType[]; setMarkingTypes: (v: SuspicionType[]) => void; onSubmit: () => void; loading: boolean }) {
+  if (!suspicion) return <p className="text-[#aaa] text-sm">加载中...</p>;
+  const toggle = (type: SuspicionType) => { if (markingTypes.includes(type)) setMarkingTypes(markingTypes.filter(x=>x!==type)); else setMarkingTypes([...markingTypes,type]); };
+  return <div className="space-y-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#4c6ef5]">{suspicion.totalReports}</div><div className="text-[11px] text-[#999]">总举报数</div></div>
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#4c6ef5]">{suspicion.uniqueReporters}</div><div className="text-[11px] text-[#999]">独立举报者</div></div>
+      {CREDIBILITY_LEVELS.map(c => { const n = suspicion.credibilityBreakdown?.[c.id]||0; if (n===0) return null; return <div key={c.id} className="card p-4 text-center" style={{borderTop:`2px solid ${c.color}`}}><div className="text-lg font-bold" style={{color:c.color}}>{n}</div><div className="text-[11px] text-[#999]">{c.labelZh}</div></div>; })}
+    </div>
+    <div className="card p-5"><h3 className="font-semibold text-[#333] mb-2">社区标记</h3><p className="text-xs text-[#888] mb-4">通过举报可疑行为来维护健康的游戏环境。</p>
+      {suspicion.viewerMarkedToday ? <div className="bg-[#edf2ff] border border-[#bac8ff] rounded p-3 text-xs text-[#4c6ef5]">你今天已标记过该玩家。</div> : <>
+        <p className="text-xs text-[#888] mb-3">请选择至少一个类别：</p>
+        <div className="flex flex-wrap gap-2 mb-4">{SUSPICION_TYPES.map(st => <button key={st.id} onClick={()=>toggle(st.id)} className={`pill-tag cursor-pointer text-[11px] px-3 py-1.5 ${markingTypes.includes(st.id)?"ring-2 ring-offset-1":"opacity-75 hover:opacity-100"}`} style={{backgroundColor:st.color}}>{st.label}</button>)}</div>
+        <button onClick={onSubmit} disabled={markingTypes.length===0||loading} className="btn-primary text-xs">{loading?"...":"提交举报"}</button>
+      </>}
+    </div>
+    {suspicion.typeBreakdown && <div className="card p-5"><h3 className="font-semibold text-[#333] mb-3 text-sm">分类统计</h3><div className="space-y-2">{SUSPICION_TYPES.map(st=>{const c=suspicion.typeBreakdown[st.id]||0;const mx=Math.max(...Object.values(suspicion.typeBreakdown),1);return <div key={st.id} className="flex items-center gap-3 text-xs"><span className="w-16 text-[#666]">{st.label}</span><div className="flex-1 bg-[#f0f0f0] rounded-full h-2 overflow-hidden"><div className="h-full rounded-full" style={{width:`${(c/mx)*100}%`,backgroundColor:st.color}}/></div><span className="w-6 text-right tabular-nums text-[#999]">{c}</span></div>;})}</div></div>}
   </div>;
 }
 

@@ -31,9 +31,9 @@ export default function MyPage() {
             <div><div className="font-semibold text-[#333]">{user.username}</div><div className="text-xs text-[#aaa]">{user.isAdmin ? "管理员" : "玩家"}</div></div>
           </div>
           <div className="space-y-3">
-            <div className="card p-4 cursor-pointer hover:shadow-md transition-shadow">
+            <div className="card p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = "/search"}>
               <div className="text-sm font-semibold text-[#333]">我的举报</div>
-              <div className="text-xs text-[#aaa] mt-1">查看我提交的可疑玩家举报记录</div>
+              <div className="text-xs text-[#aaa] mt-1">搜索玩家后在个人页选择「标记」即可举报</div>
             </div>
             <div className="card p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = "/contact"}>
               <div className="text-sm font-semibold text-[#333]">联系我们</div>
