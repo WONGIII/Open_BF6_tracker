@@ -84,7 +84,8 @@ function _migrate(db: Database.Database): void {
       metadata TEXT,
       FOREIGN KEY (target) REFERENCES profiles(platform_user_identifier)
     );
-  try { db.exec("ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT ''"); } catch { /* column may already exist */ }
+
+    CREATE INDEX IF NOT EXISTS idx_suspicion_unique
       ON player_suspicion_reports(target, reporter_key, report_date);
 
     CREATE TABLE IF NOT EXISTS player_suspicion_report_types (
@@ -142,6 +143,7 @@ function _migrate(db: Database.Database): void {
       is_admin INTEGER NOT NULL DEFAULT 0
     );
   `);
+  try { db.exec("ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT ''"); } catch { /* already exists */ }
 }
 
 // ============================================================
