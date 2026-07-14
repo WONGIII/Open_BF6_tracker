@@ -28,8 +28,9 @@ export async function GET(request: NextRequest) {
     cached = lookupByName(query);
   }
   if (cached) {
-    // Update in background (don't await)
-    refreshInBackground(query);
+    // Extract stored platform from cached response to use for background refresh
+    const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;
+    refreshInBackground(query, storedPlatform);
     return NextResponse.json(cached);
   }
 
@@ -73,25 +74,28 @@ export async function GET(request: NextRequest) {
 }
 
 // Background refresh (fire and forget)
-async function refreshInBackground(query: string) {
+async function refreshInBackground(query: string, preferredPlatform?: Platform) {
   try {
-    const results = await Promise.allSettled(PLATFORMS.map(p => tryPlatform(query, p)));
-    for (const r of results) {
-      if (r.status === "fulfilled" && r.value) {
-        const { stats, platform } = r.value;
-        if (stats?.userId) {
-          // Reuse stats from tryPlatform (same platform as first search), only fetch profile for rank metadata
-          const fullStats = stats;
-          const rawProfile = await fetchProfileById(stats.userId).catch(() => null);
-          const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
-      || (rawProfile as any).playerProfiles?.[0]
-      || rawProfile || {};
-          const hash = generateUpdateHash(fullStats as unknown as Record<string, unknown>);
-          const response = buildTrnProfileResponse(fullStats as any, profileData, stats.userName || query, platform, hash);
-          const identifier = String(fullStats.userId || stats.userId);
-          upsertProfile(identifier, stats.userName || query, platform, hash, response);
-          break;
-        }
+    const orderedPlatforms = preferredPlatform
+      ? [preferredPlatform, ...PLATFORMS.filter(p => p !== preferredPlatform)]
+      : PLATFORMS;
+    // Try preferred platform first, fall back to others
+    for (const p of orderedPlatforms) {
+      const result = await tryPlatform(query, p).catch(() => null);
+      if (result?.stats?.userId) {
+        const { stats, platform } = result;
+        const uid = stats.userId as number;
+        // Reuse stats from tryPlatform, only fetch profile for rank metadata
+        const fullStats = stats;
+        const rawProfile = await fetchProfileById(uid).catch(() => null);
+        const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
+    || (rawProfile as any).playerProfiles?.[0]
+    || rawProfile || {};
+        const hash = generateUpdateHash(fullStats as unknown as Record<string, unknown>);
+        const response = buildTrnProfileResponse(fullStats as any, profileData, stats.userName || query, platform, hash);
+        const identifier = String(fullStats.userId || stats.userId);
+        upsertProfile(identifier, stats.userName || query, platform, hash, response);
+        return;
       }
     }
   } catch { /* ignore background failures */ }
