@@ -176,6 +176,14 @@ pm2 save
 
 MIT License
 
+## 贡献
+
+本项目尚不完善，欢迎 Issue 和 PR！详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+
+- [提交 Bug](https://github.com/WONGIII/Open_BF6_tracker/issues/new?template=bug_report.yml)
+- [功能建议](https://github.com/WONGIII/Open_BF6_tracker/issues/new?template=feature_request.yml)
+- [项目 Wiki](https://github.com/WONGIII/Open_BF6_tracker/wiki)（部署教程、API 文档、FAQ 等）
+
 ---
 
 Powered by [WANG](https://xnnserver.dpdns.org/)
