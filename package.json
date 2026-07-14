@@ -1,0 +1,42 @@
+{
+  "name": "openbf6tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source Battlefield 6 player stats tracker with community anti-cheat marking system",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "seed": "npx tsx scripts/seed-sponsors.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^11.7.0",
+    "clsx": "^2.1.1",
+    "cookies-next": "^5.1.0",
+    "i18next": "^24.2.3",
+    "i18next-resources-to-backend": "^1.2.1",
+    "jose": "^6.2.3",
+    "next": "^15.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^15.4.1",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.1",
+    "typescript": "^5.7.0"
+  }
+}

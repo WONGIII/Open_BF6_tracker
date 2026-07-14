@@ -1,0 +1,226 @@
+{
+  "site": {
+    "title": "BF6 战绩查询",
+    "subtitle": "战地6 玩家战绩追踪与社区反作弊",
+    "description": "追踪玩家战绩，查看生涯数据摘要，参与社区驱动的反作弊标记系统。"
+  },
+  "cookiePreferences": "Cookie 选择",
+  "close": "关闭",
+  "nav": {
+    "home": "首页",
+    "search": "搜索",
+    "status": "服务状态",
+    "privacy": "隐私政策",
+    "cookies": "Cookie 设置",
+    "donate": "赞助",
+    "contact": "联系我们",
+    "language": "语言",
+    "myPage": "我的"
+  },
+  "home": {
+    "hero": {
+      "title": "战地6 战绩查询",
+      "subtitle": "追踪玩家战绩，查看详细生涯数据，共同维护游戏环境。",
+      "placeholder": "输入 EA ID、Steam ID、PSN ID 或 Xbox Gamertag...",
+      "search": "搜索",
+      "tip": "提示：首次搜索建议使用 EA ID，后续可以自动联想。",
+      "platforms": "支持 Origin、Steam、PSN、Xbox Live 平台"
+    },
+    "topMarks": {
+      "title": "玩家标记排行",
+      "subtitle": "社区标记最多的玩家，点击卡片查看玩家数据。",
+      "allCat": "全部",
+      "confirmedCat": "实锤作弊",
+      "hackSusCat": "可疑/恶意",
+      "communityCat": "社区",
+      "timeAll": "全部",
+      "time30d": "近30天",
+      "time7d": "近7天",
+      "marks": "次标记",
+      "empty": "暂无社区标记记录。",
+      "loadMore": "加载更多"
+    },
+    "streamers": {
+      "title": "认证主播",
+      "subtitle": "社区内容创作者",
+      "visitChannel": "访问频道",
+      "loadMore": "加载更多"
+    },
+    "stats": {
+      "trackedPlayers": "已追踪玩家",
+      "matchesRecorded": "已追踪战报",
+      "serviceStatus": "服务状态",
+      "updatedAt": "截至 {{date}}，我们已追踪以上数据。"
+    }
+  },
+  "player": {
+    "notFound": "未找到玩家",
+    "notFoundDesc": "未找到与该标识符匹配的玩家。请检查后重试。",
+    "refresh": "刷新",
+    "overview": "总览",
+    "weapons": "武器",
+    "vehicles": "载具",
+    "classes": "兵种",
+    "matches": "对局记录",
+    "marks": "社区标记",
+    "stats": {
+      "rank": "等级",
+      "kills": "击杀",
+      "deaths": "阵亡",
+      "kd": "K/D",
+      "kpm": "KPM",
+      "spm": "SPM",
+      "winRate": "胜率",
+      "playtime": "游戏时长",
+      "headshots": "爆头",
+      "hsPct": "HS%",
+      "accuracy": "命中率",
+      "highestKillStreak": "最高连杀",
+      "longestHeadShot": "最远爆头",
+      "damage": "伤害",
+      "revives": "救援",
+      "heals": "治疗",
+      "resupplies": "补给",
+      "repairs": "修复",
+      "roundsPlayed": "回合",
+      "wins": "胜利",
+      "losses": "失败",
+      "serverStatus": "Online",
+      "noMatches": "暂无对局记录，玩几局再来看看吧！",
+      "loading": "加载中..."
+    },
+    "weapon": {
+      "name": "名称",
+      "kills": "击杀",
+      "headshots": "爆头",
+      "accuracy": "命中率",
+      "kpm": "KPM",
+      "timeEquipped": "使用时间"
+    },
+    "vehicle": {
+      "name": "名称",
+      "kills": "击杀",
+      "destroyed": "摧毁",
+      "timeInVehicle": "驾驶时间"
+    },
+    "match": {
+      "mode": "模式",
+      "map": "地图",
+      "result": "结果",
+      "kills": "击杀",
+      "deaths": "阵亡",
+      "kd": "K/D",
+      "win": "胜利",
+      "loss": "失败",
+      "draw": "平局"
+    },
+    "marksEmpty": "该玩家暂无社区标记。"
+  },
+  "marks": {
+    "title": "社区标记",
+    "description": "通过举报可疑行为来维护健康的游戏环境。",
+    "alreadyMarked": "你今天已标记过该玩家。",
+    "selectTypes": "请选择至少一个类别：",
+    "submit": "提交举报",
+    "totalReports": "总举报数",
+    "uniqueReporters": "独立举报者",
+    "breakdown": "分类统计"
+  },
+  "status": {
+    "title": "服务状态",
+    "allHealthy": "所有监控服务运行正常。",
+    "degraded": "部分服务出现问题。",
+    "frontend": "前端",
+    "backend": "后端",
+    "backendServices": "后端服务",
+    "dataSource": "数据源",
+    "stats": "战绩",
+    "profile": "资料",
+    "playerSearch": "玩家搜索",
+    "backupSource": "备用搜索源",
+    "database": "数据库",
+    "healthy": "正常",
+    "degraded": "降级",
+    "down": "中断",
+    "latency": "响应时间"
+  },
+  "search": {
+    "title": "搜索结果",
+    "placeholder": "输入 EA ID、Steam ID、PSN ID 或 Xbox Gamertag...",
+    "results": "个搜索结果",
+    "noResults": "未找到匹配的玩家。",
+    "viewProfile": "查看资料"
+  },
+  "cookies": {
+    "banner": "本站使用 Cookie 以提供必要功能和可选分析。",
+    "acceptAll": "接受全部",
+    "acceptEssential": "仅必要",
+    "preferences": "Cookie 偏好设置",
+    "essential": "必要 Cookie",
+    "essentialDesc": "网站功能必需：语言、最近搜索、登录鉴权和隐私偏好记录。",
+    "analytics": "分析 Cookie",
+    "analyticsDesc": "帮助我们了解网站流量和使用模式。"
+  },
+  "privacy": {
+    "title": "隐私政策",
+    "intro": "我们致力于保护您的隐私。本政策说明我们如何处理您的数据。",
+    "dataCollection": "数据收集",
+    "dataUsage": "数据使用",
+    "thirdParty": "第三方服务",
+    "rights": "您的权利"
+  },
+  "donate": {
+    "title": "支持 OpenBF6Tracker",
+    "description": "帮助我们支付服务器成本，让战绩追踪器对所有人免费。所有捐赠将用于基础设施和开发。",
+    "button": "赞助",
+    "afdian": "爱发电赞助",
+    "afdianNote": "赞助时请备注你的唯一游戏 ID",
+    "bilibili": "关注我的 B 站",
+    "howToClaim": "赞助后如何领取",
+    "howToClaimDesc": "复制爱发电订单号，前往「我的页面」输入订单号和玩家标识符自助领取。",
+    "goToMyPage": "前往我的页面",
+    "colorExplanation": "玩家名字颜色说明",
+    "tierOwner": "网站站长",
+    "tierOwnerDesc": "本站创建者和维护者",
+    "tier1": "赞助 Tier 1",
+    "tier1Desc": "累计赞助超过 ¥999",
+    "tier2": "赞助 Tier 2",
+    "tier2Desc": "累计赞助超过 ¥199",
+    "tier3": "赞助 Tier 3",
+    "tier3Desc": "累计赞助超过 ¥19.99",
+    "tier4": "赞助 Tier 4",
+    "tier4Desc": "累计赞助超过 ¥5",
+    "tierContributor": "网站协助者",
+    "tierContributorDesc": "对本站开发或运营有协助"
+  },
+  "myPage": {
+    "title": "我的页面",
+    "description": "管理绑定账户、查看赞助状态、提交主播认证。",
+    "bindId": "绑定游戏 ID",
+    "bindIdDesc": "绑定你的 EA ID 或 Steam ID，实现一键直达免检索战绩。",
+    "placeholderId": "输入 EA ID 或 Steam ID...",
+    "bind": "绑定",
+    "redeemSponsor": "自助领取赞助权益",
+    "redeemDesc": "赞助后，输入爱发电订单号和你的游戏标识符来激活名字颜色特权。",
+    "orderId": "订单号（爱发电）",
+    "identifier": "玩家标识符",
+    "submitRedemption": "提交领取",
+    "redeemSubmitted": "你的领取申请已提交，我们会在 24 小时内处理。",
+    "streamerVerify": "主播认证申请",
+    "streamerVerifyDesc": "认证主播将获得首页专属推荐位和赞助颜色特权。提交你的资料开始申请。",
+    "applyVerification": "前往提交主播认证"
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "用于 Bug 报告、误标申诉、颜色特权异议、合作接洽。",
+    "email": "邮箱",
+    "message": "留言",
+    "send": "发送",
+    "sent": "消息已发送。我们会尽快回复。"
+  },
+  "footer": {
+    "copyright": "OpenBF6Tracker 是社区项目。与 EA 或 DICE 无关联。",
+    "privacy": "隐私政策",
+    "cookies": "Cookie 政策"
+  }
+}

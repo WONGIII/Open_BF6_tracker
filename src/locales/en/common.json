@@ -1,0 +1,226 @@
+{
+  "site": {
+    "title": "BF6 Tracker",
+    "subtitle": "Battlefield 6 Player Stats & Community Anti-Cheat",
+    "description": "Track player stats, view career summaries, and participate in community-driven anti-cheat marking."
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "status": "Status",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "donate": "Sponsor",
+    "contact": "Contact",
+    "language": "Language",
+    "myPage": "My"
+  },
+  "cookiePreferences": "Cookie choices",
+  "close": "Close",
+  "home": {
+    "hero": {
+      "title": "BF6 Stats Tracker",
+      "subtitle": "Track player stats, view detailed career summaries, and help keep the community clean.",
+      "placeholder": "Enter EA ID, Steam ID, PSN ID, or Xbox Gamertag...",
+      "search": "Search",
+      "tip": "Tip: For first time search, better use EA ID.",
+      "platforms": "Supports Origin, Steam, PSN, Xbox Live"
+    },
+    "topMarks": {
+      "title": "Player Marks Ranking",
+      "subtitle": "Most reported players by the community. Click a card to view detailed data.",
+      "allCat": "All",
+      "confirmedCat": "Confirmed",
+      "hackSusCat": "Hack Sus",
+      "communityCat": "Community",
+      "timeAll": "All",
+      "time30d": "30 Days",
+      "time7d": "7 Days",
+      "marks": "marks",
+      "empty": "No community marks recorded yet.",
+      "loadMore": "Load More"
+    },
+    "streamers": {
+      "title": "Verified Streamers",
+      "subtitle": "Community content creators",
+      "visitChannel": "Visit Channel",
+      "loadMore": "Load More"
+    },
+    "stats": {
+      "trackedPlayers": "Players Tracked",
+      "matchesRecorded": "Matches Recorded",
+      "serviceStatus": "Service Status",
+      "updatedAt": "As of {{date}}, we have tracked the above data."
+    }
+  },
+  "player": {
+    "notFound": "Player not found",
+    "notFoundDesc": "We couldn't find a player matching that identifier. Please check and try again.",
+    "refresh": "Refresh",
+    "overview": "Overview",
+    "weapons": "Weapons",
+    "vehicles": "Vehicles",
+    "classes": "Classes",
+    "matches": "Matches",
+    "marks": "Community Marks",
+    "stats": {
+      "rank": "Rank",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "kd": "K/D",
+      "kpm": "KPM",
+      "spm": "SPM",
+      "winRate": "Win Rate",
+      "playtime": "Playtime",
+      "headshots": "Headshots",
+      "hsPct": "HS%",
+      "accuracy": "Accuracy",
+      "highestKillStreak": "Best Kill Streak",
+      "longestHeadShot": "Longest HS",
+      "damage": "Damage",
+      "revives": "Revives",
+      "heals": "Heals",
+      "resupplies": "Resupplies",
+      "repairs": "Repairs",
+      "roundsPlayed": "Rounds",
+      "wins": "Wins",
+      "losses": "Losses",
+      "serverStatus": "Online",
+      "noMatches": "No matches recorded yet. Play some games and check back!",
+      "loading": "Loading..."
+    },
+    "weapon": {
+      "name": "Name",
+      "kills": "Kills",
+      "headshots": "HS",
+      "accuracy": "Accuracy",
+      "kpm": "KPM",
+      "timeEquipped": "Time"
+    },
+    "vehicle": {
+      "name": "Name",
+      "kills": "Kills",
+      "destroyed": "Destroyed",
+      "timeInVehicle": "Time"
+    },
+    "match": {
+      "mode": "Mode",
+      "map": "Map",
+      "result": "Result",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "kd": "K/D",
+      "win": "Victory",
+      "loss": "Defeat",
+      "draw": "Draw"
+    },
+    "marksEmpty": "No community marks for this player yet."
+  },
+  "marks": {
+    "title": "Community Marks",
+    "description": "Help maintain a healthy gaming environment by reporting suspicious behavior.",
+    "alreadyMarked": "You have already marked this player today.",
+    "selectTypes": "Select at least one category:",
+    "submit": "Submit Report",
+    "totalReports": "Total Reports",
+    "uniqueReporters": "Unique Reporters",
+    "breakdown": "Breakdown"
+  },
+  "status": {
+    "title": "Service Status",
+    "allHealthy": "All monitored services are responding normally.",
+    "degraded": "Some services are experiencing issues.",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "backendServices": "Backend Services",
+    "dataSource": "DataSource",
+    "stats": "Stats",
+    "profile": "Profile",
+    "playerSearch": "Player Search",
+    "backupSource": "Backup Search Source",
+    "database": "Database",
+    "healthy": "Operational",
+    "degraded": "Degraded",
+    "down": "Unavailable",
+    "latency": "Response time"
+  },
+  "search": {
+    "title": "Search Results",
+    "placeholder": "Enter EA ID, Steam ID, PSN ID, or Xbox Gamertag...",
+    "results": "results found",
+    "noResults": "No players found matching your search.",
+    "viewProfile": "View Profile"
+  },
+  "cookies": {
+    "banner": "This site uses cookies for essential functionality and optional analytics.",
+    "acceptAll": "Accept All",
+    "acceptEssential": "Essential Only",
+    "preferences": "Cookie Preferences",
+    "essential": "Essential Cookies",
+    "essentialDesc": "Required for site functionality: language, recent searches, authentication, and privacy preferences.",
+    "analytics": "Analytics Cookies",
+    "analyticsDesc": "Help us understand site traffic and usage patterns."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "We are committed to protecting your privacy. This policy explains how we handle your data.",
+    "dataCollection": "Data Collection",
+    "dataUsage": "Data Usage",
+    "thirdParty": "Third-Party Services",
+    "rights": "Your Rights"
+  },
+  "donate": {
+    "title": "Support OpenBF6Tracker",
+    "description": "Help us cover server costs and keep the tracker free for everyone. All donations go toward infrastructure and development.",
+    "button": "Donate",
+    "afdian": "afdian.net",
+    "afdianNote": "Please include your game ID in the note.",
+    "bilibili": "Follow on Bilibili",
+    "howToClaim": "How to Claim Sponsor Perks",
+    "howToClaimDesc": "Copy your afdian order number, go to My Page and enter the order number and your player identifier to claim.",
+    "goToMyPage": "Go to My Page",
+    "colorExplanation": "Player Name Color Explanation",
+    "tierOwner": "Site Owner",
+    "tierOwnerDesc": "Site creator and maintainer",
+    "tier1": "Sponsor Tier 1",
+    "tier1Desc": "Cumulative sponsorship over ¥999",
+    "tier2": "Sponsor Tier 2",
+    "tier2Desc": "Cumulative sponsorship over ¥199",
+    "tier3": "Sponsor Tier 3",
+    "tier3Desc": "Cumulative sponsorship over ¥19.99",
+    "tier4": "Sponsor Tier 4",
+    "tier4Desc": "Cumulative sponsorship over ¥5",
+    "tierContributor": "Contributor",
+    "tierContributorDesc": "Helped with development or operations"
+  },
+  "myPage": {
+    "title": "My Page",
+    "description": "Manage your linked accounts, view sponsor status, and submit streamer verification.",
+    "bindId": "Bind Game ID",
+    "bindIdDesc": "Link your EA ID, Steam ID, or other platform accounts for one-click profile access.",
+    "placeholderId": "Enter EA ID or Steam ID...",
+    "bind": "Bind",
+    "redeemSponsor": "Redeem Sponsor Perks",
+    "redeemDesc": "After sponsoring, enter your afdian order number and game identifier to activate your name color.",
+    "orderId": "Order Number (afdian)",
+    "identifier": "Player Identifier",
+    "submitRedemption": "Submit Redemption",
+    "redeemSubmitted": "Your redemption request has been submitted. It will be processed within 24 hours.",
+    "streamerVerify": "Streamer Verification",
+    "streamerVerifyDesc": "Verified streamers get a dedicated card on the homepage and sponsor color perks. Submit your application to get started.",
+    "applyVerification": "Apply for Verification"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "For bug reports, false mark appeals, partnerships, or general inquiries.",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send",
+    "sent": "Message sent successfully. We'll get back to you soon."
+  },
+  "footer": {
+    "copyright": "OpenBF6Tracker is a community project. Not affiliated with EA or DICE.",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Policy"
+  }
+}
