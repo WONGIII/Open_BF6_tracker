@@ -259,19 +259,63 @@ export function upsertProfile(
   const newOv = newSegs.find((s) => s.type === "overview") as Record<string, unknown> | undefined;
 
   if (oldOv?.stats && newOv?.stats) {
-    const os = oldOv.stats as Record<string, { value?: number }>;
-    const ns = newOv.stats as Record<string, { value?: number }>;
+    const os = oldOv.stats as Record<string, { value?: number; displayValue?: string }>;
+    const ns = newOv.stats as Record<string, { value?: number; displayValue?: string }>;
     const dk = (ns.kills?.value || 0) - (os.kills?.value || 0);
     const dd = (ns.deaths?.value || 0) - (os.deaths?.value || 0);
-    if (dk !== 0 || dd !== 0) {
+    if (dk !== 0 || dd !== 0 || ((ns.wins?.value || 0) - (os.wins?.value || 0)) !== 0 || ((ns.losses?.value || 0) - (os.losses?.value || 0)) !== 0) {
+      const diff = (k: string) => (ns[k]?.value || 0) - (os[k]?.value || 0);
+      const f = (k: string) => ({ value: diff(k), displayValue: String(Math.round(diff(k))), displayType: "Number" });
+      const fp = (k: string) => { const v = diff(k); return { value: v, displayValue: v.toFixed(2), displayType: "NumberPrecision2" }; };
+      const deltaSegs: Record<string, unknown>[] = [{
+        type: "overview", stats: {
+          kills: f("kills"), deaths: f("deaths"),
+          kd: { value: dd>0?parseFloat((dk/dd).toFixed(2)):dk, displayValue: dd>0?(dk/dd).toFixed(2):String(dk), displayType: "NumberPrecision2" },
+          wins: f("wins"), losses: f("losses"),
+          score: f("score"),
+          killsPerMinute: fp("killsPerMinute"),
+          scorePerMinute: fp("scorePerMinute"),
+        }
+      }];
+
+      const segDiff = (segType: string, key: string) => {
+        const oldS = oldSegs.filter(s=>(s.type===segType)).map(s=>({name:(s.metadata as Record<string,unknown>|undefined)?.name,sv:((s.stats as Record<string,{value?:number}>|undefined)?.[key]?.value||0)}));
+        const newS = newSegs.filter(s=>(s.type===segType)).map(s=>({name:(s.metadata as Record<string,unknown>|undefined)?.name,sv:((s.stats as Record<string,{value?:number}>|undefined)?.[key]?.value||0)}));
+        const m:Record<string,{o:number,n:number}>={};
+        for(const x of oldS){const n=String(x.name||"");if(n)m[n]={...m[n],o:x.sv};}
+        for(const x of newS){const n=String(x.name||"");if(n)m[n]={...m[n],n:x.sv};}
+        return Object.entries(m).filter(([,v])=>(v.n||0)-(v.o||0)>0).map(([name,vals])=>({type:segType,metadata:{name},stats:{[key]:{value:(vals.n||0)-(vals.o||0),displayValue:String((vals.n||0)-(vals.o||0)),displayType:"Number"}}}));
+      };
+
+      // Weapon delta
+      const dWeapons = segDiff("weapon","kills").sort((a,b)=>(b.stats?.kills?.value||0)-(a.stats?.kills?.value||0)).slice(0,8);
+      deltaSegs.push(...dWeapons);
+
+      // Vehicle delta
+      const dVehicles = segDiff("vehicle","kills").sort((a,b)=>(b.stats?.kills?.value||0)-(a.stats?.kills?.value||0)).slice(0,5);
+      deltaSegs.push(...dVehicles);
+
+      // Kit delta
+      const kitOld = oldSegs.filter(s=>s.type==="kit").map(s=>({name:(s.metadata as Record<string,unknown>|undefined)?.name,k:((s.stats as Record<string,{value?:number}>|undefined)?.kills?.value||0),d:((s.stats as Record<string,{value?:number}>|undefined)?.deaths?.value||0)}));
+      const kitNew = newSegs.filter(s=>s.type==="kit").map(s=>({name:(s.metadata as Record<string,unknown>|undefined)?.name,k:((s.stats as Record<string,{value?:number}>|undefined)?.kills?.value||0),d:((s.stats as Record<string,{value?:number}>|undefined)?.deaths?.value||0)}));
+      const km:Record<string,{ok:number,od:number,nk:number,nd:number}>={};
+      for(const x of kitOld){const n=String(x.name||"");if(n)km[n]={...km[n],ok:x.k,od:x.d};}
+      for(const x of kitNew){const n=String(x.name||"");if(n)km[n]={...km[n],nk:x.k,nd:x.d};}
+      const dKits = Object.entries(km).filter(([,v])=>(v.nk||0)-(v.ok||0)>0).map(([name,vals])=>({type:"kit",metadata:{name},stats:{kills:{value:(vals.nk||0)-(vals.ok||0),displayValue:String((vals.nk||0)-(vals.ok||0)),displayType:"Number"},deaths:{value:(vals.nd||0)-(vals.od||0),displayValue:String((vals.nd||0)-(vals.od||0)),displayType:"Number"}}}));
+      deltaSegs.push(...dKits);
+
+      // Gamemode delta
+      const dModes = segDiff("gamemode","kills").slice(0,5);
+      deltaSegs.push(...dModes);
+
+      // Map delta
+      const dMaps = segDiff("level","wins").slice(0,5);
+      deltaSegs.push(...dMaps);
+
       db.prepare("INSERT INTO matches (id, platform_user_identifier, created_at, from_hash, to_hash, match_json) VALUES (?, ?, ?, ?, ?, ?)")
         .run(crypto.randomUUID(), platformUserIdentifier, now, existing.update_hash, updateHash, JSON.stringify({
           id: crypto.randomUUID(), metadata: {},
-          segments: [{ type: "overview", stats: {
-            kills: { value: dk, displayValue: String(dk), displayType: "Number" },
-            deaths: { value: dd, displayValue: String(dd), displayType: "Number" },
-            kd: { value: dd > 0 ? parseFloat((dk / dd).toFixed(2)) : dk, displayValue: dd > 0 ? (dk / dd).toFixed(2) : String(dk), displayType: "NumberPrecision2" },
-          }}],
+          segments: deltaSegs,
         }));
     }
   }
