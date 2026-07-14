@@ -1,3 +1,5 @@
+<img src="public/favicon.png" width="64" align="right" />
+
 # OpenBF6Tracker
 
 战地风云 6 玩家战绩查询与社区反作弊标记平台。
