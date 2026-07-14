@@ -84,10 +84,7 @@ function _migrate(db: Database.Database): void {
       metadata TEXT,
       FOREIGN KEY (target) REFERENCES profiles(platform_user_identifier)
     );
-    -- Add reporter_username if the column doesn't already exist (safe migration)
-    ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT '';
-
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_suspicion_unique
+  try { db.exec("ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT ''"); } catch { /* column may already exist */ }
       ON player_suspicion_reports(target, reporter_key, report_date);
 
     CREATE TABLE IF NOT EXISTS player_suspicion_report_types (
