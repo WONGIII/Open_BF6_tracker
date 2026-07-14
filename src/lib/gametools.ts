@@ -152,7 +152,7 @@ async function _fetchJson<T>(url: string, ttl?: number): Promise<T> {
   }
   const resp = await fetch(url, {
     headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(500_000),
   });
   if (!resp.ok) {
     throw new Error(`GameTools API error: ${resp.status} ${resp.statusText}`);
