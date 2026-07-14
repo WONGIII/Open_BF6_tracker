@@ -128,6 +128,15 @@ function _migrate(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_sponsors_level ON sponsors(level);
 
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      username TEXT DEFAULT '',
+      status TEXT DEFAULT 'pending'
+    );
+
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL COLLATE NOCASE,
