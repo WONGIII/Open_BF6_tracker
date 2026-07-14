@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchStats, fetchFullById, fetchProfileById } from "@/lib/gametools";
+import { fetchStats, fetchProfileById } from "@/lib/gametools";
 import { getProfile, upsertProfile, generateUpdateHash } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
@@ -75,19 +75,21 @@ export async function GET(request: NextRequest) {
 // Background refresh (fire and forget)
 async function refreshInBackground(query: string) {
   try {
-    // Try to re-fetch and update the stored profile
     const results = await Promise.allSettled(PLATFORMS.map(p => tryPlatform(query, p)));
     for (const r of results) {
       if (r.status === "fulfilled" && r.value) {
-        const { stats } = r.value;
+        const { stats, platform } = r.value;
         if (stats?.userId) {
-          const { stats: fullStats, profile: rawProfile } = await fetchFullById(stats.userId);
+          // Reuse stats from tryPlatform (same platform as first search), only fetch profile for rank metadata
+          const fullStats = stats;
+          const rawProfile = await fetchProfileById(stats.userId).catch(() => null);
           const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
       || (rawProfile as any).playerProfiles?.[0]
       || rawProfile || {};
           const hash = generateUpdateHash(fullStats as unknown as Record<string, unknown>);
-          const response = buildTrnProfileResponse(fullStats as any, profileData, stats.userName || query, "origin", hash);
-          upsertProfile(String(fullStats.userId || stats.userId), stats.userName || query, "origin", hash, response);
+          const response = buildTrnProfileResponse(fullStats as any, profileData, stats.userName || query, platform, hash);
+          const identifier = String(fullStats.userId || stats.userId);
+          upsertProfile(identifier, stats.userName || query, platform, hash, response);
           break;
         }
       }
