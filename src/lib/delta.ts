@@ -183,7 +183,10 @@ const GROUP_CONFIGS: Record<string, GroupDeltaConfig> = {
   },
   maps: {
     segType: "level",
-    counters: new Set(["wins","losses","matchesPlayed","matches"]),
+    counters: new Set(["wins","losses"]),
+    derived: {
+      matchesPlayed: (d) => ({value:(d.wins||0)+(d.losses||0),displayType:"Number"}),
+    },
     keyPrefix: "map_",
   },
   kits: {

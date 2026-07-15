@@ -189,7 +189,7 @@ export function buildTrnProfileResponse(
   // Maps
   let mp = (stats.maps || []) as Record<string, unknown>[];
   if (!Array.isArray(mp) && typeof stats.maps === "object") mp = Object.entries(stats.maps as Record<string, unknown>).map(([k, v]) => ({ mapName: k, ...(v as object) }));
-  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map"), secondsPlayed: _stat(_n(m.secondsPlayed || m.timePlayed), "TimeSeconds", "Time", "Map") } });
+  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map") } });
 
   // Gadgets
   for (const g of (stats.gadgets || []) as Record<string, unknown>[]) segments.push({ type: "gadget", attributes: {}, metadata: { name: String(g.gadgetName || g.name || ""), imageUrl: _img(g) }, stats: { kills: _stat(_n(g.kills), "Number", "Kills", "Gadget") } });
