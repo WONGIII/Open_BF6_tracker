@@ -27,8 +27,15 @@
 - 生涯数据为全部赛季自动聚合，不硬编码赛季号
 
 ### 战报系统
-- 记录玩家战绩变更历史（增量快照）
-- 展开查看该场变更的武器、载具、兵种、模式、地图等详情
+- TRN segment 维度差分：逐 counter 相减全字段（武器 12+ 字段、载具 10+、兵种 8+ 等），衍生指标（KPM/KD/SPM）从 delta 重新计算
+- 自动过滤聚合项和零增量项，图片从新快照提取
+- 展开查看该场变更的武器、载具、兵种、模式、地图、装备等全段详情
+
+### 后台自动轮询
+- 服务启动即开启，无需外部 cron
+- **分级策略**：赞助者每 5 分钟、近期搜索玩家每 10 分钟、24 小时内未搜索的玩家自动跳过
+- 通过 `POST /bf6/multiple/` 批量查询（`seperation=false`，快速），仅 hash 变动时补拉完整数据
+- 环境变量 `BF6_POLL_INTERVAL_SECONDS` 可调轮询间隔（默认 300 秒）
 
 ### 社区反作弊
 - 登录后可对可疑玩家进行**匿名举报**
@@ -171,6 +178,10 @@ pm2 save
 请求参数：`categories=multiplayer&raw=false&format_values=true&seperation=true&skip_battlelog=true&lang=en-us`
 
 数据经后端的 `buildTrnProfileResponse` 函数转换为 TRN 格式的统一结构。
+
+## 参考与致谢
+
+本项目战报差分和后台轮询的实现方式参考了 [jo4rchy/battlefield_6_tracker_gametools](https://github.com/jo4rchy/battlefield_6_tracker_gametools) 的源码思路。该仓库未附带开源协议，本项目仅借鉴其架构设计，所有代码均为独立实现。
 
 ## 许可证
 
