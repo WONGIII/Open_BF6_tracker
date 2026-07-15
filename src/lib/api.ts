@@ -37,7 +37,9 @@ export async function fetchPlayerProfile(
   query: string,
   platform?: string
 ): Promise<{ data: { platformInfo: Record<string, unknown>; segments: Record<string, unknown>[] }; deltaInfo: Record<string, unknown> }> {
-  const params = new URLSearchParams({ query });
+  const isNumericId = /^\d{10,}$/.test(query);
+  const key = isNumericId ? "identifier" : "query";
+  const params = new URLSearchParams({ [key]: query });
   if (platform) params.set("platform", platform);
   return _get(`/profile?${params}`);
 }

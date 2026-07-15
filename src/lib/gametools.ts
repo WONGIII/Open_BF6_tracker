@@ -305,6 +305,45 @@ export async function searchPlayers(
   }));
 }
 
+// Player name resolution via /bf6/player/ — returns all matching accounts
+// across any platform, each with nucleusId / personaId / platformId.
+export interface PlayerCandidate {
+  displayName: string;
+  username: string;
+  platform: string;
+  nucleusId: string;
+  personaId: string;
+  platformId: string;
+  createdAt: string;
+}
+
+export async function searchPlayersByName(query: string): Promise<PlayerCandidate[]> {
+  const url = `${GAMETOOLS_BASE}/bf6/player/?name=${encodeURIComponent(query)}&limit=100`;
+  const raw = await _fetchJson<{ results?: unknown[] }>(url, 60_000); // cache 60s
+  if (!raw || !Array.isArray(raw.results)) {
+    // Sometimes the response is a direct array
+    if (Array.isArray(raw)) {
+      return (raw as any[]).map(toCandidate).filter(Boolean) as PlayerCandidate[];
+    }
+    return [];
+  }
+  return raw.results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
+}
+
+function toCandidate(r: unknown): PlayerCandidate | null {
+  if (!r || typeof r !== "object") return null;
+  const o = r as Record<string, unknown>;
+  return {
+    displayName: String(o.displayName || o.username || ""),
+    username: String(o.username || o.displayName || ""),
+    platform: String(o.platform || "").toLowerCase(),
+    nucleusId: String(o.nucleusId || ""),
+    personaId: String(o.personaId || ""),
+    platformId: String(o.platformId || ""),
+    createdAt: String(o.createdAt || ""),
+  };
+}
+
 export async function fetchMatches(
   playerId: number
 ): Promise<GametoolsMatchRaw[]> {
