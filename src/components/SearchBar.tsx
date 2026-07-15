@@ -161,7 +161,7 @@ function toApiPlatform(c: Candidate): string {
     if (!showDropdown || candidates.length === 0) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIdx(prev => Math.min(prev + 1, candidates.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIdx(prev => Math.max(prev - 1, 0)); }
-    else if (e.key === "Escape") setShowDropdown(false);
+    else if (e.key === "Escape") setFocused(false);
   };
 
   return (
@@ -175,7 +175,7 @@ function toApiPlatform(c: Candidate): string {
             setFocused(true);
             if (!query.trim() && candidates.length === 0) await fetchEmptyHistory();
           }}
-          onBlur={() => {} /* let mousedown handler manage focus */}
+          onBlur={() => setTimeout(() => setFocused(false), 150)}
           onKeyDown={handleKeyDown}
           placeholder={t("home.hero.placeholder")}
           className="input h-11 rounded-lg pr-24"
@@ -208,7 +208,7 @@ function toApiPlatform(c: Candidate): string {
                 <button
                   type="button"
                   className="text-[11px] text-[#999] hover:text-[#ff6b6b] transition-colors"
-                  onClick={(e) => { e.stopPropagation(); clearHistory(); setShowDropdown(false); }}
+                  onClick={(e) => { e.stopPropagation(); clearHistory(); setFocused(false); }}
                 >
                   清空记录
                 </button>
