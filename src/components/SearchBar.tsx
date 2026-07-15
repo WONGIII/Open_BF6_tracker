@@ -194,6 +194,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
                   {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] ml-2 shrink-0">已追踪</span>}
                   {c.rank && <span className="text-[11px] text-[#999] ml-2">Rank {c.rank}</span>}
                 </div>
+                <span className="text-[#999] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
               </div>
             ))}
           </div>
