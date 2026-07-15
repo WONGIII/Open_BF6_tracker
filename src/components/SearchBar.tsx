@@ -145,7 +145,7 @@ function toApiPlatform(c: Candidate): string {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (fetching) return;
+    if (fetching || (query.trim().length >= 2 && candidates.length === 0)) return;
     if (selectedIdx >= 0 && selectedIdx < candidates.length) {
       goToPlayer(candidates[selectedIdx]);
       return;
@@ -183,7 +183,7 @@ function toApiPlatform(c: Candidate): string {
         />
         <button
           type="submit"
-          disabled={loading || fetching || query.trim().length < 2}
+          disabled={loading || fetching || (query.trim().length >= 2 && candidates.length === 0)}
           className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary h-8 px-5 text-xs rounded-md"
         >
           {loading ? (
