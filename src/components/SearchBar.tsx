@@ -229,7 +229,7 @@ function toApiPlatform(c: Candidate): string {
                   {c.rank && <span className="text-[11px] text-[#999] ml-2">Rank {c.rank}</span>}
                 </div>
                 <span className="text-[#999] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
-                {!query.trim() && (
+                {!query.trim() && !c.tracked && (
                   <button
                     type="button"
                     className="ml-1 w-5 h-5 flex items-center justify-center rounded text-[#ccc] hover:text-[#ff6b6b] hover:bg-[#fff0f0] opacity-0 group-hover:opacity-100 transition-all shrink-0"
