@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchStats, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
-import { getProfile, upsertProfile } from "@/lib/db";
+import { getProfile, upsertProfile, touchSearchTimestamp } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 
@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
   if (cached) {
     // Extract stored platform from cached response to use for background refresh
     const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;
+    const pid = ((cached as any).data?.platformInfo?.platformUserIdentifier) as string | undefined;
+    if (pid) touchSearchTimestamp(pid);
     refreshInBackground(query, storedPlatform);
     return NextResponse.json(cached);
   }

@@ -52,6 +52,7 @@ function _migrate(db: Database.Database): void {
       name TEXT NOT NULL,
       update_hash TEXT,
       updated_at TEXT NOT NULL,
+      last_searched_at TEXT NOT NULL DEFAULT '',
       trn_profile_json TEXT NOT NULL
     );
 
@@ -145,6 +146,7 @@ function _migrate(db: Database.Database): void {
     );
   `);
   try { db.exec("ALTER TABLE player_suspicion_reports ADD COLUMN reporter_username TEXT DEFAULT ''"); } catch { /* already exists */ }
+  try { db.exec("ALTER TABLE profiles ADD COLUMN last_searched_at TEXT NOT NULL DEFAULT ''"); } catch { /* already exists */ }
 }
 
 // ============================================================
@@ -217,9 +219,15 @@ export function lookupByName(name: string): Record<string, unknown> | null {
   return JSON.parse(row.trn_profile_json) as Record<string, unknown>;
 }
 
-export function listProfileIdentifiers(): { platform_user_identifier: string; platform: string; name: string; update_hash: string; updated_at: string }[] {
+export function listProfileIdentifiers(): { platform_user_identifier: string; platform: string; name: string; update_hash: string; updated_at: string; last_searched_at: string }[] {
   const db = getDb();
-  return db.prepare("SELECT platform_user_identifier, platform, name, update_hash, updated_at FROM profiles ORDER BY updated_at ASC").all() as any[];
+  return db.prepare("SELECT platform_user_identifier, platform, name, update_hash, updated_at, last_searched_at FROM profiles ORDER BY updated_at ASC").all() as any[];
+}
+
+export function touchSearchTimestamp(platformUserIdentifier: string): void {
+  const db = getDb();
+  db.prepare("UPDATE profiles SET last_searched_at = ? WHERE platform_user_identifier = ?")
+    .run(new Date().toISOString(), platformUserIdentifier);
 }
 
 export function upsertProfile(
@@ -238,8 +246,8 @@ export function upsertProfile(
   const profileJson = JSON.stringify(response);
 
   if (!existing) {
-    db.prepare("INSERT INTO profiles (platform_user_identifier, platform, name, update_hash, updated_at, trn_profile_json) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(platformUserIdentifier, platform, name, updateHash, now, profileJson);
+    db.prepare("INSERT INTO profiles (platform_user_identifier, platform, name, update_hash, updated_at, last_searched_at, trn_profile_json) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .run(platformUserIdentifier, platform, name, updateHash, now, now, profileJson);
 
     // First match: delta from nothing = full current stats as one "match"
     const firstMatch = buildDeltaMatch(null, response, platformUserIdentifier);
