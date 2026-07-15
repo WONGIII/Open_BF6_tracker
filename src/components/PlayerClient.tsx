@@ -394,12 +394,15 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
     const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch ? "中途退出"
       : winNum > lossNum ? "胜利" : lossNum > winNum ? "战败" : "平局";
     const statusColor = statusLabel === "胜利" ? "#51cf66" : statusLabel === "战败" ? "#ff6b6b" : "#999";
+    const ts = (matchData.metadata as Record<string, unknown> | undefined)?.timestamp as string | undefined;
+    const timeStr = ts ? new Date(ts).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
     const isExpanded = expanded === (m.id || String(idx));
     return <div key={m.id || idx} className="card overflow-hidden">
       <div className="p-4 cursor-pointer hover:bg-[#fafafa] transition-colors" onClick={() => onToggle(isExpanded ? null : (m.id || String(idx)))}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="font-bold" style={{color: statusColor}}>{statusLabel}</span>
+            {timeStr && <span className="text-[10px] text-[#999]">{timeStr}</span>}
             {topMode && <><span className="text-[#ddd]">/</span><span className="text-sm text-[#666]">{topMode.metadata?.name as string}</span></>}
             {topMap && <><span className="text-[#ddd]">//</span><span className="text-sm text-[#666]">{topMap.metadata?.name as string}</span></>}
           </div>
