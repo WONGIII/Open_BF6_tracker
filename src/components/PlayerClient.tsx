@@ -25,6 +25,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [markingTypes, setMarkingTypes] = useState<SuspicionType[]>([]);
   const [markingLoading, setMarkingLoading] = useState(false);
+  const [refreshCountdown, setRefreshCountdown] = useState(300);
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
   const loadedRef = useRef(false);
 
@@ -71,6 +73,43 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
     load();
     return () => { cancelled = true; };
   }, [playerId]);
+
+  // Countdown timer + auto-refresh every 5 minutes
+  useEffect(() => {
+    setRefreshCountdown(300);
+    const interval = setInterval(() => {
+      setRefreshCountdown(prev => {
+        if (prev <= 1) { doRefresh(); return 300; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [playerId]);
+
+  const doRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const displayName = urlParams.get("name") || undefined;
+      const urlPlatform = urlParams.get("platform") || undefined;
+      const resp = await fetchPlayerProfile(playerId, urlPlatform, displayName, true);
+      setProfileData(resp.data as Record<string, unknown>);
+      const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
+      const resIdent = String(resInfo.platformUserIdentifier || "");
+      const [md, sd] = await Promise.all([
+        resIdent ? fetchPlayerMatches(resIdent, 30, 0).catch(() => null) : null,
+        resIdent ? fetchSuspicionSummary(resIdent).catch(() => null) : null,
+      ]);
+      setMatches(md?.matches || []); setSuspicion(sd);
+      setRefreshCountdown(300);
+    } catch (e) {
+      console.error("[PlayerClient] refresh error:", e);
+    }
+    setRefreshing(false);
+  };
+
+  const fmtCd = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   if (loading) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#e8e8e8] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
   if (error || !profileData) { console.log("[PlayerClient] showing error, profileData:", !!profileData, "error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
@@ -131,6 +170,14 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
               <SponsorName userId={ident} name={handle} className="text-[22px] font-bold block"/>
               <div className="text-xs text-[#aaa] mt-0.5 flex items-center gap-1">{platformLogo[platformSlug] ? <img src={platformLogo[platformSlug]} alt={platformSlug} className="w-4 h-4 object-contain"/> : null}{platformSlug.toUpperCase()} · 唯一ID {ident}</div>
             </div>
+            <button
+              onClick={doRefresh}
+              disabled={refreshing}
+              className="shrink-0 px-3 py-1.5 rounded text-xs font-medium border border-[#ddd] hover:bg-[#f0f0f0] transition-colors disabled:opacity-50"
+              title="自动每5分钟刷新"
+            >
+              {refreshing ? "刷新中..." : `刷新 ${fmtCd(refreshCountdown)}`}
+            </button>
           </div>
         </div>
         <div className="card px-5 pt-4 pb-0 mb-4">

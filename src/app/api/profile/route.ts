@@ -46,13 +46,15 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get("query") || searchParams.get("identifier") || "";
   const displayNameOverride = searchParams.get("name") || undefined;
 
+  const forceRefresh = searchParams.get("refresh") === "1";
+
   if (!query) return NextResponse.json({ error: "Missing query" }, { status: 400 });
 
-  // Check cache by query name AND by identifier
-  let cached = getProfile(query);
+  // Check cache by query name AND by identifier (skip cache if force-refreshing)
+  let cached = forceRefresh ? null : getProfile(query);
   if (!cached) {
     const { lookupByName } = await import("@/lib/db");
-    cached = lookupByName(query);
+    cached = forceRefresh ? null : lookupByName(query);
   }
   if (cached) {
     const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;

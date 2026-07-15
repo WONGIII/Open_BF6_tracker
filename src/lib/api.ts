@@ -36,13 +36,15 @@ async function _post<T>(url: string, body?: unknown): Promise<T> {
 export async function fetchPlayerProfile(
   query: string,
   platform?: string,
-  displayName?: string
+  displayName?: string,
+  refresh?: boolean
 ): Promise<{ data: { platformInfo: Record<string, unknown>; segments: Record<string, unknown>[] }; deltaInfo: Record<string, unknown> }> {
   const isNumericId = /^\d{10,}$/.test(query);
   const key = isNumericId ? "identifier" : "query";
   const params = new URLSearchParams({ [key]: query });
   if (platform) params.set("platform", platform);
   if (displayName) params.set("name", displayName);
+  if (refresh) params.set("refresh", "1");
   return _get(`/profile?${params}`);
 }
 
