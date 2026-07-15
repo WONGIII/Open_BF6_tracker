@@ -23,7 +23,7 @@
       "subtitle": "追踪玩家战绩，查看详细生涯数据，共同维护游戏环境。",
       "placeholder": "输入 EA ID、Steam ID、PSN ID 或 Xbox Gamertag...",
       "search": "搜索",
-      "tip": "提示：首次搜索建议使用 EA ID，后续可以自动联想。",
+      "tip": "提示：首次查询需等待 GameTools API 响应（约 30-120 秒），后续查询秒开。",
       "platforms": "支持 Origin、Steam、PSN、Xbox Live 平台"
     },
     "topMarks": {
