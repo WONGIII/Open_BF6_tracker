@@ -425,7 +425,7 @@ export async function fetchStatsBatchByIds(
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(120_000),
       });
 
       if (!resp.ok) continue;
