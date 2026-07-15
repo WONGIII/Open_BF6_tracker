@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         const ov = (((p as any).data?.segments || []) as any[]).find((s: any) => s.type === "overview");
         const rank = ov?.stats?.careerPlayerRank;
         tracked.push({
-          displayName: pi.platformUserHandle || row.name,
+          displayName: pi.platformUserHandle || row.name || "Unknown",
           nucleusId: row.platform_user_identifier,
           platform: pi.platformSlug || row.platform,
           tracked: true,

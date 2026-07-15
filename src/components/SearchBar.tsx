@@ -190,13 +190,10 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
                 />
                 {c.rankImage && <img src={c.rankImage} alt="" className="w-5 h-5 object-contain shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-[#333] truncate">{c.displayName}</span>
-                    {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] shrink-0">已追踪</span>}
-                  </div>
-                  {c.rank && <span className="text-[10px] text-[#999]">Rank {c.rank}</span>}
+                  <span className="font-medium text-[#333]">{c.displayName}</span>
+                  {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] ml-2 shrink-0">已追踪</span>}
+                  {c.rank && <span className="text-[11px] text-[#999] ml-2">Rank {c.rank}</span>}
                 </div>
-                <span className="text-[#999] text-xs ml-auto shrink-0">{c.nucleusId}</span>
               </div>
             ))}
           </div>
