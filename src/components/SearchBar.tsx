@@ -104,7 +104,6 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
         })),
       ];
       setCandidates(merged);
-      setShowDropdown(merged.length > 0);
     } catch { setCandidates([]); }
   }, []);
 
@@ -175,9 +174,9 @@ function toApiPlatform(c: Candidate): string {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            if (candidates.length > 0) setShowDropdown(true);
-            else fetchEmptyHistory();
+          onFocus={async () => {
+            if (candidates.length > 0) { setShowDropdown(true); }
+            else if (!query.trim()) { await fetchEmptyHistory(); setShowDropdown(true); }
           }}
           onKeyDown={handleKeyDown}
           placeholder={t("home.hero.placeholder")}
