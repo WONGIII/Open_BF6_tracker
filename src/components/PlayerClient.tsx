@@ -439,7 +439,9 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
     const topMode = mModes[0]; const topMap = mMaps[0];
     const killsNum = parseInt(String(kills)) || 0;
     const hasModeMatch = topMode && parseInt(String((topMode.stats as any)?.matches?.displayValue || "0") || "0") > 0;
-    const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch ? "中途退出"
+    const mapsPlayed = parseInt(String((ov?.stats as any)?.matchesPlayed?.displayValue || "0")) || 0;
+    const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch && mapsPlayed === 0 ? "中途退出"
+      : winNum === 0 && lossNum === 0 && mapsPlayed > 0 ? "平局"
       : winNum > lossNum ? "胜利" : lossNum > winNum ? "战败" : "平局";
     const statusColor = statusLabel === "胜利" ? "#51cf66" : statusLabel === "战败" ? "#ff6b6b" : "#999";
     const ts = (matchData.metadata as Record<string, unknown> | undefined)?.timestamp as string | undefined;
