@@ -1,4 +1,4 @@
-import { fetchStatsBatchByIds, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
+import { fetchStatsBatchByIds, fetchStatsById, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
 import { listProfileIdentifiers, getProfile, upsertProfile, getAllSponsors } from "@/lib/db";
 import { buildTrnProfileResponse } from "@/app/api/profile/builder";
 import type { Platform } from "@/lib/types";
@@ -49,14 +49,19 @@ async function doUpsertForRow(
 
   try {
     const uid = (stats as any).userId as number;
+    const platform = (row.platform || "origin") as Platform;
+    // Map our platform to GameTools API platform
+    const gtPlatform = platform === "origin" ? "ea" : platform === "psn" ? "psn" : platform === "xbox" ? "xbl" : platform;
+    // Re-fetch full stats with seperation=true for perSeason/perGamemode data
+    const fullStats = await fetchStatsById(uid, gtPlatform).catch(() => null);
+    const finalStats = (fullStats || stats) as Record<string, unknown>;
     const rawProfile = await fetchProfileById(uid).catch(() => null);
     const profileData = (rawProfile as any)?.other?.[0]?.playerProfiles?.[0]
       || (rawProfile as any)?.playerProfiles?.[0]
       || rawProfile || {};
-    const platform = (row.platform || "origin") as Platform;
-    const response = buildTrnProfileResponse(stats as any, profileData, (stats as any).userName || row.name, platform, newHash);
-    const identifier = String((stats as any).userId || pid);
-    const deltaInfo = upsertProfile(identifier, (stats as any).userName || row.name, platform, newHash, response);
+    const response = buildTrnProfileResponse(finalStats as any, profileData, (finalStats as any).userName || row.name, platform, newHash);
+    const identifier = String((finalStats as any).userId || pid);
+    const deltaInfo = upsertProfile(identifier, (finalStats as any).userName || row.name, platform, newHash, response);
     return { changed: deltaInfo.isChanged };
   } catch (e) {
     return { changed: false, error: String(e) };
