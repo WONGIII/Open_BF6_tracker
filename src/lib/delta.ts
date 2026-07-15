@@ -129,8 +129,11 @@ function subtractStatsBlock(
 }
 
 // Check if a stats block has any non-zero counter movement
+// Excludes careerPlayerRank which carries the player's current rank (not a counter)
+// — its delta lives in metadata.delta, and rank wobble alone should not produce a match.
 function hasMovement(block: Record<string, unknown>): boolean {
-  for (const v of Object.values(block)) {
+  for (const [k, v] of Object.entries(block)) {
+    if (k === "careerPlayerRank") continue;
     if (typeof v === "object" && v && (v as Record<string,unknown>).value) {
       const val = _n((v as Record<string,unknown>).value);
       if (val !== 0) return true;
@@ -308,6 +311,11 @@ export function buildDeltaMatch(
 
   // If overview AND all groups have zero movement, skip
   if (!hasMovement(overviewDelta) && totalItems === 0) return null;
+
+  // Skip matches with zero kills AND zero deaths (not a real game)
+  const dkVal = _n((overviewDelta.kills as Record<string,unknown> | undefined)?.value || 0);
+  const ddVal = _n((overviewDelta.deaths as Record<string,unknown> | undefined)?.value || 0);
+  if (dkVal === 0 && ddVal === 0) return null;
 
   const aid = accountId || String((newData.platformInfo as Record<string,unknown>)?.platformUserIdentifier || "");
 
