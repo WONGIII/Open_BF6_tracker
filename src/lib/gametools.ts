@@ -319,15 +319,22 @@ export interface PlayerCandidate {
 
 export async function searchPlayersByName(query: string): Promise<PlayerCandidate[]> {
   const url = `${GAMETOOLS_BASE}/bf6/player/?name=${encodeURIComponent(query)}&limit=100`;
-  const raw = await _fetchJson<{ results?: unknown[] }>(url, 60_000); // cache 60s
-  if (!raw || !Array.isArray(raw.results)) {
-    // Sometimes the response is a direct array
-    if (Array.isArray(raw)) {
-      return (raw as any[]).map(toCandidate).filter(Boolean) as PlayerCandidate[];
-    }
-    return [];
+  // Don't use _fetchJson cache — /bf6/player/ response lacks userId so
+  // cache never gets populated, but _fetchJson's cache lookup on OTHER
+  // endpoints can interfere. Use raw fetch with long timeout.
+  const resp = await fetch(url, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!resp.ok) return [];
+  const raw = await resp.json() as Record<string, unknown> | unknown[];
+  if (!raw || typeof raw !== "object") return [];
+  if (Array.isArray(raw)) {
+    return (raw as any[]).map(toCandidate).filter(Boolean) as PlayerCandidate[];
   }
-  return raw.results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
+  const results = (raw as Record<string, unknown>).results;
+  if (!Array.isArray(results)) return [];
+  return results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
 }
 
 function toCandidate(r: unknown): PlayerCandidate | null {
