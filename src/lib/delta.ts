@@ -312,11 +312,6 @@ export function buildDeltaMatch(
   // If overview AND all groups have zero movement, skip
   if (!hasMovement(overviewDelta) && totalItems === 0) return null;
 
-  // Skip matches with zero kills AND zero deaths (not a real game)
-  const dkVal = _n((overviewDelta.kills as Record<string,unknown> | undefined)?.value || 0);
-  const ddVal = _n((overviewDelta.deaths as Record<string,unknown> | undefined)?.value || 0);
-  if (dkVal === 0 && ddVal === 0) return null;
-
   const aid = accountId || String((newData.platformInfo as Record<string,unknown>)?.platformUserIdentifier || "");
 
   return {
