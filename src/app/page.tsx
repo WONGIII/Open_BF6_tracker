@@ -220,7 +220,7 @@ export default function HomePage() {
                   <div className="flex flex-wrap gap-1 justify-center">
                     {s.platforms.map((p, i) => (
                       <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-[10px] px-2 py-1">
-                        {t("home.streamers.visitChannel")} &nearr;
+                        {t("home.streamers.visitChannel")} ↗
                       </a>
                     ))}
                   </div>
