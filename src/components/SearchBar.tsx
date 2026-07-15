@@ -85,26 +85,16 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   }, []);
 
   const fetchEmptyHistory = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/search?query=`); // empty query = tracked players
-      const data = await res.json();
-      const fromDb = (data.results || []) as Candidate[];
-      // Merge with localStorage history: DB data has priority (rank, etc.)
-      const local = loadHistory();
-      const dbIds = new Set(fromDb.map(c => c.nucleusId));
-      const merged: Candidate[] = [
-        ...fromDb,
-        ...local.filter(e => !dbIds.has(e.nucleusId)).map(e => ({
-          displayName: e.displayName,
-          nucleusId: e.nucleusId,
-          platform: e.platform,
-          rank: e.rank,
-          rankImage: e.rankImage,
-          tracked: false,
-        })),
-      ];
-      setCandidates(merged);
-    } catch { setCandidates([]); }
+    const local = loadHistory();
+    const items: Candidate[] = local.map(e => ({
+      displayName: e.displayName,
+      nucleusId: e.nucleusId,
+      platform: e.platform,
+      rank: e.rank,
+      rankImage: e.rankImage,
+      tracked: false,
+    }));
+    setCandidates(items);
   }, []);
 
   useEffect(() => {
