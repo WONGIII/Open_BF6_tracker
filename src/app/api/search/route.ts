@@ -73,7 +73,10 @@ export async function GET(request: NextRequest) {
     // Cache miss: fetch fresh
     const candidates = await searchPlayersByName(query);
     const enriched = await enrichCandidates(candidates, trackedIds);
-    cache.set(cacheKey, { data: enriched, ts: Date.now() });
+    // Only cache non-empty results
+    if (enriched.length > 0) {
+      cache.set(cacheKey, { data: enriched, ts: Date.now() });
+    }
     return NextResponse.json({ results: enriched });
 
   } catch (err) {

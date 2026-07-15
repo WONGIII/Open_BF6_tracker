@@ -77,10 +77,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
 
   const fetchCandidates = useCallback(async (q: string) => {
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10_000);
-      const res = await fetch(`/api/search?query=${encodeURIComponent(q.trim())}`, { signal: controller.signal });
-      clearTimeout(timeout);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(q.trim())}`);
       const data = await res.json();
       setCandidates((data.results || []) as Candidate[]);
       setSelectedIdx(-1);
