@@ -330,23 +330,51 @@ function MeleeDetail({ melees }: { melees: Segment[] }) {
   return <div className="space-y-3">{sorted.map((g,i) => <div key={(g.metadata?.name as string)+"-mel-"+i} className="card p-4 flex items-center gap-4"><div className="w-10 h-10 rounded bg-[#f0f0f0] shrink-0 flex items-center justify-center text-lg">🗡</div><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="font-semibold text-[#333] text-sm">{g.metadata?.name as string}</span><span className="text-[10px] text-[#aaa]">{g.metadata?.category as string}</span></div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{g.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">处决 </span><span className="font-semibold">{g.stats.takedowns?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{g.stats.killsPerMinute?.displayValue}</span></div><div><span className="text-[#999]">使用 </span><span className="font-semibold">{g.stats.uses?.displayValue}</span></div><div className="text-[#aaa]">伤害 {g.stats.damage?.displayValue} · DPM {g.stats.damagePerMinute?.displayValue} · 时长 {g.stats.timeEquipped?.displayValue}</div></div></div></div>)}</div>;
 }
 
+type GroupItem = { metadata: Segment["metadata"]; stats: Segment["stats"] };
 function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; expanded: string | null; onToggle: (id: string | null) => void }) {
   if (matches.length === 0) return <p className="text-[#aaa] text-sm">暂无战报</p>;
   return <div className="space-y-3">{matches.map((m, idx) => {
     const matchData = m as unknown as Record<string, unknown>;
     const mSegments = (matchData.segments || []) as Segment[];
     const ov = mSegments.find(s => s.type === "overview");
-    const mWeapons = mSegments.filter(s => s.type === "weapon").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0)).slice(0,5);
-    const mVehicles = mSegments.filter(s => s.type === "vehicle").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-    const mKits = mSegments.filter(s => s.type === "kit");
-    const mModes = mSegments.filter(s => s.type === "gamemode");
-    const mMaps = mSegments.filter(s => s.type === "level");
-    const mMelee = mSegments.filter(s => s.type === "melee");
-    const mGadgets = mSegments.filter(s => s.type === "gadget");
-    const kills = ov?.stats?.kills?.displayValue || "0"; const kd = ov?.stats?.kd?.displayValue; const kpm = ov?.stats?.killsPerMinute?.displayValue;
-    const spm = (ov?.stats as any)?.scorePerMinute?.displayValue; const score = (ov?.stats as any)?.score?.displayValue;
-    const wins = ov?.stats?.wins?.displayValue || "0"; const losses = ov?.stats?.losses?.displayValue || "0";
-    const winNum = parseInt(wins) || 0; const lossNum = parseInt(losses) || 0;
+    const ovMeta = (ov?.metadata || {}) as Record<string, GroupItem[]>;
+
+    // New format: groups nested in overview.metadata
+    const isNewFormat = ovMeta && (ovMeta.gamemodes || ovMeta.kits || ovMeta.weapons);
+
+    let mWeapons: Segment[], mVehicles: Segment[], mKits: Segment[];
+    let mModes: Segment[], mMaps: Segment[], mGadgets: Segment[], mMelee: Segment[];
+
+    if (isNewFormat) {
+      // New format: pull from overview.metadata
+      const asSeg = (items: GroupItem[] | undefined, type: string): Segment[] =>
+        (items || []).map(g => ({ type, metadata: g.metadata, stats: g.stats } as Segment));
+      mWeapons = asSeg(ovMeta.weapons, "weapon").sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills))).slice(0,5);
+      mVehicles = asSeg(ovMeta.vehicles, "vehicle").sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills)));
+      mKits = asSeg(ovMeta.kits, "kit");
+      mModes = asSeg(ovMeta.gamemodes, "gamemode");
+      mMaps = asSeg(ovMeta.levels, "level");
+      mGadgets = asSeg(ovMeta.gadgets, "gadget");
+      mMelee = [];
+    } else {
+      // Old format: flat segments
+      mWeapons = mSegments.filter(s => s.type === "weapon").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0)).slice(0,5);
+      mVehicles = mSegments.filter(s => s.type === "vehicle").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
+      mKits = mSegments.filter(s => s.type === "kit");
+      mModes = mSegments.filter(s => s.type === "gamemode");
+      mMaps = mSegments.filter(s => s.type === "level");
+      mGadgets = mSegments.filter(s => s.type === "gadget");
+      mMelee = mSegments.filter(s => s.type === "melee");
+    }
+
+    const kills = (ov?.stats as any)?.kills?.displayValue || "0";
+    const kd = (ov?.stats as any)?.kd?.displayValue;
+    const kpm = (ov?.stats as any)?.killsPerMinute?.displayValue;
+    const spm = (ov?.stats as any)?.scorePerMinute?.displayValue;
+    const score = (ov?.stats as any)?.score?.displayValue;
+    const wins = (ov?.stats as any)?.wins?.displayValue || "0";
+    const losses = (ov?.stats as any)?.losses?.displayValue || "0";
+    const winNum = parseInt(String(wins)) || 0; const lossNum = parseInt(String(losses)) || 0;
     const statusLabel = winNum > lossNum ? "胜利" : lossNum > winNum ? "战败" : "平局";
     const statusColor = winNum > lossNum ? "#51cf66" : lossNum > winNum ? "#ff6b6b" : "#999";
     const topMode = mModes[0]; const topMap = mMaps[0];
@@ -362,21 +390,22 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
           <span className="text-[10px] text-[#aaa] transform transition-transform" style={{transform: isExpanded ? "rotate(180deg)" : ""}}>▼ 展开</span>
         </div>
         <div className="grid grid-cols-5 gap-4 text-center mt-3"><div><div className="text-xl font-bold text-[#333]">{kills}</div><div className="text-[10px] text-[#999]">击杀</div></div>{kd&&<div><div className="text-xl font-bold text-[#4c6ef5]">{kd}</div><div className="text-[10px] text-[#999]">K/D</div></div>}{kpm&&<div><div className="text-xl font-bold">{kpm}</div><div className="text-[10px] text-[#999]">KPM</div></div>}{spm&&<div><div className="text-xl font-bold">{spm}</div><div className="text-[10px] text-[#999]">SPM</div></div>}{score&&<div><div className="text-xl font-bold">{score}</div><div className="text-[10px] text-[#999]">得分</div></div>}</div>
-        {mWeapons.length > 0 && <div className="flex flex-col gap-1 mt-3">{mWeapons.filter(w=>(w.stats.kills?.value||0)>0).map(w => <div key={w.metadata?.name as string} className="flex items-center gap-2 text-xs"><div className="flex items-center gap-1.5 min-w-0 flex-1">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain shrink-0"/>}<span className="font-medium truncate">{w.metadata?.name}</span></div><span className="text-[#999] shrink-0">{w.stats.kills?.displayValue} 击杀{w.stats.killsPerMinute?.displayValue&&<span className="ml-1.5">| {w.stats.killsPerMinute?.displayValue} KPM</span>}{w.stats.accuracy?.displayValue&&<span className="ml-1.5">| {w.stats.accuracy?.displayValue}% ACC</span>}{w.stats.headshots?.displayValue&&<span className="ml-1.5">| {w.stats.headshots?.displayValue}% HS</span>}</span></div>)}</div>}
+        {mWeapons.filter(w=>_nv(w.stats?.kills)>0).length > 0 && <div className="flex flex-col gap-1 mt-3">{mWeapons.filter(w=>_nv(w.stats?.kills)>0).map(w => <div key={w.metadata?.name as string} className="flex items-center gap-2 text-xs"><div className="flex items-center gap-1.5 min-w-0 flex-1">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain shrink-0"/>}<span className="font-medium truncate">{w.metadata?.name}</span></div><span className="text-[#999] shrink-0">{w.stats?.kills?.displayValue} 击杀{(w.stats as any)?.killsPerMinute?.displayValue && <span className="ml-1.5">| {(w.stats as any).killsPerMinute.displayValue} KPM</span>}{(w.stats as any)?.accuracy?.displayValue && <span className="ml-1.5">| {(w.stats as any).accuracy.displayValue}% ACC</span>}{(w.stats as any)?.headshots?.displayValue && <span className="ml-1.5">| {(w.stats as any).headshots.displayValue}% HS</span>}</span></div>)}</div>}
       </div>
         {isExpanded && <div className="border-t border-[#e8e8e8] p-5 bg-[#fafafa] space-y-5">
-          {ov && <div><h4 className="text-xs font-semibold text-[#666] mb-2">概览</h4><div className="grid grid-cols-3 sm:grid-cols-5 gap-4">{(["kills","deaths","kd","killsPerMinute","scorePerMinute","score","wins","losses","timePlayed"] as const).filter(k=>ov.stats[k as keyof typeof ov.stats]).map(k => <div key={k} className="text-center"><div className="text-lg font-bold">{ov.stats[k as keyof typeof ov.stats]!.displayValue}</div><div className="text-[10px] text-[#999]">{k==="kills"?"击杀":k==="deaths"?"死亡":k==="kd"?"K/D":k==="killsPerMinute"?"KPM":k==="scorePerMinute"?"SPM":k==="score"?"得分":k==="wins"?"胜利":k==="losses"?"战败":"时长"}</div></div>)}</div></div>}
-          {mModes.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2">模式</h4>{mModes.map(m=><div key={m.metadata?.name as string} className="flex items-center gap-3 text-xs mb-1.5">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain"/>}<span className="font-medium w-24">{m.metadata?.name}</span><span className="text-[#999]">{m.stats.matches?.displayValue||"?"} 场 · {m.stats.wins?.displayValue||"0"} 胜 · {m.stats.losses?.displayValue||"0"} 负 · {m.stats.secondsPlayed?.displayValue||"0"}</span></div>)}</>}
-          {mMaps.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">地图</h4><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{mMaps.map(m=><div key={m.metadata?.name as string} className="card p-2 text-xs">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}<div className="font-medium">{m.metadata?.name}</div><div className="text-[#999]">{m.stats.wins?.displayValue}胜 · {m.stats.losses?.displayValue}负 · {m.stats.matchesPlayed?.displayValue}场</div></div>)}</div></>}
-          {mKits.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">兵种</h4><div className="grid grid-cols-2 gap-2">{mKits.map(k=><div key={k.metadata?.name as string} className="card p-3 flex items-center gap-3">{k.metadata?.imageUrl && <img src={k.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-sm">{k.metadata?.name}</div><div className="text-[10px] text-[#999] mt-0.5">击杀 {k.stats.kills?.displayValue} · 死亡 {k.stats.deaths?.displayValue} · K/D {k.stats.kd?.displayValue} · KPM {k.stats.killsPerMinute?.displayValue} · SPM {k.stats.scorePerMinute?.displayValue}</div></div></div>)}</div></>}
-          {mWeapons.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">武器</h4>{mWeapons.map(w=><div key={w.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{w.metadata?.name}</div><div className="text-[10px] text-[#999]">{w.stats.kills?.displayValue} 击杀 · {w.stats.killsPerMinute?.displayValue} KPM · {w.stats.accuracy?.displayValue}% ACC · {w.stats.headshots?.displayValue}% HS%</div></div></div>)}</>}
-          {mVehicles.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">载具</h4>{mVehicles.map(v=><div key={v.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{v.metadata?.imageUrl && <img src={v.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{v.metadata?.name}</div><div className="text-[10px] text-[#999]">{v.stats.kills?.displayValue} 击杀 · {v.stats.killsPerMinute?.displayValue} KPM · 时长 {v.stats.timeInVehicle?.displayValue}{v.stats.destroyed?.displayValue&&<span> · 摧毁 {v.stats.destroyed?.displayValue}</span>}</div></div></div>)}</>}
-          {mGadgets.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">装备</h4><div className="grid grid-cols-2 gap-2">{mGadgets.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-1">{g.metadata?.imageUrl?<img src={g.metadata.imageUrl as string} alt="" className="w-6 h-6 object-contain"/>:<div className="w-6 h-6 rounded bg-[#f0f0f0]"/>}<div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats.kills?.displayValue} 击杀{g.stats.killsPerMinute?.displayValue&&<span> · {g.stats.killsPerMinute?.displayValue} KPM</span>}</div></div></div>)}</div></>}
-          {mMelee.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">近战</h4>{mMelee.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2"><div className="w-6 h-6 rounded bg-[#f0f0f0] shrink-0"></div><div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats.kills?.displayValue} 击杀 · {g.stats.takedowns?.displayValue} 处决 · KPM {g.stats.killsPerMinute?.displayValue}</div></div></div>)}</>}
+          {ov && <div><h4 className="text-xs font-semibold text-[#666] mb-2">概览</h4><div className="grid grid-cols-3 sm:grid-cols-5 gap-4">{(["kills","deaths","kd","killsPerMinute","scorePerMinute","score","wins","losses","timePlayed"] as const).filter(k=>(ov.stats as any)?.[k]).map(k => <div key={k} className="text-center"><div className="text-lg font-bold">{(ov.stats as any)[k].displayValue}</div><div className="text-[10px] text-[#999]">{k==="kills"?"击杀":k==="deaths"?"死亡":k==="kd"?"K/D":k==="killsPerMinute"?"KPM":k==="scorePerMinute"?"SPM":k==="score"?"得分":k==="wins"?"胜利":k==="losses"?"战败":"时长"}</div></div>)}</div></div>}
+          {mModes.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2">模式</h4>{mModes.map(m=><div key={m.metadata?.name as string} className="flex items-center gap-3 text-xs mb-1.5">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain"/>}<span className="font-medium w-24">{m.metadata?.name}</span><span className="text-[#999]">{m.stats?.kills?.displayValue||"?"} 击杀 · {(m.stats as any)?.wins?.displayValue||"0"} 胜 · {(m.stats as any)?.losses?.displayValue||"0"} 负 · {(m.stats as any)?.secondsPlayed?.displayValue||"0"}</span></div>)}</>}
+          {mMaps.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">地图</h4><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{mMaps.map(m=><div key={m.metadata?.name as string} className="card p-2 text-xs">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}<div className="font-medium">{m.metadata?.name}</div><div className="text-[#999]">{(m.stats as any)?.wins?.displayValue||"0"}胜 · {(m.stats as any)?.losses?.displayValue||"0"}负 · {(m.stats as any)?.matchesPlayed?.displayValue||"?"}场</div></div>)}</div></>}
+          {mKits.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">兵种</h4><div className="grid grid-cols-2 gap-2">{mKits.map(k=><div key={k.metadata?.name as string} className="card p-3 flex items-center gap-3">{k.metadata?.imageUrl && <img src={k.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-sm">{k.metadata?.name}</div><div className="text-[10px] text-[#999] mt-0.5">击杀 {k.stats?.kills?.displayValue} · 死亡 {(k.stats as any)?.deaths?.displayValue} · K/D {(k.stats as any)?.kd?.displayValue} · KPM {(k.stats as any)?.killsPerMinute?.displayValue} · SPM {(k.stats as any)?.scorePerMinute?.displayValue}</div></div></div>)}</div></>}
+          {mWeapons.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">武器</h4>{mWeapons.map(w=><div key={w.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{w.metadata?.name}</div><div className="text-[10px] text-[#999]">{w.stats?.kills?.displayValue} 击杀 · {(w.stats as any)?.killsPerMinute?.displayValue} KPM · {(w.stats as any)?.accuracy?.displayValue}% ACC · {(w.stats as any)?.headshots?.displayValue}% HS</div></div></div>)}</>}
+          {mVehicles.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">载具</h4>{mVehicles.map(v=><div key={v.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{v.metadata?.imageUrl && <img src={v.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{v.metadata?.name}</div><div className="text-[10px] text-[#999]">{v.stats?.kills?.displayValue} 击杀 · {(v.stats as any)?.killsPerMinute?.displayValue} KPM · 时长 {(v.stats as any)?.timeInVehicle?.displayValue || (v.stats as any)?.timeIn?.displayValue}{(v.stats as any)?.destroyed?.displayValue&&<span> · 摧毁 {(v.stats as any).destroyed.displayValue}</span>}</div></div></div>)}</>}
+          {mGadgets.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">装备</h4><div className="grid grid-cols-2 gap-2">{mGadgets.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-1">{g.metadata?.imageUrl?<img src={g.metadata.imageUrl as string} alt="" className="w-6 h-6 object-contain"/>:<div className="w-6 h-6 rounded bg-[#f0f0f0]"/>}<div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats?.kills?.displayValue} 击杀{(g.stats as any)?.killsPerMinute?.displayValue&&<span> · {(g.stats as any).killsPerMinute.displayValue} KPM</span>}</div></div></div>)}</div></>}
+          {mMelee.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">近战</h4>{mMelee.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2"><div className="w-6 h-6 rounded bg-[#f0f0f0] shrink-0"></div><div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats?.kills?.displayValue} 击杀 · {(g.stats as any)?.takedowns?.displayValue} 处决 · KPM {(g.stats as any)?.killsPerMinute?.displayValue}</div></div></div>)}</>}
         </div>}
     </div>;
   })}</div>;
 }
+const _nv = (s: Segment["stats"][keyof Segment["stats"]] | undefined): number => (s as any)?.value || 0;
 
 function SeasonBreakdown({ segments }: { segments: Segment[] }) {
   const grouped: Record<string, Record<string, Segment[]>> = {};

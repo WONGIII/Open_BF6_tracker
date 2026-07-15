@@ -8,6 +8,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import { buildDeltaMatch } from "./delta";
 import type {
   TrnProfile,
   TrnMatch,
@@ -216,6 +217,11 @@ export function lookupByName(name: string): Record<string, unknown> | null {
   return JSON.parse(row.trn_profile_json) as Record<string, unknown>;
 }
 
+export function listProfileIdentifiers(): { platform_user_identifier: string; platform: string; name: string; update_hash: string; updated_at: string }[] {
+  const db = getDb();
+  return db.prepare("SELECT platform_user_identifier, platform, name, update_hash, updated_at FROM profiles ORDER BY updated_at ASC").all() as any[];
+}
+
 export function upsertProfile(
   platformUserIdentifier: string,
   name: string,
@@ -235,11 +241,11 @@ export function upsertProfile(
     db.prepare("INSERT INTO profiles (platform_user_identifier, platform, name, update_hash, updated_at, trn_profile_json) VALUES (?, ?, ?, ?, ?, ?)")
       .run(platformUserIdentifier, platform, name, updateHash, now, profileJson);
 
-    const data = (response as Record<string, unknown>).data as Record<string, unknown> | undefined;
-    if (data) {
-      // Store full profile data as first match (all segments: overview, weapons, vehicles, etc.)
+    // First match: delta from nothing = full current stats as one "match"
+    const firstMatch = buildDeltaMatch(null, response, platformUserIdentifier);
+    if (firstMatch) {
       db.prepare("INSERT INTO matches (id, platform_user_identifier, created_at, from_hash, to_hash, match_json) VALUES (?, ?, ?, NULL, ?, ?)")
-        .run(crypto.randomUUID(), platformUserIdentifier, now, updateHash, JSON.stringify(data));
+        .run(crypto.randomUUID(), platformUserIdentifier, now, updateHash, JSON.stringify(firstMatch));
     }
 
     return { fromHash: null, toHash: updateHash, isFirstSeen: true, isChanged: true };
@@ -249,195 +255,12 @@ export function upsertProfile(
     return { fromHash: existing.update_hash, toHash: updateHash, isFirstSeen: false, isChanged: false };
   }
 
-  // Hash changed: compute delta
+  // Hash changed: compute delta using TRN segment differ
   const oldRes = JSON.parse(existing.trn_profile_json) as Record<string, unknown>;
-  const oldData = (oldRes.data || {}) as Record<string, unknown>;
-  const newData = (response.data || {}) as Record<string, unknown>;
-  const oldSegs = (oldData.segments || []) as Record<string, unknown>[];
-  const newSegs = (newData.segments || []) as Record<string, unknown>[];
-  const oldOv = oldSegs.find((s) => s.type === "overview") as Record<string, unknown> | undefined;
-  const newOv = newSegs.find((s) => s.type === "overview") as Record<string, unknown> | undefined;
-
-  if (oldOv?.stats && newOv?.stats) {
-    const os = oldOv.stats as Record<string, { value?: number; displayValue?: string }>;
-    const ns = newOv.stats as Record<string, { value?: number; displayValue?: string }>;
-    const dk = (ns.kills?.value || 0) - (os.kills?.value || 0);
-    const dd = (ns.deaths?.value || 0) - (os.deaths?.value || 0);
-    const dw = (ns.wins?.value || 0) - (os.wins?.value || 0);
-    const dl = (ns.losses?.value || 0) - (os.losses?.value || 0);
-    const ds = (ns.score?.value || 0) - (os.score?.value || 0);
-    const dt = (ns.timePlayed?.value || 0) - (os.timePlayed?.value || 0);
-    if (dk !== 0 || dd !== 0 || dw !== 0 || dl !== 0 || ds !== 0 || dt !== 0) {
-      const deltaMins = dt > 0 ? dt / 60 : 0;
-      const num = (v: number) => ({ value: v, displayValue: String(Math.round(v)), displayType: "Number" });
-      const prec2 = (v: number) => ({ value: v, displayValue: v.toFixed(2), displayType: "NumberPrecision2" });
-      const timeStr = (v: number) => { const m = Math.floor(v / 60); const s = Math.floor(v % 60); return { value: v, displayValue: m ? `${m}m ${s}s` : `${s}s`, displayType: "TimeSeconds" }; };
-
-      const deltaKpm = deltaMins > 0 ? parseFloat((dk / deltaMins).toFixed(2)) : dk;
-      const deltaSpm = deltaMins > 0 ? Math.round(ds / deltaMins) : ds;
-
-      const deltaSegs: Record<string, unknown>[] = [{
-        type: "overview",
-        stats: {
-          kills: num(dk), deaths: num(dd),
-          kd: prec2(dd > 0 ? parseFloat((dk / dd).toFixed(2)) : dk),
-          wins: num(dw), losses: num(dl),
-          score: num(ds),
-          killsPerMinute: prec2(deltaKpm),
-          scorePerMinute: num(deltaSpm),
-          timePlayed: timeStr(dt),
-        }
-      }];
-
-      // Helper: build imageUrl index from segments
-      type Seg = Record<string, unknown>;
-      const imgIdx: Record<string, string> = {};
-      for (const s of newSegs) {
-        const md = s.metadata as { name?: string; imageUrl?: string } | undefined;
-        if (md?.name && md?.imageUrl) imgIdx[String(md.name)] = md.imageUrl;
-      }
-
-      // Helper: generic delta on one stat
-      const segDiff = (segType: string, statKey: string) => {
-        const oldS = oldSegs.filter(s=>s.type===segType);
-        const newS = newSegs.filter(s=>s.type===segType);
-        const m:Record<string,{o:number,n:number}>={};
-        for(const s of oldS){
-          const n=String((s.metadata as {name?:string}|undefined)?.name||"");
-          if(n) m[n]={...m[n],o:((s.stats as Record<string,{value?:number}>|undefined)?.[statKey]?.value||0)};
-        }
-        for(const s of newS){
-          const n=String((s.metadata as {name?:string}|undefined)?.name||"");
-          if(n) m[n]={...m[n],n:((s.stats as Record<string,{value?:number}>|undefined)?.[statKey]?.value||0)};
-        }
-        type SegMap = { name: string; oldVal: number; newVal: number; seg: Seg };
-        const results: SegMap[] = [];
-        for(const [name, vals] of Object.entries(m)){
-          const diff = (vals.n||0)-(vals.o||0);
-          if(diff>0) results.push({name, oldVal:vals.o||0, newVal:vals.n||0, seg:newS.find(s=>String((s.metadata as {name?:string})?.name)===name)||{}});
-        }
-        return results;
-      };
-
-      // Weapons: kills + own KPM + accuracy + headshots
-      const aggrNames = new Set(["All","Official","Multiplayer","gm_all","gm_official","gm_mp","gm_modbuilder","gm_granite","gm_granitebr"]);
-      const wDiff = segDiff("weapon","kills");
-      const dWeapons = wDiff.sort((a,b)=>b.newVal-b.oldVal-(a.newVal-a.oldVal)).slice(0,8).map(r=>{
-        const dn = String(r.name);
-        const dk2 = (r.newVal||0)-(r.oldVal||0);
-        const img = imgIdx[dn] || "";
-        const wStat = (r.seg.stats || {}) as Record<string,{value?:number}>;
-        const oldWTime = wStat.timeEquipped?.value||0;
-        const newWTime = (()=>{const ns2=newSegs.find(s=>s.type==="weapon"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.timeEquipped?.value||0);})();
-        const dWTime=newWTime-oldWTime;
-        const dWkpm = dWTime>0?parseFloat((dk2/(dWTime/60)).toFixed(2)):(wStat.killsPerMinute?.value||0);
-        const oldFired=wStat.shotsFired?.value||0; const oldHit=wStat.shotsHit?.value||0;
-        const newFired = (()=>{const ns2=newSegs.find(s=>s.type==="weapon"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.shotsFired?.value||0);})();
-        const newHit = (()=>{const ns2=newSegs.find(s=>s.type==="weapon"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.shotsHit?.value||0);})();
-        const dFired=newFired-oldFired; const dHit=newHit-oldHit;
-        const dAcc = dFired>0?parseFloat(((dHit/dFired)*100).toFixed(2)):0;
-        const oldHs=wStat.headshots?.value||0;
-        const newHs=(()=>{const ns2=newSegs.find(s=>s.type==="weapon"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.headshots?.value||0);})();
-        const dHs=newHs-oldHs;
-        const dHsPct=dk2>0?parseFloat(((dHs/dk2)*100).toFixed(2)):0;
-        return {type:"weapon",metadata:{name:dn,imageUrl:img},stats:{kills:num(dk2),killsPerMinute:prec2(dWkpm),accuracy:prec2(dAcc),headshots:prec2(dHsPct),timeEquipped:timeStr(dWTime)}};
-      });
-      deltaSegs.push(...dWeapons);
-
-      // Vehicles: kills + KPM + timeInVehicle + destroyed
-      const vDiff = segDiff("vehicle","kills");
-      const dVehicles = vDiff.sort((a,b)=>b.newVal-b.oldVal-(a.newVal-a.oldVal)).slice(0,5).map(r=>{
-        const dn=String(r.name); const dk2=(r.newVal||0)-(r.oldVal||0);
-        const img=imgIdx[dn]||"";
-        const vStat=(r.seg.stats||{}) as Record<string,{value?:number}>;
-        const oldVTime=vStat.timeInVehicle?.value||0;
-        const newVTime=(()=>{const ns2=newSegs.find(s=>s.type==="vehicle"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.timeInVehicle?.value||0);})();
-        const dVTime=newVTime-oldVTime;
-        const dVkpm=dVTime>0?parseFloat((dk2/(dVTime/60)).toFixed(2)):(vStat.killsPerMinute?.value||0);
-        const oldDestroyed=vStat.destroyed?.value||0;
-        const newDestroyed=(()=>{const ns2=newSegs.find(s=>s.type==="vehicle"&&String((s.metadata as {name?:string})?.name)===dn);return ((ns2?.stats as Record<string,{value?:number}>|undefined)?.destroyed?.value||0);})();
-        return {type:"vehicle",metadata:{name:dn,imageUrl:img},stats:{kills:num(dk2),killsPerMinute:prec2(dVkpm),timeInVehicle:timeStr(dVTime),destroyed:num((newDestroyed||0)-(oldDestroyed||0))}};
-      });
-      deltaSegs.push(...dVehicles);
-
-      // Kits: kills, deaths, kd, kpm, spm, score, assists, revives, timePlayed
-      const kOld = oldSegs.filter(s=>s.type==="kit");
-      const kNew = newSegs.filter(s=>s.type==="kit");
-      const km:Record<string,Seg>={}; for(const s of kOld){const n=String((s.metadata as {name?:string})?.name||"");if(n)km[n]={...km[n],o:s};} for(const s of kNew){const n=String((s.metadata as {name?:string})?.name||"");if(n)km[n]={...km[n],n:s};}
-      const dKits = Object.entries(km).filter(([,v])=>{
-        const oks=((v.o as Seg)?.stats as Record<string,{value?:number}>|undefined)?.kills?.value||0;
-        const nks=((v.n as Seg)?.stats as Record<string,{value?:number}>|undefined)?.kills?.value||0;
-        return (nks-oks)>0;
-      }).map(([name,vals])=>{
-        const nStats = ((vals.n as Seg)?.stats || {}) as Record<string,{value?:number}>;
-        const oStats = ((vals.o as Seg)?.stats || {}) as Record<string,{value?:number}>;
-        const dkk=(nStats.kills?.value||0)-(oStats.kills?.value||0);
-        const dd2=(nStats.deaths?.value||0)-(oStats.deaths?.value||0);
-        const dscore=(nStats.score?.value||0)-(oStats.score?.value||0);
-        const dkt=(nStats.timePlayed?.value||0)-(oStats.timePlayed?.value||0);
-        const dkm=dkt>0?parseFloat((dkk/(dkt/60)).toFixed(2)):0;
-        const dsm=dkt>0?Math.round(dscore/(dkt/60)):0;
-        const img=imgIdx[name]||"";
-        return {type:"kit",metadata:{name,imageUrl:img},stats:{
-          kills:num(dkk),deaths:num(dd2),
-          kd:prec2(dd2>0?parseFloat((dkk/dd2).toFixed(2)):dkk),
-          killsPerMinute:prec2(dkm),scorePerMinute:num(dsm),
-          score:num(dscore),timePlayed:timeStr(dkt),
-          assists:num((nStats.assists?.value||0)-(oStats.assists?.value||0)),
-          revives:num((nStats.revives?.value||0)-(oStats.revives?.value||0)),
-        }};
-      });
-      deltaSegs.push(...dKits);
-
-      // Gamemodes: wins, losses, kills, matches, timePlayed, imageUrl (filter aggregates)
-      const gDiff = segDiff("gamemode","kills");
-      const dModes = gDiff.filter(r=>!aggrNames.has(r.name)&&!aggrNames.has(String(((r.seg.metadata || {}) as Record<string,unknown>).id||"").toLowerCase())).slice(0,5).map(r=>{
-        const dn=String(r.name);
-        const gmStat=(r.seg.stats||{}) as Record<string,{value?:number}>;
-        const oSeg=oldSegs.find(s=>s.type==="gamemode"&&String((s.metadata as {name?:string})?.name)===dn);
-        const nSeg=newSegs.find(s=>s.type==="gamemode"&&String((s.metadata as {name?:string})?.name)===dn);
-        const gs=(s:Seg|undefined)=>((s?.stats||{}) as Record<string,{value?:number}>);
-        return {type:"gamemode",metadata:{name:dn,imageUrl:imgIdx[dn]||""},stats:{
-          wins:num((gs(nSeg).wins?.value||0)-(gs(oSeg).wins?.value||0)),
-          losses:num((gs(nSeg).losses?.value||0)-(gs(oSeg).losses?.value||0)),
-          kills:num((gs(nSeg).kills?.value||0)-(gs(oSeg).kills?.value||0)),
-          matches:num((gs(nSeg).matches?.value||0)-(gs(oSeg).matches?.value||0)),
-          secondsPlayed:timeStr((gs(nSeg).secondsPlayed?.value||0)-(gs(oSeg).secondsPlayed?.value||0)),
-        }};
-      });
-      deltaSegs.push(...dModes);
-
-      // Maps: wins, losses, matchesPlayed, timePlayed (filter "All")
-      const mapDiff = segDiff("level","wins");
-      const dMaps = mapDiff.filter(r=>!aggrNames.has(r.name)&&r.name!=="All").slice(0,6).map(r=>{
-        const dn=String(r.name);
-        const oSeg=oldSegs.find(s=>s.type==="level"&&String((s.metadata as {name?:string})?.name)===dn);
-        const nSeg=newSegs.find(s=>s.type==="level"&&String((s.metadata as {name?:string})?.name)===dn);
-        const gs=(s:Seg|undefined)=>((s?.stats||{}) as Record<string,{value?:number}>);
-        return {type:"level",metadata:{name:dn,imageUrl:imgIdx[dn]||""},stats:{
-          wins:num((gs(nSeg).wins?.value||0)-(gs(oSeg).wins?.value||0)),
-          losses:num((gs(nSeg).losses?.value||0)-(gs(oSeg).losses?.value||0)),
-          matchesPlayed:num((gs(nSeg).wins?.value||0)+(gs(nSeg).losses?.value||0)-((gs(oSeg).wins?.value||0)+(gs(oSeg).losses?.value||0))),
-        }};
-      });
-      deltaSegs.push(...dMaps);
-
-      // Gadgets: kills, kpm
-      const gGadDiff = segDiff("gadget","kills");
-      const dGadgets = gGadDiff.sort((a,b)=>b.newVal-b.oldVal-(a.newVal-a.oldVal)).slice(0,6).map(r=>{
-        const dn=String(r.name); const dk2=(r.newVal||0)-(r.oldVal||0);
-        const img=imgIdx[dn]||"";
-        const gStat=(r.seg.stats||{}) as Record<string,{value?:number}>;
-        return {type:"gadget",metadata:{name:dn,imageUrl:img},stats:{kills:num(dk2),killsPerMinute:prec2(gStat.killsPerMinute?.value||0)}};
-      });
-      deltaSegs.push(...dGadgets);
-
-      db.prepare("INSERT INTO matches (id, platform_user_identifier, created_at, from_hash, to_hash, match_json) VALUES (?, ?, ?, ?, ?, ?)")
-        .run(crypto.randomUUID(), platformUserIdentifier, now, existing.update_hash, updateHash, JSON.stringify({
-          id: crypto.randomUUID(), metadata: {},
-          segments: deltaSegs,
-        }));
-    }
+  const deltaMatch = buildDeltaMatch(oldRes, response, platformUserIdentifier);
+  if (deltaMatch) {
+    db.prepare("INSERT INTO matches (id, platform_user_identifier, created_at, from_hash, to_hash, match_json) VALUES (?, ?, ?, ?, ?, ?)")
+      .run(crypto.randomUUID(), platformUserIdentifier, now, existing.update_hash, updateHash, JSON.stringify(deltaMatch));
   }
 
   db.prepare("UPDATE profiles SET name = ?, update_hash = ?, updated_at = ?, trn_profile_json = ? WHERE platform_user_identifier = ?")

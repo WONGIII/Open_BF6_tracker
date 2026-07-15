@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchStats, fetchProfileById } from "@/lib/gametools";
-import { getProfile, upsertProfile, generateUpdateHash } from "@/lib/db";
+import { fetchStats, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
+import { getProfile, upsertProfile } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 

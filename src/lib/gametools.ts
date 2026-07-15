@@ -334,3 +334,107 @@ export async function checkApiHealth(): Promise<boolean> {
     return false;
   }
 }
+
+// ============================================================
+// Batch stats fetch via POST /bf6/multiple/
+// Used by background poller — fetches up to 128 players per request
+// with seperation=false (fast, no season breakdown)
+// ============================================================
+
+interface BatchPlayerItem {
+  player_id: string | number;
+  user_id?: string | number;
+  platform?: string;
+}
+
+export async function fetchStatsBatchByIds(
+  items: BatchPlayerItem[],
+  chunkSize = 20
+): Promise<Map<string, GametoolsStatsRaw | null>> {
+  if (!items.length) return new Map();
+
+  chunkSize = Math.max(1, Math.min(chunkSize, 128));
+  const url = `${GAMETOOLS_BASE}/bf6/multiple/?categories=multiplayer&raw=false&format_values=true&seperation=false&lang=en-us`;
+
+  const out = new Map<string, GametoolsStatsRaw | null>();
+  for (const pid of items.map(i => String(i.player_id || i.user_id || ""))) {
+    if (pid) out.set(pid, null);
+  }
+
+  const chunks: BatchPlayerItem[][] = [];
+  for (let i = 0; i < items.length; i += chunkSize) {
+    chunks.push(items.slice(i, i + chunkSize));
+  }
+
+  for (const chunk of chunks) {
+    try {
+      const payload = chunk.map(item => ({
+        player_id: item.player_id,
+        user_id: item.user_id || item.player_id,
+        platform: item.platform || "ea",
+      }));
+
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Accept": "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30_000),
+      });
+
+      if (!resp.ok) continue;
+      const body = await resp.json() as { data?: unknown[] } | GametoolsStatsRaw[];
+
+      let data: unknown[] = [];
+      if (Array.isArray(body)) data = body;
+      else if (body && typeof body === "object" && Array.isArray((body as Record<string, unknown>).data)) {
+        data = (body as Record<string, unknown>).data as unknown[];
+      }
+
+      for (const stats of data) {
+        if (!stats || typeof stats !== "object") continue;
+        const s = stats as Record<string, unknown>;
+        const pid = String(s.userId || s.id || "");
+        if (pid && out.has(pid)) {
+          out.set(pid, stats as GametoolsStatsRaw);
+        }
+      }
+    } catch {
+      // skip failed chunks
+    }
+  }
+
+  return out;
+}
+
+// ============================================================
+// Update hash generator (matches closed-source project)
+// Hashes raw counter fields so that any real gameplay movement
+// invalidates the hash
+// ============================================================
+
+const HASH_COUNTER_FIELDS = [
+  "kills", "deaths", "wins", "loses", "matchesPlayed", "secondsPlayed",
+  "shotsFired", "shotsHit", "killAssists", "revives", "heals",
+  "resupplies", "repairs", "vehiclesDestroyed", "enemiesSpotted",
+  "headShots", "damage", "saviorKills", "thrownThrowables",
+  "gadgetsDestoyed", "playerTakeDowns", "squadmateRevive",
+];
+
+export function generateUpdateHash(data: Record<string, unknown>): string {
+  const parts = HASH_COUNTER_FIELDS.map(k => `${k}=${Number(data[k] || 0)}`);
+  // nested objective/sector counters
+  const obj = (data.objective || {}) as Record<string, unknown>;
+  const objTime = (obj.time || {}) as Record<string, unknown>;
+  parts.push(`obj.time.total=${Number(objTime.total || 0)}`);
+  parts.push(`obj.captured=${Number(obj.captured || 0)}`);
+  parts.push(`obj.defused=${Number(obj.defused || 0)}`);
+  const sector = (data.sector || {}) as Record<string, unknown>;
+  parts.push(`sector.captured=${Number(sector.captured || 0)}`);
+  const dk = (data.dividedKills || {}) as Record<string, unknown>;
+  for (const k of ["human", "ads", "hipfire", "melee", "multiKills", "vehicle", "roadkills"]) {
+    parts.push(`dk.${k}=${Number(dk[k] || 0)}`);
+  }
+  const blob = parts.join("|");
+  const { createHash } = require("crypto");
+  return createHash("sha1").update(blob).digest("hex").slice(0, 8);
+}
