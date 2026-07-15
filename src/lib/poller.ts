@@ -14,13 +14,24 @@ export interface PollResult {
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 let isPolling = false;
 
-// Tier intervals (seconds)
-const SPONSOR_INTERVAL = 300;    // 5 min — sponsors always
-const REGULAR_INTERVAL = 600;    // 10 min — recently searched players
-const SEARCH_WINDOW_HOURS = 24;  // skip players not searched within this window
+const SPONSOR_INTERVAL_MS = 5 * 60 * 1000;   // 5 min — sponsors
+const ACTIVE_INTERVAL_MS = 10 * 60 * 1000;    // 10 min — active players
+const SEARCH_WINDOW_MS = 24 * 3600 * 1000;     // 24h — active threshold
+const DAILY_WINDOW_MS = 24 * 3600 * 1000;       // daily refresh for all players
 
-// Track last cycle run timestamp for regular players
-let lastRegularCycleAt = 0;
+// Track which inactive players were already polled today (resets at midnight)
+let dailyPolled: Set<string> = new Set();
+let lastMidnight = 0;
+
+function isNewDay(now: Date): boolean {
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (midnight !== lastMidnight) {
+    lastMidnight = midnight;
+    dailyPolled = new Set();
+    return true;
+  }
+  return false;
+}
 
 function getSponsorIds(): Set<string> {
   try {
@@ -50,9 +61,7 @@ async function doUpsertForRow(
   try {
     const uid = (stats as any).userId as number;
     const platform = (row.platform || "origin") as Platform;
-    // Map our platform to GameTools API platform
     const gtPlatform = platform === "origin" ? "ea" : platform === "psn" ? "psn" : platform === "xbox" ? "xbl" : platform;
-    // Re-fetch full stats with seperation=true for perSeason/perGamemode data
     const fullStats = await fetchStatsById(uid, gtPlatform).catch(() => null);
     const finalStats = (fullStats || stats) as Record<string, unknown>;
     const rawProfile = await fetchProfileById(uid).catch(() => null);
@@ -71,40 +80,58 @@ async function doUpsertForRow(
 export async function runPollCycle(): Promise<PollResult> {
   const startTime = Date.now();
   const now = new Date();
+  const nowMs = now.getTime();
+  isNewDay(now);
+
   const rows = listProfileIdentifiers();
   if (!rows.length) {
     return { total: 0, changed: 0, unchanged: 0, errors: 0, durationMs: Date.now() - startTime };
   }
 
   const sponsorIds = getSponsorIds();
-  const searchWindowMs = SEARCH_WINDOW_HOURS * 3600 * 1000;
-  const shouldRunRegular = (now.getTime() - lastRegularCycleAt) >= REGULAR_INTERVAL * 1000;
 
-  // Filter: sponsors always, regulars if recently searched and due for refresh
+  // Filter into three tiers
   const eligible: typeof rows = [];
+  let tierSponsor = 0, tierActive = 0, tierDaily = 0;
+
   for (const row of rows) {
     const pid = row.platform_user_identifier;
+    const updatedAt = new Date(row.updated_at).getTime();
+    const lastSearch = row.last_searched_at ? new Date(row.last_searched_at).getTime() : 0;
+    const isActive = lastSearch > 0 && (nowMs - lastSearch) <= SEARCH_WINDOW_MS;
+
+    // Tier 1: sponsors — every cycle if not refreshed in the last 5 min
     if (sponsorIds.has(pid)) {
-      eligible.push(row);
+      if (nowMs - updatedAt >= SPONSOR_INTERVAL_MS) {
+        eligible.push(row);
+        tierSponsor++;
+      }
       continue;
     }
-    if (!shouldRunRegular) continue;
-    // Check if searched recently
-    if (row.last_searched_at) {
-      const lastSearch = new Date(row.last_searched_at).getTime();
-      if (now.getTime() - lastSearch <= searchWindowMs) {
+
+    // Tier 2: active players — every 10 min
+    if (isActive) {
+      if (nowMs - updatedAt >= ACTIVE_INTERVAL_MS) {
         eligible.push(row);
+        tierActive++;
       }
+      continue;
+    }
+
+    // Tier 3: everyone else — once per day
+    if (!dailyPolled.has(pid) && nowMs - updatedAt >= DAILY_WINDOW_MS) {
+      eligible.push(row);
+      dailyPolled.add(pid);
+      tierDaily++;
     }
   }
-
-  if (shouldRunRegular) lastRegularCycleAt = now.getTime();
 
   if (!eligible.length) {
     return { total: 0, changed: 0, unchanged: 0, errors: 0, durationMs: Date.now() - startTime };
   }
 
-  // Batch-fetch stats for eligible players
+  console.log(`[poller] Eligible: ${eligible.length} (sponsors:${tierSponsor}, active:${tierActive}, daily:${tierDaily})`);
+
   const items = eligible.map(r => ({
     player_id: r.platform_user_identifier,
     platform: r.platform || "ea",
@@ -140,13 +167,13 @@ export async function runPollCycle(): Promise<PollResult> {
 
 export function startBackgroundPoller(intervalSec = 300): void {
   if (pollInterval) return;
-  console.log(`[poller] Starting background poller every ${intervalSec}s (sponsors:5min, regular:10min, window:${SEARCH_WINDOW_HOURS}h)`);
+  console.log(`[poller] Starting every ${intervalSec}s (sponsors:5min, active:10min, daily:24h)`);
   runPollCycle().then(r => console.log(`[poller] Init: ${r.total} eligible, ${r.changed} changed, ${r.durationMs}ms`));
   pollInterval = setInterval(() => {
     if (isPolling) return;
     isPolling = true;
     runPollCycle().then(r => {
-      if (r.total > 0) console.log(`[poller] Cycle: ${r.total} eligible, ${r.changed} changed, ${r.durationMs}ms`);
+      if (r.total > 0 || r.changed > 0) console.log(`[poller] Cycle: ${r.total} eligible, ${r.changed} changed, ${r.durationMs}ms`);
     }).catch(e => {
       console.error(`[poller] Error:`, e);
     }).finally(() => {
