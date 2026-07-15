@@ -86,19 +86,31 @@ function segMatchKey(s: Segment): string {
 }
 
 // Subtract two stats blocks and recompute derived fields
+// If `itemIsNew`, the old item didn't exist at all — use new values as-is.
+// Otherwise, only diff counters that exist in BOTH old and new (skip fields
+// added after the old snapshot was stored).
 function subtractStatsBlock(
   oldStats: Stats,
   newStats: Stats,
   counters: Set<string>,
-  derived: Record<string, (d: Record<string, number>) => { value: number; displayType: string }>
+  derived: Record<string, (d: Record<string, number>) => { value: number; displayType: string }>,
+  itemIsNew = false
 ): Record<string, unknown> {
   const deltas: Record<string, number> = {};
 
-  // Subtract raw counters
-  for (const k of counters) {
-    const nv = newStats[k]?.value; const ov = oldStats[k]?.value;
-    if (nv !== undefined || ov !== undefined) {
-      deltas[k] = subNonNeg(nv, ov);
+  if (itemIsNew) {
+    // Item didn't exist in old profile: use raw new values
+    for (const k of counters) {
+      const nv = newStats[k]?.value;
+      if (nv !== undefined) deltas[k] = nv;
+    }
+  } else {
+    // Item existed: only diff counters present in BOTH
+    for (const k of counters) {
+      const nv = newStats[k]?.value; const ov = oldStats[k]?.value;
+      if (nv !== undefined && ov !== undefined) {
+        deltas[k] = subNonNeg(nv, ov);
+      }
     }
   }
 
@@ -238,8 +250,9 @@ function computeGroupDelta(
     const os = oldByKey[key] || {};
     const nsStats = (ns.stats || {}) as Stats;
     const osStats = (os.stats || {}) as Stats;
+    const isNewItem = !oldByKey[key];
 
-    const block = subtractStatsBlock(osStats, nsStats, config.counters, config.derived || {});
+    const block = subtractStatsBlock(osStats, nsStats, config.counters, config.derived || {}, isNewItem);
 
     if (!hasMovement(block)) continue;
 
