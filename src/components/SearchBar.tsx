@@ -65,6 +65,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -104,9 +105,10 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
       fetchEmptyHistory();
       return;
     }
-    if (query.trim().length < 2) { setCandidates([]); setShowDropdown(false); return; }
-    debounceRef.current = setTimeout(() => fetchCandidates(query), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    if (query.trim().length < 2) { setCandidates([]); setShowDropdown(false); setFetching(false); return; }
+    setFetching(true);
+    debounceRef.current = setTimeout(() => fetchCandidates(query).finally(() => setFetching(false)), 300);
+    return () => { if (debounceRef.current) { clearTimeout(debounceRef.current); setFetching(false); } };
   }, [query, fetchCandidates, fetchEmptyHistory]);
 
   useEffect(() => {
@@ -139,6 +141,7 @@ function toApiPlatform(c: Candidate): string {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (fetching) return;
     if (selectedIdx >= 0 && selectedIdx < candidates.length) {
       goToPlayer(candidates[selectedIdx]);
       return;
@@ -176,7 +179,7 @@ function toApiPlatform(c: Candidate): string {
         />
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || fetching || query.trim().length < 2}
           className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary h-8 px-5 text-xs rounded-md"
         >
           {loading ? (
