@@ -3,6 +3,8 @@ import { searchPlayersByName } from "@/lib/gametools";
 import { listProfileIdentifiers, getProfile } from "@/lib/db";
 
 const cache = new Map<string, { data: unknown[]; ts: number }>();
+// Clear any stale entries on startup
+cache.clear();
 const CACHE_TTL = 5 * 60 * 1000;
 
 async function enrichCandidates(candidates: any[], trackedIds: Set<string>) {
