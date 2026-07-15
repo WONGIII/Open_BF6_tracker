@@ -111,8 +111,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
 
   const fmtCd = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  if (loading) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#e8e8e8] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
-  if (error || !profileData) { console.log("[PlayerClient] showing error, profileData:", !!profileData, "error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
+  if (loading || !profileData) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#e8e8e8] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
+  if (error) { console.log("[PlayerClient] showing error, error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
   
   const info = (profileData.platformInfo || {}) as Record<string, unknown>;
   const handle = String(info.platformUserHandle || "");
