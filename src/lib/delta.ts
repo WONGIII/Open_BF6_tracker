@@ -28,8 +28,10 @@ function safeKpm(kills: number, seconds: number): number {
 
 function trnStat(val: number, displayType: string): Record<string, unknown> {
   if (displayType === "TimeSeconds") {
-    const m = Math.floor(val / 60); const s = Math.floor(val % 60);
-    return { value: val, displayValue: m ? `${m}m ${s}s` : `${s}s`, displayType };
+    const h = Math.floor(val / 3600); const m = Math.floor((val % 3600) / 60); const s = Math.floor(val % 60);
+    if (h > 0) return { value: val, displayValue: `${h}h ${m}m`, displayType };
+    if (m > 0) return { value: val, displayValue: `${m}m ${s}s`, displayType };
+    return { value: val, displayValue: `${s}s`, displayType };
   }
   if (displayType === "NumberPrecision2") return { value: val, displayValue: val.toFixed(2), displayType };
   if (displayType === "Percentage") return { value: val, displayValue: `${val.toFixed(2)}%`, displayType };
@@ -292,7 +294,8 @@ export function buildDeltaMatch(
     (oldOv.stats || {}) as Stats,
     (newOv.stats || {}) as Stats,
     OVERVIEW_COUNTERS,
-    DERIVED_OVERVIEW
+    DERIVED_OVERVIEW,
+    !oldProfile  // isNewItem: true for first match (no old profile)
   );
 
   // Career rank metadata
