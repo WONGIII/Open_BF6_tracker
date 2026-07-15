@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import SearchBar from "@/components/SearchBar";
+import SearchBar, { saveToHistory } from "@/components/SearchBar";
 import { SponsorName } from "@/components/SponsorContext";
 import { fetchPlayerProfile, fetchPlayerMatches, fetchSuspicionSummary, submitSuspicionReport } from "@/lib/api";
 import { useAuth } from "@/components/AuthContext";
@@ -40,6 +40,16 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         setProfileData(resp.data as Record<string, unknown>);
         const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
         const resIdent = String(resInfo.platformUserIdentifier || "");
+        // Save to search history (localStorage)
+        const ov = (((resp.data as any).segments || []) as any[]).find((s:any) => s.type === "overview");
+        const rank = ov?.stats?.careerPlayerRank;
+        saveToHistory({
+          nucleusId: resIdent,
+          displayName: String(resInfo.platformUserHandle || ""),
+          platform: String(resInfo.platformSlug || ""),
+          rank: rank?.displayValue || "?",
+          rankImage: rank?.metadata?.imageUrl || "",
+        });
         const [md, sd] = await Promise.all([
           resIdent ? fetchPlayerMatches(resIdent, 30, 0).catch(() => null) : null,
           resIdent ? fetchSuspicionSummary(resIdent).catch(() => null) : null,

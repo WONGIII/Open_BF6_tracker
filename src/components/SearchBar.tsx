@@ -8,8 +8,9 @@ interface Candidate {
   displayName: string;
   nucleusId: string;
   platform: string;
-  username: string;
-  personaId: string;
+  tracked?: boolean;
+  rank?: string;
+  rankImage?: string;
 }
 
 interface SearchBarProps {
@@ -26,6 +27,27 @@ const PLATFORM_LOGOS: Record<string, string> = {
   xbl: "/xbox-logo.svg",
 };
 
+const HISTORY_KEY = "bf6_recent_players";
+const MAX_HISTORY = 20;
+
+type HistoryEntry = { nucleusId: string; displayName: string; platform: string; rank: string; rankImage: string };
+
+function loadHistory(): HistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function saveToHistory(entry: HistoryEntry) {
+  try {
+    const list = loadHistory().filter(e => e.nucleusId !== entry.nucleusId);
+    list.unshift(entry);
+    if (list.length > MAX_HISTORY) list.length = MAX_HISTORY;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  } catch { /* ignore */ }
+}
+
 export default function SearchBar({ className = "", showTip = false }: SearchBarProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -34,30 +56,58 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchCandidates = useCallback(async (q: string) => {
-    if (q.trim().length < 2) { setCandidates([]); setShowDropdown(false); return; }
     try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(q.trim())}&platform=all`);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(q.trim())}`);
       const data = await res.json();
-      const items = (data.results || []) as Candidate[];
-      setCandidates(items);
-      setShowDropdown(items.length > 0);
+      setCandidates((data.results || []) as Candidate[]);
+      setShowDropdown(true);
       setSelectedIdx(-1);
     } catch {
       setCandidates([]);
     }
   }, []);
 
+  const fetchEmptyHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/search?query=`); // empty query = tracked players
+      const data = await res.json();
+      const fromDb = (data.results || []) as Candidate[];
+      // Merge with localStorage history: DB data has priority (rank, etc.)
+      const local = loadHistory();
+      const dbIds = new Set(fromDb.map(c => c.nucleusId));
+      const merged: Candidate[] = [
+        ...fromDb,
+        ...local.filter(e => !dbIds.has(e.nucleusId)).map(e => ({
+          displayName: e.displayName,
+          nucleusId: e.nucleusId,
+          platform: e.platform,
+          rank: e.rank,
+          rankImage: e.rankImage,
+          tracked: false,
+        })),
+      ];
+      setCandidates(merged);
+      setShowDropdown(merged.length > 0);
+    } catch { setCandidates([]); }
+  }, []);
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!query.trim()) {
+      setHistory(loadHistory());
+      fetchEmptyHistory();
+      return;
+    }
+    if (query.trim().length < 2) { setCandidates([]); setShowDropdown(false); return; }
     debounceRef.current = setTimeout(() => fetchCandidates(query), 300);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [query, fetchCandidates]);
+  }, [query, fetchCandidates, fetchEmptyHistory]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -71,39 +121,28 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   const goToPlayer = (candidate: Candidate) => {
     setShowDropdown(false);
     setLoading(true);
-    router.push(`/player/${encodeURIComponent(candidate.nucleusId)}?platform=${candidate.platform}`);
+    const plat = PLATFORM_PARAM_MAP[candidate.platform] || candidate.platform;
+    router.push(`/player/${encodeURIComponent(candidate.nucleusId)}?platform=${plat}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed || trimmed.length < 2) return;
-    // If there's a selected candidate from keyboard, use that
     if (selectedIdx >= 0 && selectedIdx < candidates.length) {
       goToPlayer(candidates[selectedIdx]);
       return;
     }
-    // If there are candidates, select the first one
-    if (candidates.length > 0) {
-      goToPlayer(candidates[0]);
-      return;
-    }
-    // Fallback: direct name search
+    if (candidates.length > 0) { goToPlayer(candidates[0]); return; }
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 2) return;
     setLoading(true);
     router.push(`/player/${encodeURIComponent(trimmed)}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown || candidates.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIdx(prev => Math.min(prev + 1, candidates.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIdx(prev => Math.max(prev - 1, 0));
-    } else if (e.key === "Escape") {
-      setShowDropdown(false);
-    }
+    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIdx(prev => Math.min(prev + 1, candidates.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIdx(prev => Math.max(prev - 1, 0)); }
+    else if (e.key === "Escape") setShowDropdown(false);
   };
 
   return (
@@ -113,7 +152,10 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => { if (candidates.length > 0) setShowDropdown(true); }}
+          onFocus={() => {
+            if (candidates.length > 0) setShowDropdown(true);
+            else fetchEmptyHistory();
+          }}
           onKeyDown={handleKeyDown}
           placeholder={t("home.hero.placeholder")}
           className="input h-11 rounded-lg pr-24"
@@ -122,7 +164,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
         />
         <button
           type="submit"
-          disabled={loading || query.trim().length < 2}
+          disabled={loading}
           className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary h-8 px-5 text-xs rounded-md"
         >
           {loading ? (
@@ -146,7 +188,14 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
                   alt={c.platform}
                   className="w-5 h-5 object-contain shrink-0"
                 />
-                <span className="font-medium text-[#333]">{c.displayName}</span>
+                {c.rankImage && <img src={c.rankImage} alt="" className="w-5 h-5 object-contain shrink-0" />}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-[#333] truncate">{c.displayName}</span>
+                    {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] shrink-0">已追踪</span>}
+                  </div>
+                  {c.rank && <span className="text-[10px] text-[#999]">Rank {c.rank}</span>}
+                </div>
                 <span className="text-[#999] text-xs ml-auto shrink-0">{c.nucleusId}</span>
               </div>
             ))}
@@ -159,3 +208,8 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
     </form>
   );
 }
+
+const PLATFORM_PARAM_MAP: Record<string, string> = {
+  steam: "steam", ea: "origin", origin: "origin",
+  psn: "psn", xbox: "xbox", xbl: "xbox",
+};
