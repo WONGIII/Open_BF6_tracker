@@ -8,6 +8,7 @@ interface Candidate {
   displayName: string;
   nucleusId: string;
   platform: string;
+  platformId?: string;
   tracked?: boolean;
   rank?: string;
   rankImage?: string;
@@ -118,10 +119,20 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+const PLATFORM_PARAM_MAP: Record<string, string> = {
+  steam: "steam", ea: "origin", origin: "origin",
+  psn: "psn", xbox: "xbox", xbl: "xbox",
+};
+
+function toApiPlatform(c: Candidate): string {
+  return PLATFORM_PARAM_MAP[c.platform] || (c.platformId ? PLATFORM_PARAM_MAP[c.platformId] : undefined) || c.platform || "origin";
+}
+
+// In goToPlayer:
   const goToPlayer = (candidate: Candidate) => {
     setShowDropdown(false);
     setLoading(true);
-    const plat = PLATFORM_PARAM_MAP[candidate.platform] || candidate.platform;
+    const plat = toApiPlatform(candidate);
     const displayName = encodeURIComponent(candidate.displayName);
     router.push(`/player/${encodeURIComponent(candidate.nucleusId)}?platform=${plat}&name=${displayName}`);
   };

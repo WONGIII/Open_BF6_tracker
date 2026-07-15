@@ -333,13 +333,14 @@ export async function searchPlayersByName(query: string): Promise<PlayerCandidat
 function toCandidate(r: unknown): PlayerCandidate | null {
   if (!r || typeof r !== "object") return null;
   const o = r as Record<string, unknown>;
+  const rawPlatform = String(o.platform || o.platformId || "").toLowerCase();
   return {
     displayName: String(o.displayName || o.username || ""),
     username: String(o.username || o.displayName || ""),
-    platform: String(o.platform || "").toLowerCase(),
+    platform: rawPlatform,
     nucleusId: String(o.nucleusId || ""),
     personaId: String(o.personaId || ""),
-    platformId: String(o.platformId || ""),
+    platformId: String(o.platformId || rawPlatform || ""),
     createdAt: String(o.createdAt || ""),
   };
 }
