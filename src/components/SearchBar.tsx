@@ -49,6 +49,17 @@ export function saveToHistory(entry: HistoryEntry) {
   } catch { /* ignore */ }
 }
 
+export function removeFromHistory(nucleusId: string) {
+  try {
+    const list = loadHistory().filter(e => e.nucleusId !== nucleusId);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  } catch { /* ignore */ }
+}
+
+export function clearHistory() {
+  try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
+}
+
 export default function SearchBar({ className = "", showTip = false }: SearchBarProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -188,10 +199,22 @@ function toApiPlatform(c: Candidate): string {
 
         {showDropdown && candidates.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e0e0e0] rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+            {!query.trim() && (
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[#f0f0f0] sticky top-0 bg-white">
+                <span className="text-[11px] text-[#999] font-medium">搜索记录</span>
+                <button
+                  type="button"
+                  className="text-[11px] text-[#999] hover:text-[#ff6b6b] transition-colors"
+                  onClick={(e) => { e.stopPropagation(); clearHistory(); setShowDropdown(false); }}
+                >
+                  清空记录
+                </button>
+              </div>
+            )}
             {candidates.map((c, i) => (
               <div
                 key={c.nucleusId}
-                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm hover:bg-[#f5f5f5] transition-colors ${i === selectedIdx ? "bg-[#edf2ff]" : ""}`}
+                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm hover:bg-[#f5f5f5] transition-colors group ${i === selectedIdx ? "bg-[#edf2ff]" : ""}`}
                 onClick={() => goToPlayer(c)}
                 onMouseEnter={() => setSelectedIdx(i)}
               >
@@ -207,6 +230,16 @@ function toApiPlatform(c: Candidate): string {
                   {c.rank && <span className="text-[11px] text-[#999] ml-2">Rank {c.rank}</span>}
                 </div>
                 <span className="text-[#999] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
+                {!query.trim() && (
+                  <button
+                    type="button"
+                    className="ml-1 w-5 h-5 flex items-center justify-center rounded text-[#ccc] hover:text-[#ff6b6b] hover:bg-[#fff0f0] opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    onClick={(e) => { e.stopPropagation(); removeFromHistory(c.nucleusId); setCandidates(prev => prev.filter(x => x.nucleusId !== c.nucleusId)); }}
+                    title="删除"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
           </div>
