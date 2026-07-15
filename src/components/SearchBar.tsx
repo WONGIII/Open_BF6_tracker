@@ -67,11 +67,13 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const showDropdown = focused && (fetching || candidates.length > 0);
 
   const fetchCandidates = useCallback(async (q: string) => {
     try {
@@ -81,11 +83,9 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
       clearTimeout(timeout);
       const data = await res.json();
       setCandidates((data.results || []) as Candidate[]);
-      setShowDropdown(true);
       setSelectedIdx(-1);
     } catch {
       setCandidates([]);
-      setShowDropdown(true); // show empty state
     }
   }, []);
 
@@ -109,7 +109,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
       fetchEmptyHistory();
       return;
     }
-    if (query.trim().length < 2) { setCandidates([]); setShowDropdown(false); setFetching(false); return; }
+    if (query.trim().length < 2) { setCandidates([]); setFetching(false); return; }
     setFetching(true);
     debounceRef.current = setTimeout(() => fetchCandidates(query).finally(() => setFetching(false)), 300);
     return () => { if (debounceRef.current) { clearTimeout(debounceRef.current); setFetching(false); } };
@@ -118,7 +118,7 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
+        setFocused(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -136,7 +136,7 @@ function toApiPlatform(c: Candidate): string {
 
 // In goToPlayer:
   const goToPlayer = (candidate: Candidate) => {
-    setShowDropdown(false);
+    setFocused(false);
     setLoading(true);
     const plat = toApiPlatform(candidate);
     const displayName = encodeURIComponent(candidate.displayName);
@@ -172,9 +172,10 @@ function toApiPlatform(c: Candidate): string {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={async () => {
-            if (candidates.length > 0) { setShowDropdown(true); }
-            else if (!query.trim()) { await fetchEmptyHistory(); setShowDropdown(true); }
+            setFocused(true);
+            if (!query.trim() && candidates.length === 0) await fetchEmptyHistory();
           }}
+          onBlur={() => {} /* let mousedown handler manage focus */}
           onKeyDown={handleKeyDown}
           placeholder={t("home.hero.placeholder")}
           className="input h-11 rounded-lg pr-24"
