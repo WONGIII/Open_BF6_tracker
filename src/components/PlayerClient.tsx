@@ -34,7 +34,10 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
       if (loadedRef.current) return;
       setLoading(true); setError(null);
       try {
-        const resp = await fetchPlayerProfile(playerId);
+        // Read displayName from URL search params
+        const urlParams = new URLSearchParams(window.location.search);
+        const displayName = urlParams.get("name") || undefined;
+        const resp = await fetchPlayerProfile(playerId, undefined, displayName);
         console.log("[PlayerClient] resp received, has data:", !!resp.data, "segments:", (resp.data as any)?.segments?.length);
         if (cancelled) { console.log("[PlayerClient] cancelled after fetch"); return; }
         setProfileData(resp.data as Record<string, unknown>);

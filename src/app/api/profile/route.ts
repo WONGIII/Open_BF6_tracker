@@ -26,8 +26,10 @@ async function tryPlatform(query: string, platform: Platform) {
 async function buildAndStore(
   stats: Record<string, unknown>,
   platform: Platform,
-  displayName: string
+  displayNameFallback: string,
+  displayNameOverride?: string
 ) {
+  const displayName = displayNameOverride || (stats.userName as string) || displayNameFallback;
   const rawProfile = await fetchProfileById(stats.userId as number).catch(() => null);
   const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
     || (rawProfile as any).playerProfiles?.[0]
@@ -42,6 +44,7 @@ async function buildAndStore(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query") || searchParams.get("identifier") || "";
+  const displayNameOverride = searchParams.get("name") || undefined;
 
   if (!query) return NextResponse.json({ error: "Missing query" }, { status: 400 });
 
@@ -69,7 +72,7 @@ export async function GET(request: NextRequest) {
       const platform = _platformParam(platformParam);
       const fullStats = await fetchStatsById(Number(ident), platform);
       if (fullStats?.userId) {
-        return buildAndStore(fullStats as any, platformParam, fullStats.userName || query);
+        return buildAndStore(fullStats as any, platformParam, query, displayNameOverride);
       }
       // Fallback to name search
     }
@@ -80,7 +83,7 @@ export async function GET(request: NextRequest) {
       if (r.status === "fulfilled" && r.value) {
         const { stats, platform } = r.value;
         if (stats?.userId) {
-          return buildAndStore(stats as any, platform, stats.userName || query);
+          return buildAndStore(stats as any, platform, query, displayNameOverride);
         }
       }
     }

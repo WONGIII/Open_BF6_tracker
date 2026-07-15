@@ -122,7 +122,8 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
     setShowDropdown(false);
     setLoading(true);
     const plat = PLATFORM_PARAM_MAP[candidate.platform] || candidate.platform;
-    router.push(`/player/${encodeURIComponent(candidate.nucleusId)}?platform=${plat}`);
+    const displayName = encodeURIComponent(candidate.displayName);
+    router.push(`/player/${encodeURIComponent(candidate.nucleusId)}?platform=${plat}&name=${displayName}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
