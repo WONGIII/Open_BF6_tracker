@@ -27,6 +27,9 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const [markingLoading, setMarkingLoading] = useState(false);
   const [refreshCountdown, setRefreshCountdown] = useState(300);
   const [refreshing, setRefreshing] = useState(false);
+  const [matchTotal, setMatchTotal] = useState(0);
+  const [matchPage, setMatchPage] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
   const loadedRef = useRef(false);
 
@@ -57,11 +60,12 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           rankImage: rank?.metadata?.imageUrl || "",
         });
         const [md, sd] = await Promise.all([
-          resIdent ? fetchPlayerMatches(resIdent, 30, 0).catch(() => null) : null,
+          resIdent ? fetchPlayerMatches(resIdent, 20, 0).catch(() => null) : null,
           resIdent ? fetchSuspicionSummary(resIdent).catch(() => null) : null,
         ]);
         if (cancelled) return;
         setMatches(md?.matches || []); setSuspicion(sd);
+        setMatchTotal(md?.totalCount || 0);
         loadedRef.current = true;
       } catch (err) {
         console.error("[PlayerClient] fetch error:", err);
@@ -107,6 +111,21 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
       console.error("[PlayerClient] refresh error:", e);
     }
     setRefreshing(false);
+  };
+
+  const loadMoreMatches = async () => {
+    const resInfo = (profileData?.platformInfo || {}) as Record<string, unknown>;
+    const resIdent = String(resInfo.platformUserIdentifier || "");
+    if (!resIdent || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const md = await fetchPlayerMatches(resIdent, 20, matches.length).catch(() => null);
+      if (md) {
+        setMatches(prev => [...prev, ...(md.matches || [])]);
+        setMatchTotal(md.totalCount || 0);
+      }
+    } catch { /* ignore */ }
+    setLoadingMore(false);
   };
 
   const fmtCd = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -187,7 +206,16 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
             <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[#e8e8e8]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"#333":"#aaa"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
         </div>
-        {showMatches ? <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
+        {showMatches ? <>
+          <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
+          {matches.length < matchTotal && (
+            <div className="text-center mt-4">
+              <button onClick={loadMoreMatches} disabled={loadingMore} className="btn-outline text-xs py-2 px-8">
+                {loadingMore ? "加载中..." : `加载更多 (${matches.length}/${matchTotal})`}
+              </button>
+            </div>
+          )}
+        </>
         : l1 === "marks" ? <MarksDetail suspicion={suspicion} markingTypes={markingTypes} setMarkingTypes={setMarkingTypes} onSubmit={async () => {
           if (markingTypes.length === 0) return; setMarkingLoading(true);
           try { const r = await submitSuspicionReport(ident, markingTypes, user?.username || undefined); setSuspicion(r); setMarkingTypes([]); } catch {} finally { setMarkingLoading(false); }
