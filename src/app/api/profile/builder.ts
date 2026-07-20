@@ -60,17 +60,25 @@ export function buildTrnProfileResponse(
   const tp = _n(stats.secondsPlayed || stats.timePlayed);
   const hs = _n(stats.headShots), sf = _n(stats.shotsFired), sh = _n(stats.shotsHit);
 
-  // 真实游戏时间从 All class 取（比全局 secondsPlayed 更准，不含菜单时间）
+  // 真实游戏时间：与闭源项目一致，汇总各兵种 secondsPlayed（排除 "All"）
   let realSeconds = tp;
   let realScore = _n(stats.score, 0);
   try {
     const classesArr = (stats.classes || []) as Record<string, unknown>[];
-    const allClass = classesArr.find(c => String(c.className || "").toLowerCase() === "all");
-    if (allClass) {
-      realSeconds = _n(allClass.secondsPlayed) || tp;
-      realScore = _n(allClass.score) || realScore;
+    let sumSec = 0; let sumScore = 0;
+    for (const c of classesArr) {
+      if (String(c.className || "").toLowerCase() === "all") continue;
+      sumSec += _n(c.secondsPlayed);
+      sumScore += _n(c.score);
     }
+    if (sumSec > 0) { realSeconds = sumSec; realScore = sumScore || realScore; }
   } catch { /* keep defaults */ }
+
+  // 真人击杀/死亡 (dividedKills.human)
+  const dk = (stats.dividedKills || {}) as Record<string, unknown>;
+  const humanKills = _n(dk.human);
+  const humanKd = humanKills > 0 && d > 0 ? parseFloat((humanKills / d).toFixed(2)) : humanKills;
+  const humanKpm = realSeconds > 0 ? parseFloat((humanKills / (realSeconds / 60)).toFixed(2)) : 0;
 
   // 类别中英文映射
   const CAT_ZH: Record<string, string> = {
@@ -107,6 +115,9 @@ export function buildTrnProfileResponse(
       kills: _stat(k, "Number", "Kills", "Combat"),
       deaths: _stat(d, "Number", "Deaths", "Combat"),
       kd: _stat(d ? parseFloat((k / d).toFixed(2)) : k, "NumberPrecision2", "K/D", "Combat"),
+      humanKills: _stat(humanKills, "Number", "Human Kills", "Combat"),
+      humanKd: _stat(humanKd, "NumberPrecision2", "Human K/D", "Combat"),
+      humanKpm: _stat(humanKpm, "NumberPrecision2", "Human KPM", "Combat"),
       killsPerMinute: _stat(realSeconds ? parseFloat((k / (realSeconds / 60)).toFixed(2)) : 0, "NumberPrecision2", "KPM", "Combat"),
       scorePerMinute: _stat(realSeconds ? Math.round(realScore / (realSeconds / 60)) : 0, "Number", "SPM", "Game"),
       headShots: _stat(hs, "Number", "Headshots", "Weapons"),
