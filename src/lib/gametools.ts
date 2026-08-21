@@ -152,7 +152,7 @@ async function _fetchJson<T>(url: string, ttl?: number): Promise<T> {
   }
   const resp = await fetch(url, {
     headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(500_000),
   });
   if (!resp.ok) {
     throw new Error(`GameTools API error: ${resp.status} ${resp.statusText}`);
@@ -317,73 +317,24 @@ export interface PlayerCandidate {
   createdAt: string;
 }
 
-// Fallback: /bf6/player/ 索引失效（返回空）时，并行探测四大平台的
-// /bf6/stats/ 按名接口构建候选。stats 响应含 userId/userName，足以定位玩家。
-async function searchPlayersByStatsProbe(query: string): Promise<PlayerCandidate[]> {
-  const platforms: Platform[] = ["origin", "steam", "xbox", "psn"];
-  const settled = await Promise.allSettled(
-    platforms.map(async (p) => {
-      try {
-        const stats = await fetchStats(query, p);
-        if (!stats?.userId || !stats.userName) return null;
-        const uid = String(stats.userId);
-        return {
-          displayName: String(stats.userName),
-          username: String(stats.userName),
-          platform: p,
-          nucleusId: uid,
-          personaId: "",
-          platformId: p,
-          createdAt: "",
-        } as PlayerCandidate;
-      } catch {
-        return null;
-      }
-    })
-  );
-  const seen = new Set<string>();
-  const out: PlayerCandidate[] = [];
-  for (const r of settled) {
-    if (r.status !== "fulfilled" || !r.value) continue;
-    if (seen.has(r.value.nucleusId)) continue;
-    seen.add(r.value.nucleusId);
-    out.push(r.value);
-  }
-  return out;
-}
-
 export async function searchPlayersByName(query: string): Promise<PlayerCandidate[]> {
   const url = `${GAMETOOLS_BASE}/bf6/player/?name=${encodeURIComponent(query)}&limit=100`;
   // Don't use _fetchJson cache — /bf6/player/ response lacks userId so
   // cache never gets populated, but _fetchJson's cache lookup on OTHER
-  // endpoints can interfere. Use raw fetch.
-  let mapped: PlayerCandidate[] = [];
-  try {
-    const resp = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (resp.ok) {
-      const raw = await resp.json() as Record<string, unknown> | unknown[];
-      if (raw && typeof raw === "object") {
-        if (Array.isArray(raw)) {
-          mapped = (raw as any[]).map(toCandidate).filter(Boolean) as PlayerCandidate[];
-        } else {
-          const results = (raw as Record<string, unknown>).results;
-          if (Array.isArray(results)) {
-            mapped = results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
-          }
-        }
-      }
-    }
-  } catch {
-    mapped = [];
+  // endpoints can interfere. Use raw fetch with long timeout.
+  const resp = await fetch(url, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!resp.ok) return [];
+  const raw = await resp.json() as Record<string, unknown> | unknown[];
+  if (!raw || typeof raw !== "object") return [];
+  if (Array.isArray(raw)) {
+    return (raw as any[]).map(toCandidate).filter(Boolean) as PlayerCandidate[];
   }
-  // 主索引为空/失败时走 stats 探测兜底
-  if (mapped.length === 0) {
-    return searchPlayersByStatsProbe(query);
-  }
-  return mapped;
+  const results = (raw as Record<string, unknown>).results;
+  if (!Array.isArray(results)) return [];
+  return results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
 }
 
 function toCandidate(r: unknown): PlayerCandidate | null {
@@ -474,7 +425,7 @@ export async function fetchStatsBatchByIds(
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(45_000),
+    signal: AbortSignal.timeout(120_000),
       });
 
       if (!resp.ok) continue;
