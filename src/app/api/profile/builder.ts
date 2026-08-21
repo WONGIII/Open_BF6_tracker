@@ -71,7 +71,8 @@ export function buildTrnProfileResponse(
       sumSec += _n(c.secondsPlayed);
       sumScore += _n(c.score);
     }
-    if (sumSec > 0) { realSeconds = sumSec; realScore = sumScore || realScore; }
+    // 兵种数据不全（如只返回部分兵种）时汇总值会远小于总时长，回退总时长防止 KPM 虚高
+    if (sumSec > 0 && (!tp || sumSec >= tp * 0.5)) { realSeconds = sumSec; realScore = sumScore || realScore; }
   } catch { /* keep defaults */ }
 
   // 真人击杀/死亡 (dividedKills.human)
@@ -118,6 +119,8 @@ export function buildTrnProfileResponse(
       humanKills: _stat(humanKills, "Number", "Human Kills", "Combat"),
       humanKd: _stat(humanKd, "NumberPrecision2", "Human K/D", "Combat"),
       humanKpm: _stat(humanKpm, "NumberPrecision2", "Human KPM", "Combat"),
+      humanPercent: _stat(_p((stats.humanPrecentage as string) || ""), "Percentage", "Human Percent", "Combat"),
+      infantryKd: _stat(_n(stats.infantryKillDeath), "NumberPrecision2", "Infantry K/D", "Combat"),
       killsPerMinute: _stat(realSeconds ? parseFloat((k / (realSeconds / 60)).toFixed(2)) : 0, "NumberPrecision2", "KPM", "Combat"),
       scorePerMinute: _stat(realSeconds ? Math.round(realScore / (realSeconds / 60)) : 0, "Number", "SPM", "Game"),
       headShots: _stat(hs, "Number", "Headshots", "Weapons"),
