@@ -75,8 +75,9 @@ export async function GET(request: NextRequest) {
     const candidates = await searchPlayersByName(query);
     const enriched = await enrichCandidates(candidates, trackedIds);
 
-    // Only cache if we got results
-    if (enriched.length > 0) {
+    // 只缓存包含已追踪玩家的结果；其他查询每次都实时搜上游
+    const hasTracked = enriched.some((c) => (c as any).tracked);
+    if (hasTracked) {
       cache.set(cacheKey, { data: enriched, ts: Date.now() });
     }
 
