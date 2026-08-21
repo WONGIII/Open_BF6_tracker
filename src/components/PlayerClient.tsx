@@ -9,7 +9,7 @@ import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/t
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
 type Level1 = "all" | "matches" | "multiplayer" | "redsec" | "marks";
-type Level2 = "career" | "s3" | "s2" | "s1";
+type Level2 = "career" | "s4" | "s3" | "s2" | "s1";
 type Level3 = "overview" | "weapons" | "vehicles" | "gadgets" | "classes" | "modes" | "maps" | "melee";
 
 export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: string }) {
@@ -167,7 +167,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const topM = [...gamemodes].sort((a,b)=>(b.stats.wins?.value||0)-(a.stats.wins?.value||0)).slice(0,5);
 
   const catFilter = l1 === "multiplayer" ? "全面战争" : l1 === "redsec" ? "禁区冲突" : null;
-  const seasonFilter = l2 === "s3" ? "赛季 3" : l2 === "s2" ? "赛季 2" : l2 === "s1" ? "赛季 1" : null;
+  const seasonFilter = l2 === "s4" ? "赛季 4" : l2 === "s3" ? "赛季 3" : l2 === "s2" ? "赛季 2" : l2 === "s1" ? "赛季 1" : null;
   const showMatches = l1 === "matches";
   const showCareerOverview = l1 === "all" && l2 === "career";
 
@@ -175,7 +175,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#333]" : "text-[#aaa]"}`;
 
   const l1Items: { id: Level1; label: string }[] = [{ id: "all", label: "全部" }, { id: "matches", label: `战报 (${matches.length})` }, { id: "multiplayer", label: "全面战争" }, { id: "redsec", label: "禁区冲突" }, { id: "marks", label: `标记 ${suspicion ? `(${suspicion.totalReports})` : ""}` }];
-  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
+  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s4", label: "SEASON 4" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
   const l3Items: { id: Level3; label: string }[] = [{ id: "overview", label: "总览" }, { id: "weapons", label: "武器" }, { id: "vehicles", label: "载具" }, { id: "gadgets", label: "装备" }, { id: "classes", label: "兵种" }, { id: "modes", label: "模式" }, { id: "maps", label: "地图" }, { id: "melee", label: "近战" }];
 
   return (
