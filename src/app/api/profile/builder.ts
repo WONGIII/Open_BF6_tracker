@@ -178,14 +178,14 @@ export function buildTrnProfileResponse(
     const nm = cn[String(c.className || "").toLowerCase()] || (c.className as string) || "";
     const ck = _n(c.kills), ct = _n(c.secondsPlayed), cs = _n(c.score);
     const cspm = ct > 0 ? Math.round(cs / (ct / 60)) : 0;
-    segments.push({ type: "kit", attributes: {}, metadata: { name: nm, imageUrl: _classImg(c) }, stats: { kills: _stat(ck, "Number", "Kills", "Kit"), deaths: _stat(_n(c.deaths), "Number", "Deaths", "Kit"), kd: _stat(_n(c.killDeath), "NumberPrecision2", "K/D", "Kit"), timePlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), score: _stat(cs, "Number", "Score", "Kit"), killsPerMinute: _stat(_n(c.kpm), "NumberPrecision2", "KPM", "Kit"), scorePerMinute: _stat(cspm, "Number", "SPM", "Kit"), assists: _stat(_n(c.assists), "Number", "Assists", "Kit"), revives: _stat(_n(c.revives), "Number", "Revives", "Kit") } });
+    segments.push({ type: "kit", attributes: {}, metadata: { name: nm, imageUrl: _classImg(c) }, stats: { kills: _stat(ck, "Number", "Kills", "Kit"), deaths: _stat(_n(c.deaths), "Number", "Deaths", "Kit"), kd: _stat(_n(c.killDeath), "NumberPrecision2", "K/D", "Kit"), timePlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), secondsPlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), score: _stat(cs, "Number", "Score", "Kit"), killsPerMinute: _stat(_n(c.kpm), "NumberPrecision2", "KPM", "Kit"), scorePerMinute: _stat(cspm, "Number", "SPM", "Kit"), assists: _stat(_n(c.assists), "Number", "Assists", "Kit"), revives: _stat(_n(c.revives), "Number", "Revives", "Kit"), spawns: _stat(_n(c.spawns), "Number", "Spawns", "Kit") } });
   }
 
   // Weapons
   for (const wp of (stats.weapons || []) as Record<string, unknown>[]) {
     const n = (wp.weaponName || wp.name || "") as string;
     const kk = _n(wp.kills), tt = _n(wp.secondsPlayed || wp.timeEquipped), ff = _n(wp.shotsFired), hh = _n(wp.shotsHit);
-    segments.push({ type: "weapon", attributes: {}, metadata: { name: n, imageUrl: _img(wp), category: CAT_ZH[(wp.type as string)||""] || (wp.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Weapon"), headshots: _stat(_n(wp.headshots||wp.headShots),"Number","HS","Weapon"), accuracy: _stat(ff?parseFloat(((hh/ff)*100).toFixed(1)):0,"Percentage","Acc","Weapon"), killsPerMinute: _stat(tt?parseFloat((kk/(tt/60)).toFixed(2)):0,"NumberPrecision2","KPM","Weapon"), timeEquipped: _stat(tt,"TimeSeconds","Time","Weapon") } });
+    segments.push({ type: "weapon", attributes: {}, metadata: { name: n, imageUrl: _img(wp), category: CAT_ZH[(wp.type as string)||""] || (wp.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Weapon"), killsPerMinute: _stat(tt?parseFloat((kk/(tt/60)).toFixed(2)):0,"NumberPrecision2","KPM","Weapon"), headshots: _stat(_n(wp.headshots||wp.headShots),"Number","HS","Weapon"), headshotKills: _stat(_n(wp.headshotKills),"Number","HS Kills","Weapon"), bodyKills: _stat(_n(wp.bodyKills),"Number","Body Kills","Weapon"), hipfireKills: _stat(_n(wp.hipfireKills),"Number","Hipfire Kills","Weapon"), scopedKills: _stat(_n(wp.scopedKills),"Number","Scoped Kills","Weapon"), multiKills: _stat(_n(wp.multiKills),"Number","Multi Kills","Weapon"), damage: _stat(_n(wp.damage),"Number","Damage","Weapon"), assistsDamage: _stat(_n(wp.assistsDamage),"Number","Assist Damage","Weapon"), shotsFired: _stat(ff,"Number","Shots Fired","Weapon"), shotsHit: _stat(hh,"Number","Shots Hit","Weapon"), spawns: _stat(_n(wp.spawns),"Number","Spawns","Weapon"), accuracy: _stat(ff?parseFloat(((hh/ff)*100).toFixed(1)):0,"Percentage","Acc","Weapon"), timeEquipped: _stat(tt,"TimeSeconds","Time","Weapon") } });
   }
   // Weapon groups (weaponGroups)
   for (const wg of (stats.weaponGroups || []) as Record<string, unknown>[]) {
@@ -197,7 +197,7 @@ export function buildTrnProfileResponse(
   // Vehicles
   for (const v of (stats.vehicles || []) as Record<string, unknown>[]) {
     const n = (v.vehicleName || v.name || "") as string, kk = _n(v.kills), tt = _n(v.timeIn || v.secondsPlayed || v.timeInVehicle);
-    segments.push({ type: "vehicle", attributes: {}, metadata: { name: n, imageUrl: _img(v), category: CAT_ZH[(v.type as string)||""] || (v.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Vehicle"), killsPerMinute: _stat(_n(v.killsPerMinute),"NumberPrecision2","KPM","Vehicle"), destroyed: _stat(_n(v.destroyed||v.vehiclesDestroyed),"Number","Destroyed","Vehicle"), damage: _stat(_n(v.damage),"Number","Damage","Vehicle"), damageTo: _stat(_n(v.damageTo),"Number","DmgTaken","Vehicle"), roadKills: _stat(_n(v.roadKills),"Number","RoadKills","Vehicle"), distanceTraveled: _stat(_n(v.distanceTraveled),"Number","Distance","Vehicle"), timeInVehicle: _stat(tt,"TimeSeconds","Time","Vehicle"), spawns: _stat(_n(v.spawns),"Number","Spawns","Vehicle") } });
+    segments.push({ type: "vehicle", attributes: {}, metadata: { name: n, imageUrl: _img(v), category: CAT_ZH[(v.type as string)||""] || (v.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Vehicle"), killsPerMinute: _stat(_n(v.killsPerMinute),"NumberPrecision2","KPM","Vehicle"), destroyed: _stat(_n(v.destroyed||v.vehiclesDestroyed),"Number","Destroyed","Vehicle"), damage: _stat(_n(v.damage),"Number","Damage","Vehicle"), damageTo: _stat(_n(v.damageTo),"Number","DmgTaken","Vehicle"), roadKills: _stat(_n(v.roadKills),"Number","RoadKills","Vehicle"), multiKills: _stat(_n(v.multiKills),"Number","Multi Kills","Vehicle"), driverAssists: _stat(_n(v.driverAssists),"Number","Driver Assists","Vehicle"), passengerAssists: _stat(_n(v.passengerAssists),"Number","Passenger Assists","Vehicle"), assists: _stat(_n(v.assists),"Number","Assists","Vehicle"), vehiclesDestroyedWith: _stat(_n(v.vehiclesDestroyedWith),"Number","Vehicles Destroyed","Vehicle"), distanceTraveled: _stat(_n(v.distanceTraveled),"Number","Distance","Vehicle"), timeInVehicle: _stat(tt,"TimeSeconds","Time","Vehicle"), timeIn: _stat(tt,"TimeSeconds","Time","Vehicle"), spawns: _stat(_n(v.spawns),"Number","Spawns","Vehicle") } });
   }
   // Vehicle groups
   for (const vg of (stats.vehicleGroups || []) as Record<string, unknown>[]) {
@@ -215,7 +215,46 @@ export function buildTrnProfileResponse(
     const gid = String(g.id || "").toLowerCase();
     if (gmAggregate.has(gname) || gmAggregate.has(gid)) continue;
     const gzh = MODE_ZH[gname] || gname;
-    segments.push({ type: "gamemode", attributes: {}, metadata: { name: gzh, imageUrl: _img(g) }, stats: { wins: _stat(_n(g.wins),"Number","Wins","Gamemode"), losses: _stat(_n(g.losses),"Number","Losses","Gamemode"), winPercent: _stat(_p(g.winPercent),"Percentage","Win%","Gamemode"), kills: _stat(_n(g.kills),"Number","Kills","Gamemode"), kd: _stat(_n(g.killDeath),"NumberPrecision2","K/D","Gamemode"), kpm: _stat(_n(g.kpm),"NumberPrecision2","KPM","Gamemode"), matches: _stat(_n(g.matches),"Number","Matches","Gamemode"), secondsPlayed: _stat(_n(g.secondsPlayed),"TimeSeconds","Time","Gamemode") } });
+    // 上游 gameModes[] 每个模式都带 full stat block，但此前只写了 8 个字段，
+    // 导致 deaths 缺失 —— 差分因此算不出「死亡 / K/D」，门户这类只走模式分组的局
+    // 更是整份战报只剩击杀数。这里补齐 delta.ts 声明过的全部计数。
+    const gsec = _n(g.secondsPlayed);
+    const gmatches = _n(g.matches);
+    segments.push({
+      type: "gamemode", attributes: {}, metadata: { name: gzh, imageUrl: _img(g) },
+      stats: {
+        wins: _stat(_n(g.wins), "Number", "Wins", "Gamemode"),
+        losses: _stat(_n(g.losses), "Number", "Losses", "Gamemode"),
+        winPercent: _stat(_p(g.winPercent), "Percentage", "Win%", "Gamemode"),
+        kills: _stat(_n(g.kills), "Number", "Kills", "Gamemode"),
+        deaths: _stat(_n(g.deaths), "Number", "Deaths", "Gamemode"),
+        kd: _stat(_n(g.killDeath), "NumberPrecision2", "K/D", "Gamemode"),
+        kpm: _stat(_n(g.kpm), "NumberPrecision2", "KPM", "Gamemode"),
+        dpm: _stat(_n(g.dpm), "Number", "DPM", "Gamemode"),
+        matches: _stat(gmatches, "Number", "Matches", "Gamemode"),
+        matchesPlayed: _stat(gmatches, "Number", "Matches", "Gamemode"),
+        secondsPlayed: _stat(gsec, "TimeSeconds", "Time", "Gamemode"),
+        timePlayed: _stat(gsec, "TimeSeconds", "Time", "Gamemode"),
+        killAssists: _stat(_n(g.killAssists), "Number", "Kill Assists", "Gamemode"),
+        repairs: _stat(_n(g.repairs), "Number", "Repairs", "Gamemode"),
+        revives: _stat(_n(g.revives), "Number", "Revives", "Gamemode"),
+        spots: _stat(_n(g.spots), "Number", "Spots", "Gamemode"),
+        respawns: _stat(_n(g.respawns), "Number", "Respawns", "Gamemode"),
+        objectiveTime: _stat(_n(g.objectiveTime), "TimeSeconds", "Objective Time", "Gamemode"),
+        objectivesCaptured: _stat(_n(g.objectivesCaptured), "Number", "Objectives Captured", "Gamemode"),
+        objectivesDefended: _stat(_n(g.objectivesDefended), "Number", "Objectives Defended", "Gamemode"),
+        objectivesDestroyed: _stat(_n(g.objectivesDestroyed), "Number", "Objectives Destroyed", "Gamemode"),
+        objectivesArmed: _stat(_n(g.objectivesArmed), "Number", "Objectives Armed", "Gamemode"),
+        objectivesDisarmed: _stat(_n(g.objectivesDisarmed), "Number", "Objectives Disarmed", "Gamemode"),
+        vehiclesDestroyedWith: _stat(_n(g.vehiclesDestroyedWith), "Number", "Vehicles Destroyed", "Gamemode"),
+        sectorsDefended: _stat(_n(g.sectorsDefended), "Number", "Sectors Defended", "Gamemode"),
+        intelPickups: _stat(_n(g.intelPickups), "Number", "Intel Pickups", "Gamemode"),
+        headshotKills: _stat(_n(g.headshotKills), "Number", "Headshot Kills", "Gamemode"),
+        headshots: _stat(_p(g.headshots), "Percentage", "HS%", "Gamemode"),
+        score: _stat(_n(g.scoreIn), "Number", "Score", "Gamemode"),
+        topOfLeaderboard: _stat(_n(g.topOfLeaderboard), "Number", "Top of Leaderboard", "Gamemode"),
+      },
+    });
   }
   // Gamemode groups
   for (const gg of (stats.gameModeGroups || []) as Record<string, unknown>[]) {
@@ -227,10 +266,29 @@ export function buildTrnProfileResponse(
   // Maps
   let mp = (stats.maps || []) as Record<string, unknown>[];
   if (!Array.isArray(mp) && typeof stats.maps === "object") mp = Object.entries(stats.maps as Record<string, unknown>).map(([k, v]) => ({ mapName: k, ...(v as object) }));
-  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map"), secondsPlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map") } });
+  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map"), secondsPlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map"), timePlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map") } });
 
   // Gadgets
-  for (const g of (stats.gadgets || []) as Record<string, unknown>[]) segments.push({ type: "gadget", attributes: {}, metadata: { name: String(g.gadgetName || g.name || ""), imageUrl: _img(g) }, stats: { kills: _stat(_n(g.kills), "Number", "Kills", "Gadget") } });
+  for (const g of (stats.gadgets || []) as Record<string, unknown>[]) {
+    // 上游 gadget 带 damage / uses / spots / assistsDamage 等，此前只输出了 kills，
+    // delta 声明的那些计数器全部取不到。
+    const gsec = _n(g.secondsPlayed);
+    segments.push({ type: "gadget", attributes: {}, metadata: { name: String(g.gadgetName || g.name || ""), imageUrl: _img(g) }, stats: {
+      kills: _stat(_n(g.kills), "Number", "Kills", "Gadget"),
+      damage: _stat(_n(g.damage), "Number", "Damage", "Gadget"),
+      uses: _stat(_n(g.uses), "Number", "Uses", "Gadget"),
+      assists: _stat(_n(g.assists), "Number", "Assists", "Gadget"),
+      assistsDamage: _stat(_n(g.assistsDamage), "Number", "Assist Damage", "Gadget"),
+      spots: _stat(_n(g.spots), "Number", "Spots", "Gadget"),
+      spotAssists: _stat(_n(g.spotAssists), "Number", "Spot Assists", "Gadget"),
+      vehiclesDestroyedWith: _stat(_n(g.vehiclesDestroyedWith), "Number", "Vehicles Destroyed", "Gadget"),
+      multiKills: _stat(_n(g.multiKills), "Number", "Multi Kills", "Gadget"),
+      repairs: _stat(_n(g.repairs), "Number", "Repairs", "Gadget"),
+      spawns: _stat(_n(g.spawns), "Number", "Spawns", "Gadget"),
+      secondsPlayed: _stat(gsec, "TimeSeconds", "Time", "Gadget"),
+      timePlayed: _stat(gsec, "TimeSeconds", "Time", "Gadget"),
+    } });
+  }
 
   // Melee weapons
   for (const m of (stats.melee || []) as Record<string, unknown>[]) {

@@ -279,7 +279,10 @@ function computeGroupDelta(
 // so the overview delta contains nothing but playtime and the match card renders
 // "0 击杀" with no result. Rebuild a headline summary from the mode items so the
 // report is self-describing.
-const SUMMARY_COUNTERS = ["kills", "deaths", "wins", "losses", "matches", "matchesPlayed", "secondsPlayed", "score", "assists", "revives", "repairs"];
+const SUMMARY_COUNTERS = [
+  "kills", "deaths", "wins", "losses", "matches", "matchesPlayed", "secondsPlayed", "timePlayed",
+  "score", "assists", "killAssists", "revives", "repairs", "spots", "objectiveTime", "headshotKills",
+];
 
 function summarizeModeItems(items: GroupItem[] | undefined): Record<string, unknown> {
   if (!items || items.length === 0) return {};
@@ -292,14 +295,23 @@ function summarizeModeItems(items: GroupItem[] | undefined): Record<string, unkn
     }
   }
   const out: Record<string, unknown> = {};
-  for (const k of ["kills", "deaths", "wins", "losses", "score", "assists", "revives", "repairs"]) {
+  for (const k of ["kills", "deaths", "wins", "losses", "score", "assists", "killAssists", "revives", "repairs", "spots", "headshotKills"]) {
     if (sum[k] > 0) out[k] = trnStat(sum[k], "Number");
   }
   const matches = sum.matches || sum.matchesPlayed || 0;
   if (matches > 0) out.matchesPlayed = trnStat(matches, "Number");
-  if (sum.secondsPlayed > 0) out.timePlayed = trnStat(sum.secondsPlayed, "TimeSeconds");
+  const secs = sum.secondsPlayed || sum.timePlayed || 0;
+  if (secs > 0) {
+    out.timePlayed = trnStat(secs, "TimeSeconds");
+    out.secondsPlayed = trnStat(secs, "TimeSeconds");
+  }
+  if (sum.objectiveTime > 0) out.objectiveTime = trnStat(sum.objectiveTime, "TimeSeconds");
+  // K/D 和 KPM 是这一局真正的看点：有 deaths 才算得出来
   if (sum.kills > 0 && sum.deaths > 0) out.kd = trnStat(parseFloat((sum.kills / sum.deaths).toFixed(2)), "NumberPrecision2");
-  if (sum.kills > 0 && sum.secondsPlayed > 0) out.killsPerMinute = trnStat(parseFloat((sum.kills / (sum.secondsPlayed / 60)).toFixed(2)), "NumberPrecision2");
+  if (sum.kills > 0 && secs > 0) {
+    out.killsPerMinute = trnStat(parseFloat((sum.kills / (secs / 60)).toFixed(2)), "NumberPrecision2");
+    out.scorePerMinute = sum.score > 0 ? trnStat(Math.round(sum.score / (secs / 60)), "Number") : out.scorePerMinute;
+  }
   return out;
 }
 
