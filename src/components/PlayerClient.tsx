@@ -456,16 +456,23 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
       mMelee = mSegments.filter(s => s.type === "melee");
     }
 
-    const kills = (ov?.stats as any)?.kills?.displayValue || "0";
+    // 顶层概览优先。门户等不计入上游官方统计的模式，整局数据只体现在分组里，
+    // 这种情况下回退到模式分组汇总，否则战报顶部会显示 “0 击杀”。
+    const modeSum = (key: string) => mModes.reduce((a, m) => a + _nv((m.stats as any)?.[key]), 0);
+    const ovKills = _nv((ov?.stats as any)?.kills);
+    const ovWins = _nv((ov?.stats as any)?.wins);
+    const ovLosses = _nv((ov?.stats as any)?.losses);
+    const killsNum = ovKills > 0 ? ovKills : modeSum("kills");
+    const winNum = ovWins > 0 ? ovWins : modeSum("wins");
+    const lossNum = ovLosses > 0 ? ovLosses : modeSum("losses");
+    const kills = String(killsNum);
+    const wins = String(winNum);
+    const losses = String(lossNum);
     const kd = (ov?.stats as any)?.kd?.displayValue;
     const kpm = (ov?.stats as any)?.killsPerMinute?.displayValue;
     const spm = (ov?.stats as any)?.scorePerMinute?.displayValue;
     const score = (ov?.stats as any)?.score?.displayValue;
-    const wins = (ov?.stats as any)?.wins?.displayValue || "0";
-    const losses = (ov?.stats as any)?.losses?.displayValue || "0";
-    const winNum = parseInt(String(wins)) || 0; const lossNum = parseInt(String(losses)) || 0;
     const topMode = mModes[0]; const topMap = mMaps[0];
-    const killsNum = parseInt(String(kills)) || 0;
     const hasModeMatch = topMode && parseInt(String((topMode.stats as any)?.matches?.displayValue || "0") || "0") > 0;
     const mapsPlayed = parseInt(String((ov?.stats as any)?.matchesPlayed?.displayValue || "0")) || 0;
     const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch && mapsPlayed === 0 ? "中途退出"
@@ -491,7 +498,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
       </div>
         {isExpanded && <div className="border-t border-[#e8e8e8] p-5 bg-[#fafafa] space-y-5">
           {ov && <div><h4 className="text-xs font-semibold text-[#666] mb-2">概览</h4><div className="grid grid-cols-3 sm:grid-cols-5 gap-4">{(["kills","deaths","kd","killsPerMinute","scorePerMinute","score","wins","losses","timePlayed"] as const).filter(k=>(ov.stats as any)?.[k]).map(k => <div key={k} className="text-center"><div className="text-lg font-bold">{(ov.stats as any)[k].displayValue}</div><div className="text-[10px] text-[#999]">{k==="kills"?"击杀":k==="deaths"?"死亡":k==="kd"?"K/D":k==="killsPerMinute"?"KPM":k==="scorePerMinute"?"SPM":k==="score"?"得分":k==="wins"?"胜利":k==="losses"?"战败":"时长"}</div></div>)}</div></div>}
-          {mModes.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2">模式</h4>{mModes.map(m=><div key={m.metadata?.name as string} className="flex items-center gap-3 text-xs mb-1.5">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain"/>}<span className="font-medium w-24">{m.metadata?.name}</span><span className="text-[#999]">{m.stats?.kills?.displayValue||"?"} 击杀 · {(m.stats as any)?.wins?.displayValue||"0"} 胜 · {(m.stats as any)?.losses?.displayValue||"0"} 负 · {(m.stats as any)?.secondsPlayed?.displayValue||"0"}</span></div>)}</>}
+          {mModes.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2">模式</h4>{mModes.map(m=><div key={m.metadata?.name as string} className="flex items-center gap-3 text-xs mb-1.5">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain"/>}<span className="font-medium w-24">{m.metadata?.name}</span><span className="text-[#999]">{m.stats?.kills?.displayValue||"?"} 击杀 · {(m.stats as any)?.wins?.displayValue||"0"} 胜 · {(m.stats as any)?.losses?.displayValue||"0"} 负{(() => { const tp = (m.stats as any)?.timePlayed?.displayValue; const sec = _nv((m.stats as any)?.secondsPlayed); return (tp || sec > 0) ? <>{' · '}时长 {tp || fmtDuration(sec)}</> : null; })()}</span></div>)}</>}
           {mMaps.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">地图</h4><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{mMaps.map(m=><div key={m.metadata?.name as string} className="card p-2 text-xs">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}<div className="font-medium">{m.metadata?.name}</div><div className="text-[#999]">{(m.stats as any)?.wins?.displayValue||"0"}胜 · {(m.stats as any)?.losses?.displayValue||"0"}负 · {(m.stats as any)?.matchesPlayed?.displayValue||"?"}场</div></div>)}</div></>}
           {mKits.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">兵种</h4><div className="grid grid-cols-2 gap-2">{mKits.map(k=><div key={k.metadata?.name as string} className="card p-3 flex items-center gap-3">{k.metadata?.imageUrl && <img src={k.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-sm">{k.metadata?.name}</div><div className="text-[10px] text-[#999] mt-0.5">击杀 {k.stats?.kills?.displayValue} · 死亡 {(k.stats as any)?.deaths?.displayValue} · K/D {(k.stats as any)?.kd?.displayValue} · KPM {(k.stats as any)?.killsPerMinute?.displayValue} · SPM {(k.stats as any)?.scorePerMinute?.displayValue}</div></div></div>)}</div></>}
           {mWeapons.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">武器</h4>{mWeapons.map(w=><div key={w.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{w.metadata?.name}</div><div className="text-[10px] text-[#999]">{w.stats?.kills?.displayValue} 击杀 · {(w.stats as any)?.killsPerMinute?.displayValue} KPM · {(w.stats as any)?.accuracy?.displayValue} ACC · {(w.stats as any)?.headshots?.displayValue} HS</div></div></div>)}</>}
@@ -503,6 +510,14 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
   })}</div>;
 }
 const _nv = (s: Segment["stats"][keyof Segment["stats"]] | undefined): number => (s as any)?.value || 0;
+
+const fmtDuration = (s: number): string => {
+  if (!s || s <= 0) return "0m";
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${Math.floor(s % 60)}s`;
+  return `${Math.floor(s)}s`;
+};
 
 function SeasonBreakdown({ segments }: { segments: Segment[] }) {
   const grouped: Record<string, Record<string, Segment[]>> = {};

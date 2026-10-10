@@ -141,6 +141,30 @@ export function buildTrnProfileResponse(
       shotsFired: _stat(sf, "Number", "Shots Fired", "Weapons"),
       shotsHit: _stat(sh, "Number", "Shots Hit", "Weapons"),
       vehiclesDestroyed: _stat(_n(stats.vehiclesDestroyed), "Number", "Vehicles Destroyed", "Vehicles"),
+      // 以下计数上游一直有返回，但此前没有写进 overview，导致差分战报永远取不到它们
+      // （delta.ts 的 OVERVIEW_COUNTERS 里其实早就列了这些键）。
+      assists: _stat(_n(stats.assists), "Number", "Assists", "Combat"),
+      killAssists: _stat(_n(stats.killAssists), "Number", "Kill Assists", "Combat"),
+      enemiesSpotted: _stat(_n(stats.enemiesSpotted), "Number", "Enemies Spotted", "Combat"),
+      thrownThrowables: _stat(_n(stats.thrownThrowables), "Number", "Throwables Thrown", "Combat"),
+      gadgetsDestoyed: _stat(_n(stats.gadgetsDestoyed), "Number", "Gadgets Destroyed", "Gadgets"),
+      playerTakeDowns: _stat(_n(stats.playerTakeDowns), "Number", "Takedowns", "Combat"),
+      squadmateRevive: _stat(_n(stats.squadmateRevive), "Number", "Squad Revives", "Combat"),
+      damagePerMinute: _stat(_n(stats.damagePerMinute), "Number", "DPM", "Combat"),
+      killsPerMatch: _stat(_n(stats.killsPerMatch), "NumberPrecision2", "Kills/Match", "Combat"),
+      damagePerMatch: _stat(_n(stats.damagePerMatch), "Number", "Damage/Match", "Combat"),
+      headshotsPercent: _stat(_p(stats.headshots as string), "Percentage", "HS%", "Weapons"),
+      winPercent: _stat(_p(stats.winPercent as string), "Percentage", "Win%", "Game"),
+      infantryKillDeathRate: _stat(_n(stats.infantryKillDeath), "NumberPrecision2", "Infantry K/D", "Combat"),
+      playtimeFlying: _stat(_n(((stats.dividedSecondsPlayed || {}) as Record<string, unknown>).flying), "TimeSeconds", "Flying Time", "Vehicles"),
+      playtimeDriving: _stat(_n(((stats.dividedSecondsPlayed || {}) as Record<string, unknown>).driving), "TimeSeconds", "Driving Time", "Vehicles"),
+      distanceTraveled: _stat(
+        _n((stats.distanceTraveled as Record<string, unknown> | undefined)?.total)
+          || (_n((stats.distanceTraveled as Record<string, unknown> | undefined)?.foot)
+            + _n((stats.distanceTraveled as Record<string, unknown> | undefined)?.vehicle)
+            + _n((stats.distanceTraveled as Record<string, unknown> | undefined)?.passenger)),
+        "Number", "Distance Traveled", "Game"),
+      xpTotal: _stat(_n(((stats.XP || []) as Record<string, unknown>[])[0]?.total), "Number", "XP", "Game"),
     },
   });
 

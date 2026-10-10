@@ -1,5 +1,5 @@
-import { fetchStatsBatchByIds, fetchStatsById, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
-import { listProfileIdentifiers, getProfile, upsertProfile, getAllSponsors } from "@/lib/db";
+import { fetchStatsBatchByIds, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
+import { listProfileIdentifiers, upsertProfile, getAllSponsors } from "@/lib/db";
 import { buildTrnProfileResponse } from "@/app/api/profile/builder";
 import type { Platform } from "@/lib/types";
 
@@ -43,34 +43,35 @@ function getSponsorIds(): Set<string> {
 }
 
 async function doUpsertForRow(
-  row: { platform_user_identifier: string; platform: string; name: string },
+  row: { platform_user_identifier: string; platform: string; name: string; update_hash: string },
   stats: Record<string, unknown>
 ): Promise<{ changed: boolean; error?: string }> {
   const pid = row.platform_user_identifier;
   if (!stats || !(stats as any).userId) {
     return { changed: false, error: stats ? "no_userId" : "not_in_batch" };
   }
-  const newHash = generateUpdateHash(stats as Record<string, unknown>);
 
-  const existing = getProfile(pid);
-  if (existing) {
-    const storedHash = ((existing as any).data?.metadata?.updateHash) as string | undefined;
-    if (storedHash === newHash) return { changed: false };
-  }
+  // 关键：hash 必须和写进库的内容来自同一个快照。
+  // 早先这里 hash 取自批量接口、内容取自单查接口，两者上游快照不一致时会写出
+  // 一行「hash 是新数据、JSON 是旧数据」的坏数据；去重闸门随后永远命中，
+  // 该玩家再也不会更新，差分战报也不再生成。
+  const newHash = generateUpdateHash(stats);
+
+  // 短路：update_hash 已由 listProfileIdentifiers() 一并取出，无需再解析 profile JSON
+  if (row.update_hash && row.update_hash === newHash) return { changed: false };
 
   try {
     const uid = (stats as any).userId as number;
     const platform = (row.platform || "origin") as Platform;
-    const gtPlatform = platform === "origin" ? "ea" : platform === "psn" ? "psn" : platform === "xbox" ? "xbl" : platform;
-    const fullStats = await fetchStatsById(uid, gtPlatform).catch(() => null);
-    const finalStats = (fullStats || stats) as Record<string, unknown>;
+    // 批量接口已改用 seperation=true，返回内容与 /bf6/stats/ 等价（含 perSeason），
+    // 因此不再逐玩家单查统计；只有头像/军衔仍需 profile 接口。
     const rawProfile = await fetchProfileById(uid).catch(() => null);
     const profileData = (rawProfile as any)?.other?.[0]?.playerProfiles?.[0]
       || (rawProfile as any)?.playerProfiles?.[0]
       || rawProfile || {};
-    const response = buildTrnProfileResponse(finalStats as any, profileData, (finalStats as any).userName || row.name, platform, newHash);
-    const identifier = String((finalStats as any).userId || pid);
-    const deltaInfo = upsertProfile(identifier, (finalStats as any).userName || row.name, platform, newHash, response);
+    const response = buildTrnProfileResponse(stats as any, profileData, (stats as any).userName || row.name, platform, newHash);
+    const identifier = String((stats as any).userId || pid);
+    const deltaInfo = upsertProfile(identifier, (stats as any).userName || row.name, platform, newHash, response);
     return { changed: deltaInfo.isChanged };
   } catch (e) {
     return { changed: false, error: String(e) };

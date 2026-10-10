@@ -401,7 +401,9 @@ export async function fetchStatsBatchByIds(
   if (!items.length) return new Map();
 
   chunkSize = Math.max(1, Math.min(chunkSize, 128));
-  const url = `${GAMETOOLS_BASE}/bf6/multiple/?categories=multiplayer&raw=false&format_values=true&seperation=false&lang=en-us`;
+  // seperation=true 时批量接口才会返回 perSeason / perGamemode —— 与 /bf6/stats/ 等价。
+  // 这样一次请求就能拿到建库所需的完整数据，不必再逐个玩家单查。
+  const url = `${GAMETOOLS_BASE}/bf6/multiple/?categories=multiplayer&raw=false&format_values=true&seperation=true&lang=en-us`;
 
   const out = new Map<string, GametoolsStatsRaw | null>();
   for (const pid of items.map(i => String(i.player_id || i.user_id || ""))) {
@@ -425,22 +427,29 @@ export async function fetchStatsBatchByIds(
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(1_000_000),
+        signal: AbortSignal.timeout(1_000_000),
       });
 
       if (!resp.ok) continue;
-      const body = await resp.json() as { data?: unknown[] } | GametoolsStatsRaw[];
+      const body = await resp.json() as unknown;
 
+      // 上游返回形态不固定：
+      //   只有 1 个玩家 -> 裸对象 { userId, kills, ... }
+      //   2 个以上     -> { data: [ {...}, {...} ] }
+      // 早期版本/代理偶发直接返回数组。三种都要认。
       let data: unknown[] = [];
-      if (Array.isArray(body)) data = body;
-      else if (body && typeof body === "object" && Array.isArray((body as Record<string, unknown>).data)) {
-        data = (body as Record<string, unknown>).data as unknown[];
+      if (Array.isArray(body)) {
+        data = body;
+      } else if (body && typeof body === "object") {
+        const b = body as Record<string, unknown>;
+        if (Array.isArray(b.data)) data = b.data as unknown[];
+        else if (b.userId || b.user_id || b.id) data = [b];
       }
 
       for (const stats of data) {
         if (!stats || typeof stats !== "object") continue;
         const s = stats as Record<string, unknown>;
-        const pid = String(s.userId || s.id || "");
+        const pid = String(s.userId || s.user_id || s.id || "");
         if (pid && out.has(pid)) {
           out.set(pid, stats as GametoolsStatsRaw);
         }

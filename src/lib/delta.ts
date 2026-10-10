@@ -122,6 +122,9 @@ function subtractStatsBlock(
 
   const result: Record<string, unknown> = {};
   for (const k of counters) {
+    // secondsPlayed 与 timePlayed 表示同一件事。若两者都输出，界面上会出现一个
+    // 没有单位的裸数字（例如 "618"），所以只保留下面带 TimeSeconds 格式的 timePlayed。
+    if (k === "secondsPlayed") continue;
     if (deltas[k] !== undefined && deltas[k] > 0) {
       result[k] = trnStat(deltas[k], "Number");
     }
@@ -271,6 +274,35 @@ function computeGroupDelta(
   return results;
 }
 
+// Some rounds never reach the upstream overview counters. Portal (门户) is the
+// clearest case: the round's kills/wins only show up in the per-mode breakdown,
+// so the overview delta contains nothing but playtime and the match card renders
+// "0 击杀" with no result. Rebuild a headline summary from the mode items so the
+// report is self-describing.
+const SUMMARY_COUNTERS = ["kills", "deaths", "wins", "losses", "matches", "matchesPlayed", "secondsPlayed", "score", "assists", "revives", "repairs"];
+
+function summarizeModeItems(items: GroupItem[] | undefined): Record<string, unknown> {
+  if (!items || items.length === 0) return {};
+  const sum: Record<string, number> = {};
+  for (const it of items) {
+    const st = (it.stats || {}) as Record<string, { value?: number } | undefined>;
+    for (const k of SUMMARY_COUNTERS) {
+      const v = st[k]?.value;
+      if (typeof v === "number" && v > 0) sum[k] = (sum[k] || 0) + v;
+    }
+  }
+  const out: Record<string, unknown> = {};
+  for (const k of ["kills", "deaths", "wins", "losses", "score", "assists", "revives", "repairs"]) {
+    if (sum[k] > 0) out[k] = trnStat(sum[k], "Number");
+  }
+  const matches = sum.matches || sum.matchesPlayed || 0;
+  if (matches > 0) out.matchesPlayed = trnStat(matches, "Number");
+  if (sum.secondsPlayed > 0) out.timePlayed = trnStat(sum.secondsPlayed, "TimeSeconds");
+  if (sum.kills > 0 && sum.deaths > 0) out.kd = trnStat(parseFloat((sum.kills / sum.deaths).toFixed(2)), "NumberPrecision2");
+  if (sum.kills > 0 && sum.secondsPlayed > 0) out.killsPerMinute = trnStat(parseFloat((sum.kills / (sum.secondsPlayed / 60)).toFixed(2)), "NumberPrecision2");
+  return out;
+}
+
 // ============================================================
 // Main entry: build a TRN delta match from two profiles
 // ============================================================
@@ -322,6 +354,14 @@ export function buildDeltaMatch(
       const outKey = groupName === "maps" ? "levels" : groupName;
       metadata[outKey] = items;
       totalItems += items.length;
+    }
+  }
+
+  // 顶层没有记录这一局（例如门户模式不计入官方统计）时，用模式分组汇总补全概览，
+  // 让战报顶部也能显示这一局真实的击杀/胜负。
+  if (totalItems > 0 && overviewDelta.kills === undefined) {
+    for (const [k, v] of Object.entries(summarizeModeItems(metadata["gamemodes"]))) {
+      if (overviewDelta[k] === undefined) overviewDelta[k] = v;
     }
   }
 
