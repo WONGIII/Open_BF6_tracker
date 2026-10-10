@@ -24,12 +24,12 @@ export default function CookieBanner() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
-      <div className="bg-white border-t border-[#e8e8e8] shadow-lg">
+      <div className="bg-white border-t border-[#dfe5ec] shadow-lg">
         <div className="max-w-[1200px] mx-auto px-4 py-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <p className="text-xs text-[#888] max-w-xl leading-relaxed">
+            <p className="text-xs text-[#94a3b8] max-w-xl leading-relaxed">
               {t("cookies.banner")}{" "}
-              <a href="/cookies" className="text-[#4c6ef5] hover:underline">{t("cookies.preferences")}</a>
+              <a href="/cookies" className="text-[#e8590c] hover:underline">{t("cookies.preferences")}</a>
             </p>
             <div className="flex items-center gap-2 shrink-0">
               <button onClick={() => accept(false)} className="btn-ghost text-xs px-3 py-1.5">

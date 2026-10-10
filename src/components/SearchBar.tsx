@@ -142,7 +142,7 @@ function toApiPlatform(c: Candidate): string {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (fetching || (query.trim().length >= 2 && candidates.length === 0)) return;
+    if (fetching) return;
     if (selectedIdx >= 0 && selectedIdx < candidates.length) {
       goToPlayer(candidates[selectedIdx]);
       return;
@@ -164,6 +164,7 @@ function toApiPlatform(c: Candidate): string {
   return (
     <form onSubmit={handleSubmit} className={`w-full ${className}`}>
       <div className="relative" ref={containerRef}>
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input
           type="text"
           value={query}
@@ -175,14 +176,14 @@ function toApiPlatform(c: Candidate): string {
           onBlur={() => setTimeout(() => setFocused(false), 150)}
           onKeyDown={handleKeyDown}
           placeholder={t("home.hero.placeholder")}
-          className="input h-11 rounded-lg pr-24"
+          className="input h-[52px] pl-12 pr-32 text-[15px] rounded-none"
           autoComplete="off"
           spellCheck={false}
         />
         <button
           type="submit"
-          disabled={loading || fetching || (query.trim().length >= 2 && candidates.length === 0)}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary h-8 px-5 text-xs rounded-md"
+          disabled={loading || fetching}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 btn-primary h-10 px-7 text-sm rounded-none"
         >
           {loading ? (
             <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -192,19 +193,19 @@ function toApiPlatform(c: Candidate): string {
         </button>
 
         {showDropdown && (candidates.length > 0 || fetching) && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e0e0e0] rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#dfe5ec] rounded-none shadow-lg z-50 max-h-80 overflow-y-auto">
             {fetching && candidates.length === 0 && (
-              <div className="px-4 py-3 text-sm text-[#999] flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border-2 border-[#ddd] border-t-[#4c6ef5] rounded-full animate-spin" />
+              <div className="px-4 py-3 text-sm text-[#94a3b8] flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-[#ddd] border-t-[#e8590c] rounded-full animate-spin" />
                 正在搜索...
               </div>
             )}
             {!query.trim() && candidates.length > 0 && (
-              <div className="flex items-center justify-between px-4 py-2 border-b border-[#f0f0f0] sticky top-0 bg-white">
-                <span className="text-[11px] text-[#999] font-medium">搜索记录</span>
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[#f1f5f9] sticky top-0 bg-white">
+                <span className="text-[11px] text-[#94a3b8] font-medium">搜索记录</span>
                 <button
                   type="button"
-                  className="text-[11px] text-[#999] hover:text-[#ff6b6b] transition-colors"
+                  className="text-[11px] text-[#94a3b8] hover:text-[#e11d48] transition-colors"
                   onClick={(e) => { e.stopPropagation(); clearHistory(); setFocused(false); }}
                 >
                   清空记录
@@ -214,7 +215,7 @@ function toApiPlatform(c: Candidate): string {
             {candidates.map((c, i) => (
               <div
                 key={c.nucleusId}
-                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm hover:bg-[#f5f5f5] transition-colors group ${i === selectedIdx ? "bg-[#edf2ff]" : ""}`}
+                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm hover:bg-[#eef1f5] transition-colors group ${i === selectedIdx ? "bg-[#edf2ff]" : ""}`}
                 onClick={() => goToPlayer(c)}
                 onMouseEnter={() => setSelectedIdx(i)}
               >
@@ -225,15 +226,15 @@ function toApiPlatform(c: Candidate): string {
                 />
                 {c.rankImage && <img src={c.rankImage} alt="" className="w-5 h-5 object-contain shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <span className="font-medium text-[#333]">{c.displayName}</span>
+                  <span className="font-medium text-[#0f172a]">{c.displayName}</span>
                   {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] ml-2 shrink-0">已追踪</span>}
-                  {c.rank && <span className="text-[11px] text-[#999] ml-2">Rank {c.rank}</span>}
+                  {c.rank && <span className="text-[11px] text-[#94a3b8] ml-2">Rank {c.rank}</span>}
                 </div>
-                <span className="text-[#999] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
+                <span className="text-[#94a3b8] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
                 {!query.trim() && !c.tracked && (
                   <button
                     type="button"
-                    className="ml-1 w-5 h-5 flex items-center justify-center rounded text-[#ccc] hover:text-[#ff6b6b] hover:bg-[#fff0f0] opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    className="ml-1 w-5 h-5 flex items-center justify-center rounded text-[#cbd5e1] hover:text-[#e11d48] hover:bg-[#fff0f0] opacity-0 group-hover:opacity-100 transition-all shrink-0"
                     onClick={(e) => { e.stopPropagation(); removeFromHistory(c.nucleusId); setCandidates(prev => prev.filter(x => x.nucleusId !== c.nucleusId)); }}
                     title="删除"
                   >
@@ -246,7 +247,7 @@ function toApiPlatform(c: Candidate): string {
         )}
       </div>
       {showTip && (
-        <p className="mt-2 text-xs text-[#aaa]">{t("home.hero.tip")}</p>
+        <p className="mt-2 text-xs text-[#b6c0cc]">{t("home.hero.tip")}</p>
       )}
     </form>
   );

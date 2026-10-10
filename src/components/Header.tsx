@@ -11,12 +11,12 @@ export default function Header() {
   useEffect(() => { setMounted(true); }, []);
 
   return (
-    <header className="bg-white border-b border-[#e8e8e8] sticky top-0 z-50">
-      <div className="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-1.5 shrink-0 no-underline">
-          <img src="/favicon.png" alt="" className="w-6 h-6 object-contain shrink-0" />
-          <span className="text-base font-bold text-[#4c6ef5] tracking-tight leading-none">
-            {mounted ? t("site.title") : "BF6 Tracker"}
+    <header className="bg-white/90 backdrop-blur border-b border-[rgba(15,23,42,.14)] sticky top-0 z-50">
+      <div className="max-w-[1320px] mx-auto px-5 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 no-underline">
+          <img src="/favicon.png" alt="OpenBF6Tracker" className="w-9 h-9 object-contain shrink-0" />
+          <span className="en-name text-xl leading-none whitespace-nowrap">
+            <span className="text-[#e8590c]">OPEN</span><span className="text-[#0f172a]">BF6</span><span className="text-[#94a3b8] ml-1.5 text-base tracking-[1px] font-semibold">TRACKER</span>
           </span>
         </Link>
 

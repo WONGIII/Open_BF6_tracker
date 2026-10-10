@@ -50,65 +50,69 @@ export default function HomePage() {
     : topMarks.filter((p) => p.credibility === credFilter);
 
   return (
-    <div className="bg-[#f5f5f5] min-h-[calc(100vh-56px)]">
+    <div className="bg-[#eef1f5] min-h-[calc(100vh-56px)]">
       {/* Hero */}
-      <section className="bg-white border-b border-[#e8e8e8]">
-        <div className="max-w-[1200px] mx-auto px-4 py-10 sm:py-14">
-          <div className="max-w-[560px] mx-auto text-center">
-            <h1 className="text-[26px] sm:text-[28px] font-bold text-[#333] leading-tight mb-1">
-              {t("home.hero.title")}
+      <section className="max-w-[1320px] mx-auto px-6 pt-8">
+        <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_2px_5px_-2px_rgba(15,23,42,.07),0_8px_20px_-8px_rgba(15,23,42,.11)]">
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#e8590c] via-[#f59e0b] to-transparent" />
+          <div className="px-8 py-10 sm:px-11 sm:py-11">
+            <span className="inline-flex items-center gap-2 border border-[rgba(15,23,42,.14)] bg-[#f8fafc] px-3 py-1 text-xs text-[#475569] tracking-[1.6px]">
+              <span className="w-[7px] h-[7px] rounded-full bg-[#0f9b6c] shadow-[0_0_0_4px_rgba(15,155,108,.15)]" />
+              GameTools Network
+            </span>
+            <h1 className="text-[30px] sm:text-[38px] font-bold text-[#0f172a] leading-tight mt-5 mb-2">
+              {t("home.hero.title").includes("战绩")
+                ? <>{t("home.hero.title").split("战绩")[0]}<span className="text-[#e8590c]">战绩</span>{t("home.hero.title").split("战绩")[1] || ""}</>
+                : t("home.hero.title")}
             </h1>
-            <p className="text-sm text-[#888] mb-6">Battlefield 6</p>
+            <p className="text-sm text-[#94a3b8] mb-7">Battlefield 6</p>
             <SearchBar showTip />
           </div>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="bg-white border-b border-[#e8e8e8]">
-        <div className="max-w-[1200px] mx-auto px-4 py-5">
-          <div className="flex justify-center gap-12 sm:gap-20">
-            <div className="text-center">
-              <div className="text-[22px] font-bold text-[#333]">{counts.playersTracked.toLocaleString()}</div>
-              <div className="text-[11px] text-[#999] mt-0.5">{t("home.stats.trackedPlayers")}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-[22px] font-bold text-[#333]">{counts.matchesTracked.toLocaleString()}</div>
-              <div className="text-[11px] text-[#999] mt-0.5">{t("home.stats.matchesRecorded")}</div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1.5 text-[22px] font-bold text-[#51cf66]">
-                <span className="status-dot bg-[#51cf66] status-dot-healthy" />
-                Online
-              </div>
-              <div className="text-[11px] text-[#999] mt-0.5">{t("home.stats.serviceStatus")}</div>
+      <section className="max-w-[1320px] mx-auto px-6 pt-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
+            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.trackedPlayers")}</div>
+            <div className="stat-number text-[32px] font-bold leading-none mt-3">{counts.playersTracked.toLocaleString()}</div>
+          </div>
+          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
+            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.matchesRecorded")}</div>
+            <div className="stat-number text-[32px] font-bold leading-none mt-3">{counts.matchesTracked.toLocaleString()}</div>
+          </div>
+          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#0f9b6c] to-[#34d399]" />
+            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.serviceStatus")}</div>
+            <div className="flex items-center gap-2 mt-4">
+              <span className="status-dot bg-[#0f9b6c] status-dot-healthy" />
+              <span className="text-lg font-semibold text-[#0f9b6c]">Online</span>
             </div>
           </div>
-          {updatedDate && (
-            <p className="text-center text-[11px] text-[#bbb] mt-3">
-              {t("home.stats.updatedAt", { date: updatedDate })}
-            </p>
-          )}
+          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
+            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">数据更新</div>
+            <div className="stat-number text-[22px] font-bold leading-none mt-4">{updatedDate || "—"}</div>
+          </div>
         </div>
       </section>
 
-      {/* Service Status */}
-      <section className="max-w-[1200px] mx-auto px-4 py-6">
-        <ServiceCards />
-      </section>
+
 
       {/* Player Marks Ranking */}
-      <section className="bg-white border-t border-[#e8e8e8]">
-        <div className="max-w-[1200px] mx-auto px-4 py-8">
+      <section className="max-w-[1320px] mx-auto px-6 py-8">
           <div className="flex flex-col gap-4 mb-5">
-            <h2 className="text-lg font-bold text-[#333]">{t("home.topMarks.title")}</h2>
+            <h2 className="text-lg font-bold text-[#0f172a]">{t("home.topMarks.title")}</h2>
 
             {/* Credibility filter tabs */}
-            <div className="flex items-center gap-1 bg-[#f0f0f0] rounded-lg p-0.5 w-fit">
+            <div className="flex items-center gap-1 bg-[#f1f5f9] rounded-none p-0.5 w-fit">
               <button
                 onClick={() => setCredFilter("all")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  credFilter === "all" ? "bg-white text-[#333] shadow-sm" : "text-[#888] hover:text-[#555]"
+                className={`px-3 py-1 rounded-none text-xs font-medium transition-colors ${
+                  credFilter === "all" ? "bg-white text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[#94a3b8] hover:text-[#475569]"
                 }`}
               >
                 {t("home.topMarks.allCat")}
@@ -117,8 +121,8 @@ export default function HomePage() {
                 <button
                   key={cred.id}
                   onClick={() => setCredFilter(cred.id)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                    credFilter === cred.id ? "bg-white text-[#333] shadow-sm" : "text-[#888] hover:text-[#555]"
+                  className={`px-3 py-1 rounded-none text-xs font-medium transition-colors ${
+                    credFilter === cred.id ? "bg-white text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[#94a3b8] hover:text-[#475569]"
                   }`}
                 >
                   {cred.labelZh}
@@ -134,8 +138,8 @@ export default function HomePage() {
                   onClick={() => setTimeFilter(f)}
                   className={`text-xs px-3 py-1 rounded transition-colors ${
                     timeFilter === f
-                      ? "text-[#4c6ef5] bg-[#4c6ef5]/8 font-medium"
-                      : "text-[#888] hover:text-[#555]"
+                      ? "text-[#e8590c] bg-[#e8590c]/8 font-medium"
+                      : "text-[#94a3b8] hover:text-[#475569]"
                   }`}
                 >
                   {f === "7d" ? t("home.topMarks.time7d") : f === "30d" ? t("home.topMarks.time30d") : t("home.topMarks.timeAll")}
@@ -144,79 +148,93 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-xs text-[#aaa] mb-4">{t("home.topMarks.subtitle")}</p>
+          <p className="text-xs text-[#b6c0cc] mb-4">{t("home.topMarks.subtitle")}</p>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            <div className="card p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="card p-4 animate-pulse">
-                  <div className="h-3 bg-[#f0f0f0] rounded w-1/3 mb-2" />
-                  <div className="h-4 bg-[#f0f0f0] rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-[#f0f0f0] rounded w-1/2" />
+                  <div className="h-3 bg-[#f1f5f9] rounded w-1/3 mb-2" />
+                  <div className="h-4 bg-[#f1f5f9] rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-[#f1f5f9] rounded w-1/2" />
                 </div>
               ))}
             </div>
           ) : filteredMarks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-              {filteredMarks.map((player, idx) => {
-                const cred = CREDIBILITY_LEVELS.find((c) => c.id === player.credibility);
-                return (
-                  <Link
-                    key={player.playerId}
-                    href={`/player/${player.playerId}`}
-                    className="card-interactive p-4 flex flex-col gap-2 animate-fade-in relative"
-                    style={{ animationDelay: `${idx * 40}ms` }}
-                  >
-                    {/* Credibility accent bar */}
-                    {cred && player.credibility !== "community" && (
-                      <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-lg" style={{ backgroundColor: cred.color }} />
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-[#aaa]">#{idx + 1}</span>
-                      {cred && player.credibility !== "community" && (
-                        <span
-                          className="badge text-[10px] text-white"
-                          style={{ backgroundColor: cred.color }}
-                        >
-                          {cred.labelZh}
-                          {player.typeBreakdown.aimbot > 0 ? "：自瞄" : player.typeBreakdown.converter > 0 ? "：转换器" : ""}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="badge bg-[#edf2ff] text-[#4c6ef5] text-[10px]">
-                        Lv.{player.playerLevel}
-                      </span>
-                    </div>
-                    <SponsorName
-                      userId={player.playerId}
-                      name={player.playerName}
-                      className="text-sm font-medium text-[#333] truncate"
-                    />
-                    <SuspicionTags typeBreakdown={player.typeBreakdown} />
-                  </Link>
-                );
-              })}
+            <div className="card">
+              <div className="card-b" style={{ paddingTop: 6, paddingBottom: 10 }}>
+                {filteredMarks.map((player, idx) => {
+                  const cred = CREDIBILITY_LEVELS.find((c) => c.id === player.credibility);
+                  const tkStyle = cred ? { borderColor: cred.color + "66", color: cred.color, background: cred.color + "14" } : undefined;
+                  return (
+                    <Link key={player.playerId} href={"/player/" + player.playerId} className="prow">
+                      <div className={"i" + (idx === 0 ? " g1" : idx === 1 ? " g2" : idx === 2 ? " g3" : "")}>{idx + 1}</div>
+                      <div className="av">{player.playerName.charAt(0).toUpperCase()}</div>
+                      <div className="nm">
+                        <SponsorName userId={player.playerId} name={player.playerName} className="n" />
+                        {cred && <span className="tk" style={tkStyle}>{cred.labelZh}</span>}
+                        <SuspicionTags typeBreakdown={player.typeBreakdown} />
+                      </div>
+                      <div className="val3">
+                        {player.totalMarks}
+                        <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 400, marginLeft: 4 }}>次举报</span>
+                      </div>
+                      <div className="xt">Lv.{player.playerLevel}</div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           ) : (
-            <p className="text-[#aaa] text-sm">{t("home.topMarks.empty")}</p>
+            <div className="card p-10 text-center text-[#94a3b8] text-sm">{t("home.topMarks.empty")}</div>
           )}
 
           <div className="text-center mt-5">
             <button className="btn-outline text-xs py-2 px-6">{t("home.topMarks.loadMore")}</button>
           </div>
+      </section>
+
+      {/* 平台能力 */}
+      <section className="max-w-[1320px] mx-auto px-6 py-8">
+        <h2 className="section-title">平台能力</h2>
+        <div className="feats">
+          <div className="feat">
+            <div className="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></div>
+            <div className="t">差分战报</div>
+            <div className="d">后台轮询上游，逐局计算击杀 / 死亡 / K/D / KPM / 目标点等差异，自动生成战报，不遗漏任何一局。</div>
+          </div>
+          <div className="feat">
+            <div className="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+            <div className="t">全维度统计</div>
+            <div className="d">武器、兵种、载具、装备、近战、模式、地图、赛季，全部维度可排序浏览，每个指标都带全站百分位对照。</div>
+          </div>
+          <div className="feat">
+            <div className="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9.5 12.5l2 2 3.5-4"/></svg></div>
+            <div className="t">反作弊标记</div>
+            <div className="d">社区协作标记系统，多种举报类型、三级可信度与证据留言，可疑玩家一目了然。</div>
+          </div>
+          <div className="feat">
+            <div className="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 7l-5 5 5 5"/><path d="M15 7l5 5-5 5"/></svg></div>
+            <div className="t">开放接口</div>
+            <div className="d">兼容 TRN 的 profile / matches 响应格式，可直接对接第三方机器人或面板。</div>
+          </div>
         </div>
+      </section>
+
+      {/* Service Status */}
+      <section className="max-w-[1320px] mx-auto px-6 py-8">
+        <h2 className="section-title">服务状态</h2>
+        <ServiceCards />
       </section>
 
       {/* Streamers */}
       {streamers.length > 0 && (
-        <section className="bg-[#fafafa] border-t border-[#e8e8e8]">
-          <div className="max-w-[1200px] mx-auto px-4 py-8">
-            <h2 className="text-lg font-bold text-[#333] mb-4">{t("home.streamers.title")}</h2>
+        <section className="max-w-[1320px] mx-auto px-6 pb-10">
+            <h2 className="text-lg font-bold text-[#0f172a] mb-4">{t("home.streamers.title")}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {streamers.map((s) => (
                 <div key={s.id} className="card p-4 flex flex-col items-center text-center gap-2">
-                  <SponsorName userId={String(s.platformId)} name={s.name} className="text-xs font-medium text-[#333]" />
+                  <SponsorName userId={String(s.platformId)} name={s.name} className="text-xs font-medium text-[#0f172a]" />
                   <div className="flex flex-wrap gap-1 justify-center">
                     {s.platforms.map((p, i) => (
                       <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-[10px] px-2 py-1">
@@ -230,7 +248,6 @@ export default function HomePage() {
             <div className="text-center mt-5">
               <button className="btn-outline text-xs py-2 px-6">{t("home.streamers.loadMore")}</button>
             </div>
-          </div>
         </section>
       )}
     </div>
@@ -259,43 +276,34 @@ function ServiceCards() {
   };
 
   const groups = [
-    {
-      title: t("status.backendServices"),
-      items: [
-        { key: "backend", label: "HK" },
-      ],
-    },
-    {
-      title: "GameTools",
-      items: [
-        { key: "gtStats", label: "GT " + t("status.stats") },
-        { key: "gtProfile", label: "GT " + t("status.profile") },
-        { key: "gtSearch", label: "GT " + t("status.playerSearch") },
-      ],
-    },
+    { title: t("status.backendServices"), items: [{ key: "backend", label: "HK" }] },
+    { title: "GameTools", items: [
+      { key: "gtStats", label: "GT " + t("status.stats") },
+      { key: "gtProfile", label: "GT " + t("status.profile") },
+      { key: "gtSearch", label: "GT " + t("status.playerSearch") },
+    ] },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[600px] mx-auto">
-      {groups.map((group) => (
-        <div key={group.title} className="card p-4">
-          <h3 className="text-[10px] font-semibold text-[#aaa] uppercase tracking-wider mb-3">{group.title}</h3>
-          <div className="space-y-2.5">
-            {group.items.map((item) => {
-              return (
-                <div key={item.key} className="flex items-center justify-between">
-                  <span className="text-xs text-[#666]">{item.label}</span>
-                  {(() => {
-                    const s = getStatus(item.key);
-                    const anim = s === "healthy" ? "status-dot-healthy" : s === "down" ? "status-dot-down" : "status-dot-unknown";
-                    return <span className={`status-dot ${anim}`} />;
-                  })()}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+    <div className="card overflow-hidden">
+      <table>
+        <thead><tr><th>服务</th><th>状态</th><th>分类</th></tr></thead>
+        <tbody>
+          {groups.flatMap(g => g.items.map(item => {
+            const s = getStatus(item.key);
+            const anim = s === "healthy" ? "status-dot-healthy" : s === "down" ? "status-dot-down" : "status-dot-unknown";
+            const tk = s === "healthy" ? "ok" : s === "down" ? "bad" : "warn";
+            const label = s === "healthy" ? "正常" : s === "down" ? "异常" : "未知";
+            return (
+              <tr key={item.key}>
+                <td><span className={"status-dot " + anim} />{item.label}</td>
+                <td><span className={"tk " + tk}>{label}</span></td>
+                <td style={{ color: "#94a3b8" }}>{g.title}</td>
+              </tr>
+            );
+          }))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/t
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
 type Level1 = "all" | "matches" | "multiplayer" | "redsec" | "marks";
-type Level2 = "career" | "s4" | "s3" | "s2" | "s1";
+type Level2 = "career" | "s5" | "s4" | "s3" | "s2" | "s1";
 type Level3 = "overview" | "weapons" | "vehicles" | "gadgets" | "classes" | "modes" | "maps" | "melee";
 
 export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: string }) {
@@ -75,7 +75,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
       setLoading(false);
     }
     load();
-    return () => { cancelled = true; };
+  return () => { cancelled = true; };
   }, [playerId]);
 
   // Countdown timer + auto-refresh every 5 minutes
@@ -130,8 +130,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
 
   const fmtCd = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  if (loading || !profileData) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#e8e8e8] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
-  if (error) { console.log("[PlayerClient] showing error, error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#333] mb-2">未找到玩家</h2><p className="text-[#888] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
+  if (loading || !profileData) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#dfe5ec] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
+  if (error) { console.log("[PlayerClient] showing error, error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#0f172a] mb-2">未找到玩家</h2><p className="text-[#94a3b8] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
   
   const info = (profileData.platformInfo || {}) as Record<string, unknown>;
   const handle = String(info.platformUserHandle || "");
@@ -167,44 +167,87 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const topM = [...gamemodes].sort((a,b)=>(b.stats.wins?.value||0)-(a.stats.wins?.value||0)).slice(0,5);
 
   const catFilter = l1 === "multiplayer" ? "全面战争" : l1 === "redsec" ? "禁区冲突" : null;
-  const seasonFilter = l2 === "s4" ? "赛季 4" : l2 === "s3" ? "赛季 3" : l2 === "s2" ? "赛季 2" : l2 === "s1" ? "赛季 1" : null;
+  const seasonFilter = l2 === "s5" ? "赛季 5" : l2 === "s4" ? "赛季 4" : l2 === "s3" ? "赛季 3" : l2 === "s2" ? "赛季 2" : l2 === "s1" ? "赛季 1" : null;
   const showMatches = l1 === "matches";
   const showCareerOverview = l1 === "all" && l2 === "career";
 
-  const navBtn = (active: boolean) => `text-[15px] font-bold relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#333]" : "text-[#aaa]"}`;
-  const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#333]" : "text-[#aaa]"}`;
+  const navBtn = (active: boolean) => `text-[15px] font-bold relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#0f172a]" : "text-[#b6c0cc]"}`;
+  const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#0f172a]" : "text-[#b6c0cc]"}`;
 
   const l1Items: { id: Level1; label: string }[] = [{ id: "all", label: "全部" }, { id: "matches", label: `战报 (${matches.length})` }, { id: "multiplayer", label: "全面战争" }, { id: "redsec", label: "禁区冲突" }, { id: "marks", label: `标记 ${suspicion ? `(${suspicion.totalReports})` : ""}` }];
-  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s4", label: "SEASON 4" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
+  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s5", label: "SEASON 5" }, { id: "s4", label: "SEASON 4" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
   const l3Items: { id: Level3; label: string }[] = [{ id: "overview", label: "总览" }, { id: "weapons", label: "武器" }, { id: "vehicles", label: "载具" }, { id: "gadgets", label: "装备" }, { id: "classes", label: "兵种" }, { id: "modes", label: "模式" }, { id: "maps", label: "地图" }, { id: "melee", label: "近战" }];
 
+    const trackedCount = matchTotal || parseInt(sv("matchesPlayed").replace(/,/g, ""), 10) || 0;
+  const loadedLabel = new Date().toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const recentForm = (() => {
+    const pick = (mm: TrnMatch) => {
+      const segs = (((mm as unknown) as Record<string, unknown>).segments || []) as Segment[];
+      const ov = segs.find(x => x.type === "overview");
+      const st = ((ov?.stats || {}) as unknown) as Record<string, { value?: number } | undefined>;
+      const wNum = st.wins?.value || 0, lNum = st.losses?.value || 0;
+      const kNum = st.kills?.value || 0, dNum = st.deaths?.value || 0;
+      return { r: wNum > lNum ? "w" : lNum > wNum ? "l" : "d", kd: dNum > 0 ? kNum / dNum : kNum };
+    };
+    const list = matches.slice(0, 5).map(pick);
+    const wins = list.filter(x => x.r === "w").length;
+    const losses = list.filter(x => x.r === "l").length;
+    const avg = list.length ? list.reduce((acc, b) => acc + b.kd, 0) / list.length : 0;
+    return { list, wins, losses, avg };
+  })();
+
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#f5f5f5]">
-      <div className="max-w-[1100px] mx-auto px-4 py-6">
-        <div className="card p-5 mb-4">
-          <div className="flex items-center gap-4">
-            {rankImg ? <img src={rankImg} alt="" className="w-14 h-14 object-contain shrink-0"/> : <div className="w-14 h-14 rounded-lg bg-[#e8e8e8] shrink-0"/>}
-            <div className="min-w-0 flex-1">
-              <span className="badge bg-[#edf2ff] text-[#4c6ef5] text-sm px-2 py-1 mb-1">rank{sv("careerPlayerRank")}</span>
-              <SponsorName userId={ident} name={handle} className="text-[22px] font-bold block"/>
-              <div className="text-xs text-[#aaa] mt-0.5 flex items-center gap-1">{platformLogo[platformSlug] ? <img src={platformLogo[platformSlug]} alt={platformSlug} className="w-4 h-4 object-contain"/> : null}{platformSlug.toUpperCase()} · 唯一ID {ident}</div>
+    <div className="min-h-[calc(100vh-56px)] bg-[#eef1f5]">
+      <div className="max-w-[1320px] mx-auto px-6 py-7">
+                <div className="phero mb-4">
+          <div className="phero-in">
+            <div className="rk">
+              {rankImg && <img src={rankImg} alt="" />}
+              <span className="tier">LV.{sv("careerPlayerRank")}</span>
             </div>
-            <button
-              onClick={doRefresh}
-              disabled={refreshing}
-              className="shrink-0 px-3 py-1.5 rounded text-xs font-medium border border-[#ddd] hover:bg-[#f0f0f0] transition-colors disabled:opacity-50"
-              title="自动每5分钟刷新"
-            >
-              {refreshing ? "刷新中..." : `刷新 ${fmtCd(refreshCountdown)}`}
-            </button>
+            <div className="hmeta">
+              <div className="nm">
+                <SponsorName userId={ident} name={handle} />
+              </div>
+              <div className="pl">
+                {platformLogo[platformSlug] && <img src={platformLogo[platformSlug]} alt={platformSlug} style={{ width: 16, height: 16, objectFit: "contain" }} />}
+                <span style={{ letterSpacing: "1.4px", fontWeight: 500, color: "#475569" }}>{platformSlug.toUpperCase()}</span>
+                <span>唯一 ID {ident}</span>
+                <span>·</span>
+                <span>最近更新 {loadedLabel}</span>
+                <span>·</span>
+                <span>已追踪 {trackedCount} 场</span>
+              </div>
+            </div>
+            <div className="hero-sp" />
+            {recentForm.list.length > 0 && (
+              <div className="form">
+                <div className="fl">最近 5 场</div>
+                <div className="fb">{recentForm.list.map((x, i) => <i key={i} className={x.r} />)}</div>
+                <div className="fd">{recentForm.wins} 胜 {recentForm.losses} 负 · 场均 K/D <b>{recentForm.avg.toFixed(2)}</b></div>
+              </div>
+            )}
+            <div className="hero-actions">
+              <button onClick={doRefresh} disabled={refreshing} className="btn" title="自动每5分钟刷新">
+                {refreshing ? "刷新中..." : "↻ 刷新 " + fmtCd(refreshCountdown)}
+              </button>
+            </div>
           </div>
         </div>
-        <div className="card px-5 pt-4 pb-0 mb-4">
-          <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">
+        <div className="strip">
+          <div className="stripm"><div className="v a">{sv("kills")}</div><div className="l">击杀</div><div className="d">{sv("deaths")} 死亡</div></div>
+          <div className="stripm"><div className="v g">{sv("kd")}</div><div className="l">K/D</div><div className="d">真人 {sv("humanKd")}</div></div>
+          <div className="stripm"><div className="v">{sv("killsPerMinute")}</div><div className="l">KPM</div><div className="d">每场 {sv("killsPerMatch")} 杀</div></div>
+          <div className="stripm"><div className="v">{sv("wl")}</div><div className="l">胜率</div><div className="d">{sv("wins")} 胜 / {sv("losses")} 负</div></div>
+          <div className="stripm"><div className="v">{sv("accuracy")}</div><div className="l">命中率</div><div className="d">{sv("shotsHit")} / {sv("shotsFired")}</div></div>
+          <div className="stripm"><div className="v" style={{ fontSize: 24 }}>{sv("timePlayed")}</div><div className="l">时长</div><div className="d">{sv("matchesPlayed")} 场</div></div>
+        </div>
+        <div className="card px-5 pt-4 pb-0 mb-4 mt-[18px]">
+          <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[#dfe5ec]">
             {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}
           </div>
-          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#e8e8e8]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
-            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[#e8e8e8]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"#333":"#aaa"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
+          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#dfe5ec]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
+            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[#dfe5ec]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"#0f172a":"#b6c0cc"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
         </div>
         {showMatches ? <>
           <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
@@ -248,7 +291,7 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
   });
   if (l3 === "overview") {
     const raw = isCareer ? seasonGm.filter((s: Segment) => catFilter ? (s.attributes?.category as string) === catFilter : true) : flt(seasonGm);
-    if (!raw.length) return <p className="text-[#aaa] text-sm py-8 text-center">暂无数据</p>;
+    if (!raw.length) return <p className="text-[#b6c0cc] text-sm py-8 text-center">暂无数据</p>;
     const ag = aggregateSegments(raw), ov = buildAggOverview(ag);
     return <OverviewMain ov={ov} topW={[]} topV={[]} topK={[]} topM={[]} kits={[]} seasonGm={[]} title={title}/>;
   }
@@ -270,7 +313,7 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
       if (l3==="classes") return <ClassesDetail kits={kits}/>;
       if (l3==="modes") return <ModesDetail gamemodes={gamemodes}/>;
       if (l3==="maps") return <MapsDetail levels={levels}/>;
-      if (l3==="melee") return melees.length ? <MeleeDetail melees={melees}/> : <p className="text-[#aaa] text-sm py-8 text-center">暂无近战数据</p>;
+      if (l3==="melee") return melees.length ? <MeleeDetail melees={melees}/> : <p className="text-[#b6c0cc] text-sm py-8 text-center">暂无近战数据</p>;
     }
     return null;
   }
@@ -286,23 +329,23 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
 }
 
 function SeasonSubList({ items, title, fields, image, format }: { items: Segment[]; title: string; fields?: {k:string;l:string}[]; image?: boolean; format?: string }) {
-  if (!items.length) return <p className="text-[#aaa] text-sm py-8 text-center">{title}</p>;
+  if (!items.length) return <p className="text-[#b6c0cc] text-sm py-8 text-center">{title}</p>;
   const grouped: Record<string, Segment[]> = {};
   for (const it of items) { const gn = (it.metadata?.gamemodeName || "其他") as string; if (!grouped[gn]) grouped[gn] = []; grouped[gn].push(it); }
   return <div className="space-y-5">{Object.entries(grouped).map(([gn, group]) => (
-    <div key={gn}><h4 className="text-xs font-semibold text-[#666] mb-2">{gn}</h4>
+    <div key={gn}><h4 className="text-xs font-semibold text-[#475569] mb-2">{gn}</h4>
       {format === "map" ? <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{group.map((it,i) => (
         <div key={(it.metadata?.name as string)+"-"+i} className="card p-3">
           {it.metadata?.imageUrl && <img src={it.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}
-          <div className="font-medium text-xs text-[#333]">{it.metadata?.name as string}</div>
-          <div className="text-[10px] text-[#999]">{it.stats.wins?.displayValue}胜 · {it.stats.losses?.displayValue}负 · {it.stats.matches?.displayValue}场</div>
+          <div className="font-medium text-xs text-[#0f172a]">{it.metadata?.name as string}</div>
+          <div className="text-[10px] text-[#94a3b8]">{it.stats.wins?.displayValue}胜 · {it.stats.losses?.displayValue}负 · {it.stats.matches?.displayValue}场</div>
         </div>
       ))}</div>
       : <div className="space-y-2">{group.map((it,i) => (
         <div key={(it.metadata?.name as string)+"-"+i} className="card p-3 flex items-center gap-3">
-          {image && (it.metadata?.imageUrl ? <img src={it.metadata.imageUrl as string} alt="" className="w-9 h-9 object-contain shrink-0"/> : <div className="w-9 h-9 rounded bg-[#f0f0f0] shrink-0"/>)}
-          <div className="flex-1 min-w-0"><div className="font-semibold text-[#333] text-sm">{it.metadata?.name as string}</div>
-            {fields && <div className="flex gap-3 text-xs">{fields.map(f => <span key={f.k} className="text-[#999]">{f.l} <span className="font-semibold text-[#333]">{it.stats[f.k]?.displayValue}</span></span>)}</div>}
+          {image && it.metadata?.imageUrl && <img src={it.metadata.imageUrl as string} alt="" className="w-9 h-9 object-contain shrink-0"/>}
+          <div className="flex-1 min-w-0"><div className="font-semibold text-[#0f172a] text-sm">{it.metadata?.name as string}</div>
+            {fields && <div className="flex gap-3 text-xs">{fields.map(f => <span key={f.k} className="text-[#94a3b8]">{f.l} <span className="font-semibold text-[#0f172a]">{it.stats[f.k]?.displayValue}</span></span>)}</div>}
           </div>
         </div>
       ))}</div>}
@@ -343,85 +386,149 @@ function buildAggOverview(agg:AggStats):Record<string,{value:number;displayValue
 }
 
 function PctBar({ value, statKey, percentiles }: { value: number; statKey: string; percentiles: Record<string, { p10: number; p20: number; p50: number; p80: number; p90: number; count: number }> }) {
-  const pdata = percentiles[statKey]; const [show, setShow] = useState(false); const hasData = pdata && pdata.count >= 3;
+  const pdata = percentiles[statKey];
+  const hasData = !!pdata && pdata.count >= 3;
   let pct = 50; if (hasData && pdata.p50 > 0) pct = Math.min(100, Math.round((value / pdata.p50) * 50));
-  return <div className="relative" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-    {hasData && <div className="text-[10px] text-[#aaa] mb-0.5">{pct<50?`前${pct}%`:`后${100-pct}%`}</div>}
-    <div className="w-full h-1.5 rounded-full relative cursor-pointer" style={{ background: "linear-gradient(to right, #4ade80, #facc15, #f97316, #ef4444)" }}>
-      <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-[#333] shadow-sm z-10" style={{ left: `calc(${Math.min(Math.max(pct, 1), 99)}% - 5px)`, backgroundColor: `hsl(${Math.max(0, Math.min(120, (100-pct)*1.2))}, 60%, 45%)` }}/>
+  const fmt = (v: number) => Number(v).toLocaleString("en-US");
+  return <div className="pct">
+    {hasData && <div className="cap">{pct < 50 ? `前 ${pct}%` : `后 ${100 - pct}%`}</div>}
+    <div className="rail">
+      {hasData && <span className="knob" style={{ left: `${Math.min(Math.max(pct, 1), 99)}%`, background: `hsl(${Math.max(0, Math.min(120, (100 - pct) * 1.2))},60%,45%)` }} />}
+      {hasData && <div className="tip">
+        <div className="th"><b>分布</b><span>样本 {pdata.count}</span></div>
+        {(["p10","p20","p50","p80","p90"] as const).map(p => { const v = pdata[p]; const w = pdata.p90 > 0 ? Math.min(100, (v / pdata.p90) * 100) : 50;
+          return <div className="row2" key={p}><span className="pk">{p}</span><span className="pb"><i style={{ width: w + "%" }} /></span><span className="pv">{fmt(v)}</span></div>; })}
+        <div className="ft">中位数 <b>{fmt(pdata.p50)}</b></div>
+      </div>}
     </div>
-    {show && hasData && <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#1a1d21] text-white rounded-lg p-4 shadow-2xl z-50 w-72 border border-[#2b2f36]">
-      <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#2b2f36]"><span className="text-sm font-semibold text-[#f97316]">分布</span><span className="text-xs text-[#888]">样本 {pdata.count}</span></div>
-      <div className="space-y-1.5">{["p10","p20","p50","p80","p90"].map(p => { const v = pdata[p as keyof typeof pdata] as number; const barW = pdata.p90>0?Math.min(100,(v/pdata.p90)*100):50; return <div key={p} className="flex items-center gap-2"><span className="text-[11px] text-[#888] w-7">{p.toUpperCase()}</span><div className="flex-1 h-1.5 bg-[#2b2f36] rounded-full relative"><div className="h-full rounded-full bg-[#f97316]/40" style={{width:`${barW}%`}}/></div><span className="text-[11px] text-right w-16 tabular-nums">{v?.toLocaleString?.()||v}</span></div>; })}</div>
-      <div className="mt-3 pt-2 border-t border-[#2b2f36] text-[11px] text-[#888]">中位数 <span className="text-white font-medium">{pdata.p50?.toLocaleString?.()||pdata.p50}</span></div>
-    </div>}
   </div>;
-}
+ }
 
 function OverviewMain({ ov, topW, topV, topK, topM, kits, seasonGm, title }: { ov: Record<string, { value?: number; displayValue?: string }>; topW: Segment[]; topV: Segment[]; topK: Segment[]; topM: Segment[]; kits: Segment[]; seasonGm: Segment[]; title?: string }) {
   const [percentiles, setPercentiles] = useState<Record<string, { p10: number; p20: number; p50: number; p80: number; p90: number; count: number }>>({});
   useEffect(() => { fetch("/api/stats/percentiles").then(r => r.json()).then(setPercentiles).catch(() => {}); }, []);
   const sV = (k: string) => ov[k]?.displayValue || "0"; const nV = (k: string) => ov[k]?.value || 0;
-  const stat = (k: string, l: string) => nV(k) > 0 ? <div key={k} className="card p-3 flex flex-col"><div className="flex justify-between items-baseline mb-1"><span className="text-base font-bold text-[#333]">{sV(k)}</span></div><div className="text-[11px] text-[#999] mb-1">{l}</div><PctBar value={nV(k)} statKey={k} percentiles={percentiles}/></div> : null;
+  const stat = (k: string, l: string) => nV(k) > 0 ? <div key={k} className="dc"><div className="dv">{sV(k)}</div><div className="dl">{l}</div><PctBar value={nV(k)} statKey={k} percentiles={percentiles}/></div> : null;
   const allS = [{k:"kills",l:"击杀"},{k:"deaths",l:"死亡"},{k:"kd",l:"K/D"},{k:"killsPerMinute",l:"KPM"},{k:"scorePerMinute",l:"SPM"},{k:"wl",l:"胜率"},{k:"matchesPlayed",l:"总场次"},{k:"timePlayed",l:"游戏时长"},{k:"score",l:"得分"}];
-  const combS = [{k:"headShots",l:"爆头"},{k:"damageDealt",l:"总伤害"},{k:"headshots",l:"爆头率"},{k:"killAssists",l:"助攻"},{k:"revives",l:"急救"},{k:"repairs",l:"修复"},{k:"wins",l:"胜利"},{k:"losses",l:"战败"}];
+  const extS = [{k:"assists",l:"助攻"},{k:"accuracy",l:"命中率"},{k:"damagePerMinute",l:"DPM"},{k:"damagePerMatch",l:"每场伤害"},{k:"killsPerMatch",l:"每场击杀"},{k:"winPercent",l:"胜率%"},{k:"distanceTraveled",l:"行进距离"},{k:"enemiesSpotted",l:"发现敌人"},{k:"gadgetsDestoyed",l:"拆装置"},{k:"heals",l:"治疗"},{k:"humanKd",l:"真人 K/D"},{k:"humanKills",l:"真人击杀"},{k:"humanKpm",l:"真人 KPM"},{k:"humanPercent",l:"真人击杀率"},{k:"infantryKd",l:"步兵 K/D"},{k:"playerTakeDowns",l:"处决"},{k:"playtimeDriving",l:"驾驶时间"},{k:"playtimeFlying",l:"飞行时间"},{k:"resupplies",l:"补给"},{k:"saviorKills",l:"救星击杀"},{k:"shotsFired",l:"射击数"},{k:"shotsHit",l:"命中数"},{k:"squadmateRevive",l:"小队救人"},{k:"thrownThrowables",l:"投掷物"},{k:"vehiclesDestroyed",l:"载具摧毁"},{k:"xpTotal",l:"总 XP"},{k:"careerPlayerRank",l:"生涯等级"}];
+const combS = [{k:"headShots",l:"爆头"},{k:"damageDealt",l:"总伤害"},{k:"headshotsPercent",l:"爆头率"},{k:"killAssists",l:"击杀助攻"},{k:"revives",l:"急救"},{k:"repairs",l:"修复"},{k:"wins",l:"胜利"},{k:"losses",l:"战败"}];
   return <div className="space-y-6">
-    {title && <h3 className="text-sm font-semibold text-[#666]">{title}</h3>}
+    {title && <h3 className="text-sm font-semibold text-[#475569]">{title}</h3>}
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {topW[0]&&<BestCard label="最佳武器" name={topW[0].metadata?.name as string} img={topW[0].metadata?.imageUrl as string} value={topW[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
       {topV[0]&&<BestCard label="最佳载具" name={topV[0].metadata?.name as string} img={topV[0].metadata?.imageUrl as string} value={topV[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
       {topK[0]&&<BestCard label="最佳兵种" name={topK[0].metadata?.name as string} img={topK[0].metadata?.imageUrl as string} value={topK[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
       {topM[0]&&<BestCard label="最佳模式" name={topM[0].metadata?.name as string} img={topM[0].metadata?.imageUrl as string} value={topM[0].stats.wins?.displayValue||"0"} unit="胜利"/>}
     </div>
-    <h3 className="text-sm font-semibold text-[#666]">生涯</h3>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">{allS.map(s => stat(s.k, s.l))}</div>
-    <h3 className="text-sm font-semibold text-[#666]">战斗</h3>
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{combS.map(s => stat(s.k, s.l))}</div>
-    {topW.length>0&&<><h3 className="text-sm font-semibold text-[#666]">武器概览</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{topW.map(w=><WpCard key={w.metadata?.name as string} w={w}/>)}</div></>}
-    {topV.length>0&&<><h3 className="text-sm font-semibold text-[#666]">载具概览</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{topV.map(v=><VhCard key={v.metadata?.name as string} v={v}/>)}</div></>}
-    {kits.length>0&&<><h3 className="text-sm font-semibold text-[#666]">兵种概览</h3><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{kits.map(k=><KitCard key={k.metadata?.name as string} k={k}/>)}</div></>}
-    {topM.length>0&&<><h3 className="text-sm font-semibold text-[#666]">模式概览</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{topM.map(m=><ModeCard key={m.metadata?.name as string} m={m}/>)}</div></>}
+    <h3 className="section-title">生涯</h3>
+    <div className="dist">{allS.map(s => stat(s.k, s.l))}</div>
+    <h3 className="section-title">战斗</h3>
+    <div className="dist">{combS.map(s => stat(s.k, s.l))}</div>
+    <h3 className="section-title">更多数据</h3>
+    <div className="dist">{extS.map(s => stat(s.k, s.l))}</div>
+    {topW.length>0&&<><h3 className="section-title">武器概览</h3><div className="ogrid c3">{topW.map(w=><WpCard key={w.metadata?.name as string} w={w}/>)}</div></>}
+    {topV.length>0&&<><h3 className="section-title">载具概览</h3><div className="ogrid c3">{topV.map(v=><VhCard key={v.metadata?.name as string} v={v}/>)}</div></>}
+    {kits.length>0&&<><h3 className="section-title">兵种概览</h3><div className="ogrid c4">{kits.map(k=><KitCard key={k.metadata?.name as string} k={k}/>)}</div></>}
+    {topM.length>0&&<><h3 className="section-title">模式概览</h3><div className="ogrid c3">{topM.map(m=><ModeCard key={m.metadata?.name as string} m={m}/>)}</div></>}
     {seasonGm.length>0&&<SeasonBreakdown segments={seasonGm}/>}
   </div>;
 }
 
-function BestCard({ label, name, img, value, unit }: { label: string; name: string; img?: string; value: string; unit: string }) {
-  return <div className="card p-4"><div className="text-[10px] text-[#aaa] mb-1">{label}</div><div className="flex items-center gap-2 mb-2">{img&&<img src={img} alt="" className="w-8 h-8 object-contain"/>}<span className="font-semibold text-[#333] text-sm">{name}</span></div><div className="text-xl font-bold text-[#4c6ef5]">{value}</div><div className="text-[10px] text-[#999]">{unit}</div></div>;
-}
-function WpCard({ w }: { w: Segment }) { return <div className="card p-4 flex items-center gap-3">{w.metadata?.imageUrl&&<img src={w.metadata.imageUrl as string} alt="" className="w-10 h-10 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-[#333] text-sm">{w.metadata?.name as string}</div><div className="text-[10px] text-[#999]">{w.metadata?.category as string}</div></div><div className="text-right"><div className="text-lg font-bold text-[#4c6ef5]">{w.stats.kills?.displayValue}</div><div className="text-[10px] text-[#999]">击杀</div></div></div>; }
-function VhCard({ v }: { v: Segment }) { return <div className="card p-4 flex items-center gap-3">{v.metadata?.imageUrl&&<img src={v.metadata.imageUrl as string} alt="" className="w-10 h-10 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-[#333] text-sm">{v.metadata?.name as string}</div><div className="text-[10px] text-[#999]">{v.metadata?.category as string}</div></div><div className="text-right"><div className="text-lg font-bold text-[#4c6ef5]">{v.stats.kills?.displayValue}</div><div className="text-[10px] text-[#999]">击杀</div></div></div>; }
-function KitCard({ k }: { k: Segment }) { return <div className="card p-4 text-center">{k.metadata?.imageUrl&&<img src={k.metadata.imageUrl as string} alt="" className="w-10 h-10 object-contain mx-auto mb-2"/>}<div className="font-semibold text-[#333] text-sm">{k.metadata?.name as string}</div><div className="text-xl font-bold text-[#4c6ef5] mt-1">{k.stats.kills?.displayValue}</div><div className="text-[10px] text-[#999]">击杀 · K/D {k.stats.kd?.displayValue} · KPM {k.stats.killsPerMinute?.displayValue}</div></div>; }
-function ModeCard({ m }: { m: Segment }) { return <div className="card p-4 flex items-center gap-3">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain shrink-0"/>}<div className="flex-1 min-w-0"><div className="font-semibold text-[#333] text-sm">{m.metadata?.name as string}</div><div className="grid grid-cols-3 gap-x-3 text-xs mt-1"><span><span className="text-[#999]">胜 </span><span className="font-bold text-[#4c6ef5]">{m.stats.wins?.displayValue}</span></span><span><span className="text-[#999]">K/D </span><span className="font-bold">{m.stats.kd?.displayValue||"-"}</span></span><span><span className="text-[#999]">KPM </span><span className="font-bold">{m.stats.kpm?.displayValue||"-"}</span></span></div></div></div>; }
+function BestCard({ label, name, img, value, unit }: { label: string; name: string; img?: string; value: string; unit: string }) { return <div className="ocard">{img && <img className="pic" src={img} alt="" />}<div className="tx"><div className="nm2">{name}</div><div className="cat">{label}</div></div><div className="rt"><div className="v">{value}</div><div className="u">{unit}</div></div></div>; }
+function WpCard({ w }: { w: Segment }) { return <div className="ocard">{w.metadata?.imageUrl && <img className="pic" src={w.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{w.metadata?.name as string}</div><div className="cat">{w.metadata?.category as string}</div></div><div className="rt"><div className="v">{w.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
+function VhCard({ v }: { v: Segment }) { return <div className="ocard">{v.metadata?.imageUrl && <img className="pic" src={v.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{v.metadata?.name as string}</div><div className="cat">{v.metadata?.category as string}</div></div><div className="rt"><div className="v">{v.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
+function KitCard({ k }: { k: Segment }) { return <div className="okit">{k.metadata?.imageUrl && <img className="pic" src={k.metadata.imageUrl as string} alt="" />}<div className="nm2">{k.metadata?.name as string}</div><div className="big">{k.stats.kills?.displayValue}</div><div className="sub">击杀 · K/D {k.stats.kd?.displayValue || "-"} · KPM {k.stats.killsPerMinute?.displayValue || "-"}</div></div>; }
+function ModeCard({ m }: { m: Segment }) { return <div className="omode">{m.metadata?.imageUrl && <img className="pic" src={m.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{m.metadata?.name as string}</div><div className="g3"><div><div className="k">胜</div><div className="v a">{m.stats.wins?.displayValue || 0}</div></div><div><div className="k">K/D</div><div className="v">{m.stats.kd?.displayValue || "-"}</div></div><div><div className="k">KPM</div><div className="v">{m.stats.kpm?.displayValue || "-"}</div></div></div></div></div>; }
 
-function WeaponsDetail({ weapons, cats }: { weapons: Segment[]; cats: Segment[] }) {
-  const sorted = [...weapons].sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-  return <div className="space-y-3">{sorted.map(w => <div key={w.metadata?.name as string} className="card p-4 flex items-center gap-4">{w.metadata?.imageUrl?<img src={w.metadata.imageUrl as string} alt="" className="w-12 h-12 object-contain shrink-0"/>:<div className="w-12 h-12 rounded bg-[#f0f0f0] shrink-0"/>}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="font-semibold text-[#333] text-sm">{w.metadata?.name as string}</span><span className="text-[10px] text-[#aaa]">{w.metadata?.category as string}</span></div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{w.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{w.stats.killsPerMinute?.displayValue}</span></div><div><span className="text-[#999]">ACC </span><span className="font-semibold">{w.stats.accuracy?.displayValue}</span></div><div><span className="text-[#999]">HS% </span><span className="font-semibold">{w.stats.headshots?.displayValue}</span></div><div className="text-[#aaa]">时长 {w.stats.timeEquipped?.displayValue}</div></div></div></div>)}</div>;
+type DetailField = [string, string];
+
+function DetailCard({ seg, category, fields }: { seg: Segment; category?: string; fields: DetailField[] }) {
+  const st = seg.stats as Record<string, { displayValue?: string } | undefined>;
+  const dv = (k: string) => st?.[k]?.displayValue;
+  const shown = fields.map(([k, label]) => [label, dv(k)] as [string, string | undefined]).filter(([, v]) => v !== undefined && v !== "" && v !== "0");
+  return (
+    <div className="omode top">
+      {seg.metadata?.imageUrl && <img className="pic" src={seg.metadata.imageUrl as string} alt="" />}
+      <div className="tx">
+        <div className="nm2">{seg.metadata?.name as string}</div>
+        {category && <div className="cat">{category}</div>}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 mt-3">
+          {shown.map(([label, value]) => (
+            <div key={label}>
+              <div className="text-[11px] text-[#94a3b8]">{label}</div>
+              <div className="stat-number text-[17px] font-bold text-[#0f172a] leading-tight">{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
-function VehiclesDetail({ vehicles, cats }: { vehicles: Segment[]; cats: Segment[] }) {
-  const sorted = [...vehicles].sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-  return <div className="space-y-3">{sorted.map(v => <div key={v.metadata?.name as string} className="card p-4 flex items-center gap-4">{v.metadata?.imageUrl?<img src={v.metadata.imageUrl as string} alt="" className="w-12 h-12 object-contain shrink-0"/>:<div className="w-12 h-12 rounded bg-[#f0f0f0] shrink-0"/>}<div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="font-semibold text-[#333] text-sm">{v.metadata?.name as string}</span><span className="text-[10px] text-[#aaa]">{v.metadata?.category as string}</span></div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{v.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{v.stats.killsPerMinute?.displayValue}</span></div><div><span className="text-[#999]">摧毁 </span><span className="font-semibold">{v.stats.destroyed?.displayValue}</span></div><div><span className="text-[#999]">时长 </span><span className="font-semibold">{v.stats.timeInVehicle?.displayValue}</span></div><div className="text-[#aaa]">行驶 {v.stats.distanceTraveled?.displayValue}</div></div></div></div>)}</div>;
+
+function WeaponsDetail({ weapons }: { weapons: Segment[]; cats?: Segment[] }) {
+  const sorted = [...weapons].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
+  return <div className="space-y-3">{sorted.map(w => (
+    <DetailCard key={w.metadata?.name as string} seg={w} category={w.metadata?.category as string} fields={[
+      ["kills", "击杀"], ["headshotKills", "爆头击杀"], ["headshots", "爆头"], ["accuracy", "命中率"],
+      ["killsPerMinute", "KPM"], ["timeEquipped", "使用时长"], ["damage", "伤害"], ["assistsDamage", "助攻伤害"],
+      ["shotsFired", "射击数"], ["shotsHit", "命中数"], ["bodyKills", "躯干击杀"], ["hipfireKills", "腰射击杀"],
+      ["scopedKills", "瞄镜击杀"], ["multiKills", "多杀"], ["spawns", "使用次数"],
+    ]} />
+  ))}</div>;
+}
+function VehiclesDetail({ vehicles }: { vehicles: Segment[]; cats?: Segment[] }) {
+  const sorted = [...vehicles].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
+  return <div className="space-y-3">{sorted.map(v => (
+    <DetailCard key={v.metadata?.name as string} seg={v} category={v.metadata?.category as string} fields={[
+      ["kills", "击杀"], ["destroyed", "摧毁"], ["damage", "造成伤害"], ["damageTo", "承受伤害"],
+      ["roadKills", "撞击击杀"], ["distanceTraveled", "行驶距离"], ["timeInVehicle", "驾驶时长"], ["timeIn", "载具时长"],
+      ["killsPerMinute", "KPM"], ["spawns", "使用次数"], ["multiKills", "多杀"], ["driverAssists", "驾驶员助攻"],
+      ["passengerAssists", "乘员助攻"], ["assists", "助攻"], ["vehiclesDestroyedWith", "摧毁载具"],
+    ]} />
+  ))}</div>;
 }
 function ClassesDetail({ kits }: { kits: Segment[] }) {
-  return <div className="space-y-3">{kits.map(k => <div key={k.metadata?.name as string} className="card p-5 flex items-center gap-4">{k.metadata?.imageUrl&&<img src={k.metadata.imageUrl as string} alt="" className="w-12 h-12 object-contain shrink-0"/>}<div className="flex-1 min-w-0"><div className="font-semibold text-[#333] text-sm mb-2">{k.metadata?.name as string}</div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{k.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">K/D </span><span className="font-semibold">{k.stats.kd?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{k.stats.killsPerMinute?.displayValue}</span></div><div><span className="text-[#999]">SPM </span><span className="font-semibold">{k.stats.scorePerMinute?.displayValue}</span></div><div className="text-[#aaa]">时长 {k.stats.timePlayed?.displayValue} · 得分 {k.stats.score?.displayValue}</div></div></div></div>)}</div>;
+  const sorted = [...kits].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
+  return <div className="space-y-3">{sorted.map(k => (
+    <DetailCard key={k.metadata?.name as string} seg={k} fields={[
+      ["kills", "击杀"], ["deaths", "死亡"], ["kd", "K/D"], ["killsPerMinute", "KPM"], ["scorePerMinute", "SPM"],
+      ["timePlayed", "时长"], ["score", "得分"], ["assists", "助攻"], ["revives", "救人"], ["spawns", "出场"],
+    ]} />
+  ))}</div>;
 }
 function ModesDetail({ gamemodes }: { gamemodes: Segment[] }) {
-  return <div className="space-y-3">{gamemodes.map((m,i) => <div key={(m.metadata?.name as string)+"-"+i} className="card p-4"><div className="flex items-center gap-2 mb-2">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-6 h-6 object-contain"/>}<span className="font-semibold text-[#333] text-sm">{m.metadata?.name as string}</span></div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">胜利 </span><span className="font-semibold">{m.stats.wins?.displayValue}</span></div><div><span className="text-[#999]">胜率 </span><span className="font-semibold">{m.stats.winPercent?.displayValue}</span></div><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{m.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{m.stats.kpm?.displayValue}</span></div></div></div>)}</div>;
-}
-function MapsDetail({ levels }: { levels: Segment[] }) {
-  return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[#333] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[#999] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
+  return <div className="space-y-3">{gamemodes.map((m, i) => (
+    <DetailCard key={(m.metadata?.name as string) + "-" + i} seg={m} fields={[
+      ["kills", "击杀"], ["deaths", "死亡"], ["kd", "K/D"], ["kpm", "KPM"], ["wins", "胜利"], ["losses", "战败"],
+      ["matches", "场次"], ["winPercent", "胜率"], ["secondsPlayed", "时长"],
+    ]} />
+  ))}</div>;
 }
 function GadgetsDetail({ gadgets }: { gadgets: Segment[] }) {
-  const sorted = [...gadgets].sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-  return <div className="space-y-3">{sorted.map((g,i) => <div key={(g.metadata?.name as string)+"-"+i} className="card p-4 flex items-center gap-4">{g.metadata?.imageUrl?<img src={g.metadata.imageUrl as string} alt="" className="w-10 h-10 object-contain"/>:<div className="w-10 h-10 rounded bg-[#f0f0f0]"/>}<div className="flex-1 min-w-0"><div className="font-semibold text-[#333] text-sm">{g.metadata?.name as string}</div><div className="text-xs text-[#999]">击杀 {g.stats.kills?.displayValue} · KPM {g.stats.killsPerMinute?.displayValue}</div></div></div>)}</div>;
+  const sorted = [...gadgets].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
+  return <div className="space-y-3">{sorted.map((g, i) => (
+    <DetailCard key={(g.metadata?.name as string) + "-" + i} seg={g} category={g.metadata?.category as string} fields={[
+      ["kills", "击杀"], ["damage", "伤害"], ["uses", "使用次数"], ["assists", "助攻"], ["assistsDamage", "助攻伤害"],
+      ["spots", "发现敌人"], ["spotAssists", "索敌助攻"], ["multiKills", "多杀"], ["repairs", "修理"],
+      ["vehiclesDestroyedWith", "摧毁载具"], ["spawns", "部署"], ["timePlayed", "时长"],
+    ]} />
+  ))}</div>;
 }
 function MeleeDetail({ melees }: { melees: Segment[] }) {
-  const sorted = [...melees].sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-  return <div className="space-y-3">{sorted.map((g,i) => <div key={(g.metadata?.name as string)+"-mel-"+i} className="card p-4 flex items-center gap-4"><div className="w-10 h-10 rounded bg-[#f0f0f0] shrink-0 flex items-center justify-center text-lg">🗡</div><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="font-semibold text-[#333] text-sm">{g.metadata?.name as string}</span><span className="text-[10px] text-[#aaa]">{g.metadata?.category as string}</span></div><div className="grid grid-cols-4 gap-x-4 text-xs"><div><span className="text-[#999]">击杀 </span><span className="font-semibold">{g.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">处决 </span><span className="font-semibold">{g.stats.takedowns?.displayValue}</span></div><div><span className="text-[#999]">KPM </span><span className="font-semibold">{g.stats.killsPerMinute?.displayValue}</span></div><div><span className="text-[#999]">使用 </span><span className="font-semibold">{g.stats.uses?.displayValue}</span></div><div className="text-[#aaa]">伤害 {g.stats.damage?.displayValue} · DPM {g.stats.damagePerMinute?.displayValue} · 时长 {g.stats.timeEquipped?.displayValue}</div></div></div></div>)}</div>;
+  const sorted = [...melees].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
+  return <div className="space-y-3">{sorted.map((g, i) => (
+    <DetailCard key={(g.metadata?.name as string) + "-mel-" + i} seg={g} category={g.metadata?.category as string} fields={[
+      ["kills", "击杀"], ["takedowns", "处决"], ["uses", "使用次数"], ["damage", "伤害"],
+      ["killsPerMinute", "KPM"], ["damagePerMinute", "DPM"], ["timeEquipped", "装备时长"],
+    ]} />
+  ))}</div>;
 }
-
+function MapsDetail({ levels }: { levels: Segment[] }) {
+  return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[#0f172a] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[#94a3b8] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
+}
 type GroupItem = { metadata: Segment["metadata"]; stats: Segment["stats"] };
 function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; expanded: string | null; onToggle: (id: string | null) => void }) {
-  if (matches.length === 0) return <p className="text-[#aaa] text-sm">暂无战报</p>;
+  if (matches.length === 0) return <p className="text-[#b6c0cc] text-sm">暂无战报</p>;
   return <div className="space-y-3">{matches.map((m, idx) => {
     const matchData = m as unknown as Record<string, unknown>;
     const mSegments = (matchData.segments || []) as Segment[];
@@ -478,37 +585,84 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
     const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch && mapsPlayed === 0 ? "中途退出"
       : winNum === 0 && lossNum === 0 && mapsPlayed > 0 ? "平局"
       : winNum > lossNum ? "胜利" : lossNum > winNum ? "战败" : "平局";
-    const statusColor = statusLabel === "胜利" ? "#51cf66" : statusLabel === "战败" ? "#ff6b6b" : "#999";
+    const statusColor = statusLabel === "胜利" ? "#0f9b6c" : statusLabel === "战败" ? "#e11d48" : "#94a3b8";
     const ts = (matchData.metadata as Record<string, unknown> | undefined)?.timestamp as string | undefined;
     const timeStr = ts ? new Date(ts).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
-    const isExpanded = expanded === (m.id || String(idx));
-    return <div key={m.id || idx} className="card overflow-hidden">
-      <div className="p-4 cursor-pointer hover:bg-[#fafafa] transition-colors" onClick={() => onToggle(isExpanded ? null : (m.id || String(idx)))}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-bold" style={{color: statusColor}}>{statusLabel}</span>
-            {timeStr && <span className="text-[10px] text-[#999]">{timeStr}</span>}
-            {topMode && <><span className="text-[#ddd]">/</span><span className="text-sm text-[#666]">{topMode.metadata?.name as string}</span></>}
-            {topMap && <><span className="text-[#ddd]">//</span><span className="text-sm text-[#666]">{topMap.metadata?.name as string}</span></>}
+        const isExpanded = expanded === (m.id || String(idx));
+    const deathsNum = _nv((ov?.stats as any)?.deaths);
+    const hsNum = _nv((ov?.stats as any)?.headShots);
+    const secNum = _nv((ov?.stats as any)?.timePlayed);
+    const kdNum = killsNum / Math.max(deathsNum, 1);
+    const kdPct = (killsNum + deathsNum) > 0 ? Math.round(killsNum / (killsNum + deathsNum) * 100) : 0;
+    const kpmNum = secNum > 0 ? killsNum / (secNum / 60) : 0;
+    const spmNum = secNum > 0 ? _nv((ov?.stats as any)?.score) / (secNum / 60) : 0;
+    const hsPct = killsNum > 0 ? Math.round(hsNum / killsNum * 100) : 0;
+    const rowCls = statusLabel === "胜利" ? "win" : statusLabel === "战败" ? "loss" : "draw";
+    const mapImg = (topMap?.metadata?.imageUrl as string) || "";
+    const modeImg = (topMode?.metadata?.imageUrl as string) || "";
+    const modeName = (topMode?.metadata?.name as string) || "";
+    const mapName = (topMap?.metadata?.name as string) || modeName || "—";
+    const nb = "\u00a0";
+    return <article key={m.id || idx} className={"m " + rowCls + (isExpanded ? " open" : "")}>
+      <div className="mhead" onClick={() => onToggle(isExpanded ? null : (m.id || String(idx)))}>
+        <div className="mres"><div className="rt">{statusLabel}</div>{timeStr && <div className="ts">{timeStr}</div>}</div>
+        <div className="mmap">
+          {mapImg && <img className="th" src={mapImg} alt="" />}
+          <div className="mi">
+            <div className="mn">{mapName}</div>
+            <div className="mo">{modeImg && <img src={modeImg} alt="" />}<span>{modeName}</span></div>
           </div>
-          <span className="text-[10px] text-[#aaa] transform transition-transform" style={{transform: isExpanded ? "rotate(180deg)" : ""}}>▼ 展开</span>
+          <div className="mwl">
+            <div className="r"><span className="n w">{winNum}</span><span className="lbl">胜</span></div>
+            <div className="r"><span className="n l">{lossNum}</span><span className="lbl">负</span></div>
+          </div>
+          <span className="mchev" style={{ transform: isExpanded ? "rotate(180deg)" : "" }}>▼</span>
         </div>
-        <div className="grid grid-cols-5 gap-4 text-center mt-3"><div><div className="text-xl font-bold text-[#333]">{kills}</div><div className="text-[10px] text-[#999]">击杀</div></div>{kd&&<div><div className="text-xl font-bold text-[#4c6ef5]">{kd}</div><div className="text-[10px] text-[#999]">K/D</div></div>}{kpm&&<div><div className="text-xl font-bold">{kpm}</div><div className="text-[10px] text-[#999]">KPM</div></div>}{spm&&<div><div className="text-xl font-bold">{spm}</div><div className="text-[10px] text-[#999]">SPM</div></div>}{score&&<div><div className="text-xl font-bold">{score}</div><div className="text-[10px] text-[#999]">得分</div></div>}</div>
-        {mWeapons.filter(w=>_nv(w.stats?.kills)>0).length > 0 && <div className="flex flex-col gap-1 mt-3">{mWeapons.filter(w=>_nv(w.stats?.kills)>0).map(w => <div key={w.metadata?.name as string} className="flex items-center gap-2 text-xs"><div className="flex items-center gap-1.5 min-w-0 flex-1">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain shrink-0"/>}<span className="font-medium truncate">{w.metadata?.name}</span></div><span className="text-[#999] shrink-0">{w.stats?.kills?.displayValue} 击杀{(w.stats as any)?.killsPerMinute?.displayValue && <span className="ml-1.5">| {(w.stats as any).killsPerMinute.displayValue} KPM</span>}{(w.stats as any)?.accuracy?.displayValue && <span className="ml-1.5">| {(w.stats as any).accuracy.displayValue} ACC</span>}{(w.stats as any)?.headshots?.displayValue && <span className="ml-1.5">| {(w.stats as any).headshots.displayValue} HS</span>}</span></div>)}</div>}
       </div>
-        {isExpanded && <div className="border-t border-[#e8e8e8] p-5 bg-[#fafafa] space-y-5">
-          {ov && <div><h4 className="text-xs font-semibold text-[#666] mb-2">概览</h4><div className="grid grid-cols-3 sm:grid-cols-5 gap-4">{(["kills","deaths","kd","killsPerMinute","scorePerMinute","score","wins","losses","timePlayed"] as const).filter(k=>(ov.stats as any)?.[k]).map(k => <div key={k} className="text-center"><div className="text-lg font-bold">{(ov.stats as any)[k].displayValue}</div><div className="text-[10px] text-[#999]">{k==="kills"?"击杀":k==="deaths"?"死亡":k==="kd"?"K/D":k==="killsPerMinute"?"KPM":k==="scorePerMinute"?"SPM":k==="score"?"得分":k==="wins"?"胜利":k==="losses"?"战败":"时长"}</div></div>)}</div></div>}
-          {mModes.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2">模式</h4>{mModes.map(m=><div key={m.metadata?.name as string} className="flex items-center gap-3 text-xs mb-1.5">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-5 h-5 object-contain"/>}<span className="font-medium w-24">{m.metadata?.name}</span><span className="text-[#999]">{(() => { const s = m.stats as any; const k = _nv(s?.kills); const d = _nv(s?.deaths); const sec = _nv(s?.secondsPlayed); const kd = s?.kd?.displayValue || s?.killDeath?.displayValue || (d > 0 && k > 0 ? (k / d).toFixed(2) : null); const kpm = s?.killsPerMinute?.displayValue || s?.kpm?.displayValue || (sec > 0 && k > 0 ? (k / (sec / 60)).toFixed(2) : null); const tp = s?.timePlayed?.displayValue; return <>{s?.kills?.displayValue||"?"} 击杀{d > 0 && <> · {d} 死亡</>}{kd && <> · K/D {kd}</>}{kpm && <> · KPM {kpm}</>} · {s?.wins?.displayValue||"0"} 胜 · {s?.losses?.displayValue||"0"} 负{(tp || sec > 0) && <> · 时长 {tp || fmtDuration(sec)}</>}</>; })()}</span></div>)}</>}
-          {mMaps.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">地图</h4><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{mMaps.map(m=><div key={m.metadata?.name as string} className="card p-2 text-xs">{m.metadata?.imageUrl && <img src={m.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}<div className="font-medium">{m.metadata?.name}</div><div className="text-[#999]">{(m.stats as any)?.wins?.displayValue||"0"}胜 · {(m.stats as any)?.losses?.displayValue||"0"}负 · {(m.stats as any)?.matchesPlayed?.displayValue||"?"}场</div></div>)}</div></>}
-          {mKits.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">兵种</h4><div className="grid grid-cols-2 gap-2">{mKits.map(k=><div key={k.metadata?.name as string} className="card p-3 flex items-center gap-3">{k.metadata?.imageUrl && <img src={k.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div className="flex-1 min-w-0"><div className="font-medium text-sm">{k.metadata?.name}</div><div className="text-[10px] text-[#999] mt-0.5">击杀 {k.stats?.kills?.displayValue} · 死亡 {(k.stats as any)?.deaths?.displayValue} · K/D {(k.stats as any)?.kd?.displayValue} · KPM {(k.stats as any)?.killsPerMinute?.displayValue} · SPM {(k.stats as any)?.scorePerMinute?.displayValue}</div></div></div>)}</div></>}
-          {mWeapons.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">武器</h4>{mWeapons.map(w=><div key={w.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{w.metadata?.imageUrl && <img src={w.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{w.metadata?.name}</div><div className="text-[10px] text-[#999]">{w.stats?.kills?.displayValue} 击杀 · {(w.stats as any)?.killsPerMinute?.displayValue} KPM · {(w.stats as any)?.accuracy?.displayValue} ACC · {(w.stats as any)?.headshots?.displayValue} HS</div></div></div>)}</>}
-          {mVehicles.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">载具</h4>{mVehicles.map(v=><div key={v.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2">{v.metadata?.imageUrl && <img src={v.metadata.imageUrl as string} alt="" className="w-8 h-8 object-contain"/>}<div><div className="font-medium text-sm">{v.metadata?.name}</div><div className="text-[10px] text-[#999]">{v.stats?.kills?.displayValue} 击杀 · {(v.stats as any)?.killsPerMinute?.displayValue} KPM · 时长 {(v.stats as any)?.timeInVehicle?.displayValue || (v.stats as any)?.timeIn?.displayValue}{(v.stats as any)?.destroyed?.displayValue&&<span> · 摧毁 {(v.stats as any).destroyed.displayValue}</span>}</div></div></div>)}</>}
-          {mGadgets.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">装备</h4><div className="grid grid-cols-2 gap-2">{mGadgets.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-1">{g.metadata?.imageUrl?<img src={g.metadata.imageUrl as string} alt="" className="w-6 h-6 object-contain"/>:<div className="w-6 h-6 rounded bg-[#f0f0f0]"/>}<div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats?.kills?.displayValue} 击杀{(g.stats as any)?.killsPerMinute?.displayValue&&<span> · {(g.stats as any).killsPerMinute.displayValue} KPM</span>}</div></div></div>)}</div></>}
-          {mMelee.length>0 && <><h4 className="text-xs font-semibold text-[#666] mb-2 mt-3">近战</h4>{mMelee.map(g=><div key={g.metadata?.name as string} className="card p-3 flex items-center gap-3 mb-2"><div className="w-6 h-6 rounded bg-[#f0f0f0] shrink-0"></div><div><div className="font-medium text-sm">{g.metadata?.name}</div><div className="text-[10px] text-[#999]">{g.stats?.kills?.displayValue} 击杀 · {(g.stats as any)?.takedowns?.displayValue} 处决 · KPM {(g.stats as any)?.killsPerMinute?.displayValue}</div></div></div>)}</>}
-        </div>}
-    </div>;
+      <div className="mstats">
+        <div className="msrow"><div className="v a">{kills}</div><div className="l">击杀</div><div className="sub">{nb}</div></div>
+        <div className="msrow"><div className="v">{deathsNum}</div><div className="l">死亡</div><div className="sub">{nb}</div></div>
+        <div className="msrow"><div className={"v " + (kdNum >= 1 ? "g" : "b")}>{kdNum.toFixed(2)}</div><div className="l">K/D</div>
+          <div className="sub" style={{ minHeight: 0 }}><div className="kdbar">
+            <div className="track2" style={{ ["--p" as string]: kdPct + "%" } as React.CSSProperties} />
+            <div className="kdpct"><span style={{ color: "#0f9b6c" }}>{kdPct}%</span><span style={{ color: "#e11d48" }}>{100 - kdPct}%</span></div>
+          </div></div></div>
+        <div className="msrow"><div className="v">{kpmNum.toFixed(2)}</div><div className="l">KPM</div><div className="sub">{nb}</div></div>
+        <div className="msrow"><div className="v sm">{score || "0"}</div><div className="l">得分</div><div className="sub">{spmNum.toFixed(0)} SPM</div></div>
+        <div className="msrow"><div className="v">{hsNum}</div><div className="l">爆头</div><div className="sub">{hsPct}%</div></div>
+        <div className="msrow"><div className="v sm">{fmtDuration(secNum)}</div><div className="l">时长</div><div className="sub">{nb}</div></div>
+      </div>
+      {isExpanded && <div className="mbody"><div className="cols">
+        <section className="sect"><div className="sec-t">本局概览</div><div className="brief">
+          {([["得分", String(score || "0"), "a"], ["SPM", spmNum.toFixed(0), ""], ["KPM", kpmNum.toFixed(2), ""], ["时长", fmtDuration(secNum), ""],
+             ["爆头", String(hsNum), ""], ["爆头率", hsPct + "%", ""], ["K/D", kdNum.toFixed(2), kdNum >= 1 ? "g" : "b"], ["击杀 / 死亡", killsNum + " / " + deathsNum, ""]] as [string, string, string][])
+            .map(([l, v, c]) => <div className="bc2" key={l}><div className="bl">{l}</div><div className={"bv " + c}>{v}</div></div>)}
+        </div></section>
+        {mModes.length > 0 && <section className="sect"><div className="sec-t">模式明细</div>
+          {mModes.map(md => <div key={md.metadata?.name as string} className="mrow">
+            <div className="top">{md.metadata?.imageUrl && <img src={md.metadata.imageUrl as string} alt="" />}<span className="nm">{md.metadata?.name}</span><span className="kk">{md.stats?.kills?.displayValue}</span><span style={{ fontSize: 12, color: "#94a3b8" }}>击杀</span></div>
+            <div className="meta"><span>死亡 <b>{md.stats?.deaths?.displayValue || 0}</b></span><span>K/D <b>{(md.stats as any)?.kd?.displayValue || "-"}</b></span><span>KPM <b>{(md.stats as any)?.kpm?.displayValue || "-"}</b></span></div>
+          </div>)}</section>}
+        {mKits.length > 0 && <section className="sect"><div className="sec-t">兵种</div><div className="chips">
+          {mKits.map(k => <span key={k.metadata?.name as string} className="chip"><span className="nm">{k.metadata?.name}</span><b>{k.stats?.kills?.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>杀</span>{k.stats?.deaths && <><b style={{ color: "#e11d48" }}>{k.stats.deaths.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>死</span></>}</span>)}
+        </div></section>}
+        {mWeapons.length > 0 && <section className="sect"><div className="sec-t">武器</div>
+          {mWeapons.map(w => <div key={w.metadata?.name as string} className="row">{w.metadata?.imageUrl && <img className="ic" src={w.metadata.imageUrl as string} alt="" />}<span className="nm">{w.metadata?.name}</span><span className="val"><b>{w.stats?.kills?.displayValue}</b> 击杀{w.stats?.killsPerMinute?.displayValue && <> <span className="mut">·</span> {w.stats.killsPerMinute.displayValue} KPM</>}</span></div>)}
+        </section>}
+        {mVehicles.length > 0 && <section className="sect"><div className="sec-t">载具</div>
+          {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{v.metadata?.imageUrl && <img className="ic" src={v.metadata.imageUrl as string} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val"><b>{v.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+        </section>}
+        {mGadgets.length > 0 && <section className="sect"><div className="sec-t">装备</div>
+          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{g.metadata?.imageUrl && <img className="ic" src={g.metadata.imageUrl as string} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+        </section>}
+        {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
+          {mMelee.map(g => <div key={g.metadata?.name as string} className="row"><span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+        </section>}
+      </div></div>}
+    </article>;
   })}</div>;
 }
+
 const _nv = (s: Segment["stats"][keyof Segment["stats"]] | undefined): number => (s as any)?.value || 0;
 
 const fmtDuration = (s: number): string => {
@@ -522,43 +676,54 @@ const fmtDuration = (s: number): string => {
 function SeasonBreakdown({ segments }: { segments: Segment[] }) {
   const grouped: Record<string, Record<string, Segment[]>> = {};
   for (const s of segments) { const season = (s.attributes?.season as string) || "其他"; const cat = (s.attributes?.category as string) || "其他"; if (!grouped[season]) grouped[season] = {}; if (!grouped[season][cat]) grouped[season][cat] = []; grouped[season][cat].push(s); }
-  return <div className="space-y-6"><h3 className="text-sm font-semibold text-[#666]">赛季统计</h3>
+  return <div className="space-y-8">
+    <h3 className="section-title">赛季统计</h3>
     {Object.entries(grouped).sort(([a],[b])=>b.localeCompare(a)).map(([season,cats])=>(
-      <div key={season}><h4 className="text-sm font-semibold text-[#333] mb-3">{season}</h4>{Object.entries(cats).map(([cat,items])=>(
-        <div key={cat} className="mb-4"><h5 className="text-xs font-medium text-[#888] mb-2 ml-1">{cat}</h5>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{items.map(g=>(
-            <div key={g.attributes?.key as string||g.metadata?.name as string} className="card p-4">
-              <div className="flex items-center gap-2 mb-2">{g.metadata?.imageUrl && <img src={g.metadata.imageUrl as string} alt="" className="w-6 h-6 object-contain"/>}<span className="font-semibold text-[#333] text-sm">{g.metadata?.name as string}</span></div>
-              <div className="grid grid-cols-3 gap-y-1 text-xs">
-                <div><span className="text-[#999]">击杀 </span><span className="font-semibold">{g.stats.kills?.displayValue}</span></div><div><span className="text-[#999]">K/D </span><span className="font-semibold">{g.stats.kd?.displayValue}</span></div>
-                <div><span className="text-[#999]">KPM </span><span className="font-semibold">{g.stats.kpm?.displayValue}</span></div><div><span className="text-[#999]">胜 </span><span className="font-semibold">{g.stats.wins?.displayValue}</span></div>
-                <div><span className="text-[#999]">胜率 </span><span className="font-semibold">{g.stats.winPercent?.displayValue}</span></div><div><span className="text-[#999]">时长 </span><span className="font-semibold">{g.stats.timePlayed?.displayValue}</span></div>
-              </div>
+      <div key={season}>
+        <h4 className="text-sm font-semibold text-[#0f172a] mb-3">{season}</h4>
+        {Object.entries(cats).map(([cat,items])=>(
+          <div key={cat} className="mb-5">
+            <h5 className="text-[11px] font-medium text-[#94a3b8] tracking-[1.6px] mb-3">{cat}</h5>
+            <div className="ogrid c3">
+              {items.map(g=>(
+                <div key={(g.attributes?.key as string) || (g.metadata?.name as string)} className="omode">
+                  {g.metadata?.imageUrl && <img className="pic" src={g.metadata.imageUrl as string} alt="" />}
+                  <div className="tx">
+                    <div className="nm2">{g.metadata?.name as string}</div>
+                    <div className="g3">
+                      <div><div className="k">击杀</div><div className="v a">{g.stats.kills?.displayValue || 0}</div></div>
+                      <div><div className="k">K/D</div><div className="v">{g.stats.kd?.displayValue || "-"}</div></div>
+                      <div><div className="k">KPM</div><div className="v">{g.stats.kpm?.displayValue || "-"}</div></div>
+                    </div>
+                    <div className="meta"><span>胜 <b>{g.stats.wins?.displayValue || 0}</b></span><span>胜率 <b>{g.stats.winPercent?.displayValue || "-"}</b></span><span>时长 <b>{g.stats.timePlayed?.displayValue || "-"}</b></span></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}</div>
-        </div>
-      ))}</div>
+          </div>
+        ))}
+      </div>
     ))}
   </div>;
-}
+ }
 
 function MarksDetail({ suspicion, markingTypes, setMarkingTypes, onSubmit, loading }: { suspicion: SuspicionSummary | null; markingTypes: SuspicionType[]; setMarkingTypes: (v: SuspicionType[]) => void; onSubmit: () => void; loading: boolean }) {
-  if (!suspicion) return <p className="text-[#aaa] text-sm">加载中...</p>;
+  if (!suspicion) return <p className="text-[#b6c0cc] text-sm">加载中...</p>;
   const toggle = (type: SuspicionType) => { if (markingTypes.includes(type)) setMarkingTypes(markingTypes.filter(x=>x!==type)); else setMarkingTypes([...markingTypes,type]); };
   return <div className="space-y-4">
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#4c6ef5]">{suspicion.totalReports}</div><div className="text-[11px] text-[#999]">总举报数</div></div>
-      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#4c6ef5]">{suspicion.uniqueReporters}</div><div className="text-[11px] text-[#999]">独立举报者</div></div>
-      {CREDIBILITY_LEVELS.map(c => { const n = suspicion.credibilityBreakdown?.[c.id]||0; if (n===0) return null; return <div key={c.id} className="card p-4 text-center" style={{borderTop:`2px solid ${c.color}`}}><div className="text-lg font-bold" style={{color:c.color}}>{n}</div><div className="text-[11px] text-[#999]">{c.labelZh}</div></div>; })}
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#e8590c]">{suspicion.totalReports}</div><div className="text-[11px] text-[#94a3b8]">总举报数</div></div>
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#e8590c]">{suspicion.uniqueReporters}</div><div className="text-[11px] text-[#94a3b8]">独立举报者</div></div>
+      {CREDIBILITY_LEVELS.map(c => { const n = suspicion.credibilityBreakdown?.[c.id]||0; if (n===0) return null; return <div key={c.id} className="card p-4 text-center" style={{borderTop:`2px solid ${c.color}`}}><div className="text-lg font-bold" style={{color:c.color}}>{n}</div><div className="text-[11px] text-[#94a3b8]">{c.labelZh}</div></div>; })}
     </div>
-    <div className="card p-5"><h3 className="font-semibold text-[#333] mb-2">社区标记</h3><p className="text-xs text-[#888] mb-4">通过举报可疑行为来维护健康的游戏环境。</p>
-      {suspicion.viewerMarkedToday ? <div className="bg-[#edf2ff] border border-[#bac8ff] rounded p-3 text-xs text-[#4c6ef5]">你今天已标记过该玩家。</div> : <>
-        <p className="text-xs text-[#888] mb-3">请选择至少一个类别：</p>
+    <div className="card p-5"><h3 className="font-semibold text-[#0f172a] mb-2">社区标记</h3><p className="text-xs text-[#94a3b8] mb-4">通过举报可疑行为来维护健康的游戏环境。</p>
+      {suspicion.viewerMarkedToday ? <div className="bg-[#edf2ff] border border-[#bac8ff] rounded p-3 text-xs text-[#e8590c]">你今天已标记过该玩家。</div> : <>
+        <p className="text-xs text-[#94a3b8] mb-3">请选择至少一个类别：</p>
         <div className="flex flex-wrap gap-2 mb-4">{SUSPICION_TYPES.map(st => <button key={st.id} onClick={()=>toggle(st.id)} className={`pill-tag cursor-pointer text-[11px] px-3 py-1.5 ${markingTypes.includes(st.id)?"ring-2 ring-offset-1":"opacity-75 hover:opacity-100"}`} style={{backgroundColor:st.color}}>{st.label}</button>)}</div>
         <button onClick={onSubmit} disabled={markingTypes.length===0||loading} className="btn-primary text-xs">{loading?"...":"提交举报"}</button>
       </>}
     </div>
-    {suspicion.typeBreakdown && <div className="card p-5"><h3 className="font-semibold text-[#333] mb-3 text-sm">分类统计</h3><div className="space-y-2">{SUSPICION_TYPES.map(st=>{const c=suspicion.typeBreakdown[st.id]||0;const mx=Math.max(...Object.values(suspicion.typeBreakdown),1);return <div key={st.id} className="flex items-center gap-3 text-xs"><span className="w-16 text-[#666]">{st.label}</span><div className="flex-1 bg-[#f0f0f0] rounded-full h-2 overflow-hidden"><div className="h-full rounded-full" style={{width:`${(c/mx)*100}%`,backgroundColor:st.color}}/></div><span className="w-6 text-right tabular-nums text-[#999]">{c}</span></div>;})}</div></div>}
+    {suspicion.typeBreakdown && <div className="card p-5"><h3 className="font-semibold text-[#0f172a] mb-3 text-sm">分类统计</h3><div className="space-y-2">{SUSPICION_TYPES.map(st=>{const c=suspicion.typeBreakdown[st.id]||0;const mx=Math.max(...Object.values(suspicion.typeBreakdown),1);return <div key={st.id} className="flex items-center gap-3 text-xs"><span className="w-16 text-[#475569]">{st.label}</span><div className="flex-1 bg-[#f1f5f9] rounded-full h-2 overflow-hidden"><div className="h-full rounded-full" style={{width:`${(c/mx)*100}%`,backgroundColor:st.color}}/></div><span className="w-6 text-right tabular-nums text-[#94a3b8]">{c}</span></div>;})}</div></div>}
   </div>;
 }
 

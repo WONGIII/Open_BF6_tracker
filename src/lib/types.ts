@@ -86,14 +86,14 @@ export interface SponsorInfo {
 export const SPONSOR_LEVELS: Record<SponsorLevel, SponsorInfo> = {
   owner: {
     level: "owner",
-    color: "#ff6b6b",
+    color: "#e11d48",
     cssClass: "sponsor-owner",
     badge: "&#9733;",
     label: "Site Owner",
   },
   contributor: {
     level: "contributor",
-    color: "#748ffc",
+    color: "#f59e0b",
     cssClass: "sponsor-contributor",
     badge: "&#9824;",
     label: "Contributor",
@@ -114,7 +114,7 @@ export const SPONSOR_LEVELS: Record<SponsorLevel, SponsorInfo> = {
   },
   tier3: {
     level: "tier3",
-    color: "#4c6ef5",
+    color: "#e8590c",
     cssClass: "sponsor-tier3",
     badge: "",
     label: "Sponsor Tier 3",
@@ -152,7 +152,7 @@ export type CredibilityLevel = "confirmed" | "hack_sus" | "community";
 export const CREDIBILITY_LEVELS: { id: CredibilityLevel; label: string; labelZh: string; color: string; bg: string }[] = [
   { id: "confirmed", label: "Confirmed", labelZh: "实锤", color: "#e03131", bg: "#fff5f5" },
   { id: "hack_sus", label: "Hack Sus", labelZh: "可疑", color: "#f08c00", bg: "#fff9db" },
-  { id: "community", label: "Community", labelZh: "社区", color: "#495057", bg: "#f8f9fa" },
+  { id: "community", label: "Community", labelZh: "社区", color: "#495057", bg: "#f8fafc" },
 ];
 
 // ============================================================
