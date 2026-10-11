@@ -54,13 +54,13 @@ export default function StatusPage() {
   const allHealthy = Object.values(services).every((s) => s === "healthy");
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#eef1f5]">
+    <div className="min-h-[calc(100vh-56px)] bg-[color:var(--bg)]">
       <div className="max-w-[640px] mx-auto px-4 py-10">
-        <h1 className="text-xl font-bold text-[#0f172a] mb-2">{t("status.title")}</h1>
+        <h1 className="text-xl font-bold text-[color:var(--ink)] mb-2">{t("status.title")}</h1>
 
         {allHealthy && !loading ? (
-          <div className="flex items-center gap-2 text-[#0f9b6c] mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#0f9b6c] animate-pulse-slow" />
+          <div className="flex items-center gap-2 text-[color:var(--good)] mb-6">
+            <span className="w-2 h-2 rounded-full bg-[color:var(--good)] animate-pulse-slow" />
             <span className="text-xs font-medium">{t("status.allHealthy")}</span>
           </div>
         ) : (
@@ -70,11 +70,11 @@ export default function StatusPage() {
         <div className="space-y-3 mb-6">
           {serviceGroups.map((group) => (
             <div key={group.label} className="card p-4">
-              <h3 className="text-[11px] font-semibold text-[#b6c0cc] uppercase tracking-wider mb-3">{group.label}</h3>
+              <h3 className="text-[11px] font-semibold text-[color:var(--ink3)] uppercase tracking-wider mb-3">{group.label}</h3>
               <div className="space-y-2.5">
                 {group.items.map((item) => (
                   <div key={item.key} className="flex items-center justify-between">
-                    <span className="text-xs text-[#475569]">{item.name}</span>
+                    <span className="text-xs text-[color:var(--ink2)]">{item.name}</span>
                     <StatusBadge status={services[item.key]} t={t} />
                   </div>
                 ))}
@@ -91,12 +91,12 @@ export default function StatusPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="card p-4 text-center">
-            <div className="text-xl font-bold text-[#e8590c]">{counts.playersTracked.toLocaleString()}</div>
-            <div className="text-[11px] text-[#94a3b8] mt-0.5">{t("home.stats.trackedPlayers")}</div>
+            <div className="text-xl font-bold text-[color:var(--acc)]">{counts.playersTracked.toLocaleString()}</div>
+            <div className="text-[11px] text-[color:var(--ink3)] mt-0.5">{t("home.stats.trackedPlayers")}</div>
           </div>
           <div className="card p-4 text-center">
-            <div className="text-xl font-bold text-[#e8590c]">{counts.matchesTracked.toLocaleString()}</div>
-            <div className="text-[11px] text-[#94a3b8] mt-0.5">{t("home.stats.matchesRecorded")}</div>
+            <div className="text-xl font-bold text-[color:var(--acc)]">{counts.matchesTracked.toLocaleString()}</div>
+            <div className="text-[11px] text-[color:var(--ink3)] mt-0.5">{t("home.stats.matchesRecorded")}</div>
           </div>
         </div>
       </div>

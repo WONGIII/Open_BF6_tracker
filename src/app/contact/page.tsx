@@ -12,8 +12,8 @@ export default function ContactPage() {
 
   if (!user) return (
     <div className="max-w-[480px] mx-auto px-4 py-16 text-center">
-      <h1 className="text-xl font-bold text-[#0f172a] mb-2">需要登录</h1>
-      <p className="text-[#94a3b8] text-sm mb-6">请先<a href="/my" className="text-[#e8590c]">登录或注册</a>后再使用联系我们。</p>
+      <h1 className="text-xl font-bold text-[color:var(--ink)] mb-2">需要登录</h1>
+      <p className="text-[color:var(--ink3)] text-sm mb-6">请先<a href="/my" className="text-[color:var(--acc)]">登录或注册</a>后再使用联系我们。</p>
     </div>
   );
 
@@ -27,16 +27,16 @@ export default function ContactPage() {
     setBusy(false);
   };
 
-  if (sent) return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h1 className="text-xl font-bold text-[#0f172a] mb-2">已发送</h1><p className="text-[#94a3b8] text-sm">感谢你的留言，我们会尽快回复。</p></div>;
+  if (sent) return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h1 className="text-xl font-bold text-[color:var(--ink)] mb-2">已发送</h1><p className="text-[color:var(--ink3)] text-sm">感谢你的留言，我们会尽快回复。</p></div>;
 
   return (
     <div className="max-w-[480px] mx-auto px-4 py-16">
-      <h1 className="text-xl font-bold text-[#0f172a] mb-1">联系我们</h1>
-      <p className="text-xs text-[#94a3b8] mb-6">问题反馈 / 申请主播认证 / 赞助</p>
+      <h1 className="text-xl font-bold text-[color:var(--ink)] mb-1">联系我们</h1>
+      <p className="text-xs text-[color:var(--ink3)] mb-6">问题反馈 / 申请主播认证 / 赞助</p>
       <form onSubmit={submit} className="card p-5 space-y-4">
-        <div><label className="text-xs text-[#94a3b8] mb-1 block">邮箱</label><input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required/></div>
-        <div><label className="text-xs text-[#94a3b8] mb-1 block">内容</label><textarea className="input min-h-[120px]" value={message} onChange={e=>setMessage(e.target.value)} placeholder="请描述你遇到的问题或需求..." required/></div>
-        {error && <p className="text-xs text-[#e11d48]">{error}</p>}
+        <div><label className="text-xs text-[color:var(--ink3)] mb-1 block">邮箱</label><input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required/></div>
+        <div><label className="text-xs text-[color:var(--ink3)] mb-1 block">内容</label><textarea className="input min-h-[120px]" value={message} onChange={e=>setMessage(e.target.value)} placeholder="请描述你遇到的问题或需求..." required/></div>
+        {error && <p className="text-xs text-[color:var(--bad)]">{error}</p>}
         <button type="submit" disabled={busy} className="btn-primary w-full">{busy?"...":"发送"}</button>
       </form>
     </div>

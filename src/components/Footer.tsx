@@ -15,22 +15,22 @@ export default function Footer() {
       <footer className="mt-auto" suppressHydrationWarning>
         <div className="max-w-[1320px] mx-auto px-6 pt-9 pb-7">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-5">
-            <div className="text-[13.5px] text-[#94a3b8] leading-8">
-              <span className="font-medium text-[#475569]">{mounted ? t("site.title") : "BF6 Tracker"}</span>{" "}
+            <div className="text-[13.5px] text-[color:var(--ink3)] leading-8">
+              <span className="font-medium text-[color:var(--ink2)]">{mounted ? t("site.title") : "BF6 Tracker"}</span>{" "}
               <span>{APP_VERSION}</span><br />
               Powered by <a href="https://xnnserver.dpdns.org/" target="_blank" rel="noopener" className="text-[#2563eb] hover:underline">WANG</a><br />
               <span className="text-[12.5px]">数据来源 api.gametools.network · 本站为社区非官方项目</span>
             </div>
-            <div className="flex flex-wrap items-center gap-5 text-[13.5px] text-[#475569]">
-              <Link href="/privacy" className="hover:text-[#e8590c]">隐私政策</Link>
-              <Link href="/cookies" className="hover:text-[#e8590c]">Cookie 政策</Link>
-              <Link href="/donate" className="hover:text-[#e8590c]">赞助</Link>
-              <Link href="/contact" className="hover:text-[#e8590c]">联系我们</Link>
-              <a href="https://github.com/WONGIII/Open_BF6_tracker" target="_blank" rel="noopener" className="hover:text-[#e8590c] flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-5 text-[13.5px] text-[color:var(--ink2)]">
+              <Link href="/privacy" className="hover:text-[color:var(--acc)]">隐私政策</Link>
+              <Link href="/cookies" className="hover:text-[color:var(--acc)]">Cookie 政策</Link>
+              <Link href="/donate" className="hover:text-[color:var(--acc)]">赞助</Link>
+              <Link href="/contact" className="hover:text-[color:var(--acc)]">联系我们</Link>
+              <a href="https://github.com/WONGIII/Open_BF6_tracker" target="_blank" rel="noopener" className="hover:text-[color:var(--acc)] flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 GitHub
               </a>
-              <button onClick={() => setShowSponsorInfo(true)} className="hover:text-[#e8590c]">玩家名字颜色说明</button>
+              <button onClick={() => setShowSponsorInfo(true)} className="hover:text-[color:var(--acc)]">玩家名字颜色说明</button>
             </div>
           </div>
 
@@ -41,22 +41,22 @@ export default function Footer() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowSponsorInfo(false)}>
           <div className="card p-6 max-w-md mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-[#0f172a]">玩家名字颜色说明</h3>
-              <button onClick={() => setShowSponsorInfo(false)} className="text-[#b6c0cc] hover:text-[#0f172a] text-lg leading-none">&times;</button>
+              <h3 className="font-semibold text-[color:var(--ink)]">玩家名字颜色说明</h3>
+              <button onClick={() => setShowSponsorInfo(false)} className="text-[color:var(--ink3)] hover:text-[color:var(--ink)] text-lg leading-none">&times;</button>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3"><span className="sponsor-name-owner text-xl">WANGIII1I1</span><span className="text-[#475569]">站长</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">网站拥有者</p>
-              <div className="flex items-center gap-3"><span className="sponsor-name-tier1 text-xl">WANGIII1I1</span><span className="text-[#475569]">Tier 1 (¥999+)</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">最高等级赞助者</p>
-              <div className="flex items-center gap-3"><span className="sponsor-name-tier2 text-xl">WANGIII1I1</span><span className="text-[#475569]">Tier 2 (¥199+)</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">高级赞助者</p>
-              <div className="flex items-center gap-3"><span className="sponsor-name-tier3 text-xl">WANGIII1I1</span><span className="text-[#475569]">Tier 3 (¥19.99+)</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">中级赞助者</p>
-              <div className="flex items-center gap-3"><span className="sponsor-name-tier4 text-xl">WANGIII1I1</span><span className="text-[#475569]">Tier 4 (¥5+)</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">入门赞助者</p>
-              <div className="flex items-center gap-3"><span className="sponsor-name-contributor text-xl">WANGIII1I1</span><span className="text-[#475569]">协助者</span></div>
-              <p className="text-[#b6c0cc] text-xs ml-7">网站开发协助者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-owner text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">站长</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">网站拥有者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-tier1 text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">Tier 1 (¥999+)</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">最高等级赞助者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-tier2 text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">Tier 2 (¥199+)</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">高级赞助者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-tier3 text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">Tier 3 (¥19.99+)</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">中级赞助者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-tier4 text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">Tier 4 (¥5+)</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">入门赞助者</p>
+              <div className="flex items-center gap-3"><span className="sponsor-name-contributor text-xl">WANGIII1I1</span><span className="text-[color:var(--ink2)]">协助者</span></div>
+              <p className="text-[color:var(--ink3)] text-xs ml-7">网站开发协助者</p>
             </div>
             <button onClick={() => setShowSponsorInfo(false)} className="btn-outline w-full mt-5 text-sm py-2">关闭</button>
           </div>

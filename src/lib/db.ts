@@ -84,6 +84,11 @@ function _migrate(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_alias_lower ON player_aliases(alias_lower);
 
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS tracked_count_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       calculated_at TEXT NOT NULL,
@@ -244,6 +249,21 @@ export function touchSearchTimestamp(platformUserIdentifier: string): void {
   const db = getDb();
   db.prepare("UPDATE profiles SET last_searched_at = ? WHERE platform_user_identifier = ?")
     .run(new Date().toISOString(), platformUserIdentifier);
+}
+
+/* ==================== 站点设置（键值表） ==================== */
+
+/** 读取一个设置项，不存在返回 fallback */
+export function getSetting(key: string, fallback = ""): string {
+  const db = getDb();
+  const row = db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
+  return row?.value ?? fallback;
+}
+
+/** 写入一个设置项 */
+export function setSetting(key: string, value: string): void {
+  const db = getDb();
+  db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").run(key, value);
 }
 
 /** 记录一个别名（同名重复记录只刷新时间，不覆盖首次来源） */

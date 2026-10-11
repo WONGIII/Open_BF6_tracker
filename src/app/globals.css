@@ -30,8 +30,8 @@
 
 @layer base {
   body {
-    background-color: #eef1f5;
-    color: #0f172a;
+    background-color: var(--bg);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
     font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
@@ -48,10 +48,10 @@
 
 @layer components {
   .card {
-    background: #fff;
-    border: 1px solid rgba(15,23,42,.14);
+    background: var(--surface);
+    border: 1px solid var(--line2);
     border-radius: 0;
-    box-shadow: 0 1px 2px rgba(15,23,42,.05);
+    box-shadow: var(--sh1);
   }
   .card-interactive {
     @apply card transition-all duration-150 cursor-pointer;
@@ -66,45 +66,49 @@
     border-radius: 0;
   }
 
+  /* 主按钮的渐变必须用主题变量，否则在管理面板换主题色时按钮不会跟着变 */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed;
     border-radius: 0;
-    background: linear-gradient(135deg, #e8590c, #f59e0b);
-    box-shadow: 0 7px 18px -8px rgba(232,89,12,.62);
+    background: linear-gradient(135deg, var(--acc), var(--acc2));
+    box-shadow: 0 7px 18px -8px var(--acc-line);
   }
   .btn-primary:hover { filter: brightness(1.06); }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-1.5 text-xs font-medium text-[#475569] transition-all bg-white;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-1.5 text-xs font-medium transition-all;
     border-radius: 0;
-    border: 1px solid #cbd5e1;
+    background: var(--surface);
+    color: var(--ink2);
+    border: 1px solid var(--line3);
   }
-  .btn-outline:hover { border-color: rgba(15,23,42,.28); background: #f8fafc; }
+  .btn-outline:hover { border-color: var(--ink3); background: var(--surface-2); color: var(--ink); }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#475569] transition-colors;
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors;
     border-radius: 0;
+    color: var(--ink2);
   }
-  .btn-ghost:hover { background: #f1f5f9; color: #0f172a; }
+  .btn-ghost:hover { background: var(--surface-2); color: var(--ink); }
 
   .input {
     @apply w-full px-4 py-2.5 text-sm transition-all;
     border-radius: 0;
-    border: 1px solid #cbd5e1;
-    background: #f8fafc;
-    color: #0f172a;
+    border: 1px solid var(--line3);
+    background: var(--surface-2);
+    color: var(--ink);
   }
-  .input::placeholder { color: #94a3b8; }
+  .input::placeholder { color: var(--ink3); }
   .input:focus {
     outline: none;
-    border-color: #e8590c;
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(232,89,12,.08);
+    border-color: var(--acc);
+    background: var(--surface);
+    box-shadow: 0 0 0 4px var(--acc-soft);
   }
 
   .section-title {
     @apply text-[13px] font-semibold mb-4;
-    color: #475569;
+    color: var(--ink2);
     letter-spacing: 2.6px;
     text-transform: uppercase;
   }
@@ -120,7 +124,7 @@
   .status-dot-down    { @apply bg-[#e11d48]; animation: statusPulseRed 2s ease-in-out infinite; }
 
   .tab-btn { @apply px-4 py-1.5 text-sm font-medium transition-colors; border-radius: 0; }
-  .tab-btn-active   { @apply tab-btn bg-[#e8590c] text-white; }
+  .tab-btn-active   { @apply tab-btn text-white; background:var(--acc); }
   .tab-btn-inactive { @apply tab-btn text-[#475569] hover:text-[#0f172a] hover:bg-[#f1f5f9]; }
 }
 
@@ -147,6 +151,8 @@
   --line:rgba(15,23,42,.08); --line2:rgba(15,23,42,.14); --line3:rgba(15,23,42,.22);
   --ink:#0f172a; --ink2:#475569; --ink3:#94a3b8; --ink4:#cbd5e1;
   --acc:#e8590c; --acc2:#f59e0b; --acc-soft:rgba(232,89,12,.08); --acc-line:rgba(232,89,12,.35);
+  /* 主题色的 RGB 分量，供 rgba(var(--acc-rgb), .x) 使用（光晕 / 阴影 / 浅底） */
+  --acc-rgb:232, 89, 12;
   --good:#0f9b6c; --good-soft:rgba(15,155,108,.10);
   --bad:#e11d48;  --bad-soft:rgba(225,29,72,.09);
   --warn:#d97706; --warn-soft:rgba(217,119,6,.09);
@@ -160,6 +166,66 @@
   --maxw:1320px;
 }
 
+
+/* ==========================================================================
+   深色模式
+   html.dark 由 ThemeController 根据「系统 / 手动」设置切换。
+   只覆盖设计令牌本身，所有组件都通过 var() 取值，因此会自动跟随。
+   主题色（--acc 系列）由主题接口在运行时写入，深浅两套都生效。
+   ========================================================================== */
+html.dark{
+  /* 中性深灰，不用海军蓝：蓝调在数据密集的卡片上会显得很突兀 */
+  --bg:#0d0f12; --surface:#14171b; --surface-2:#191d22; --surface-3:#1f242a;
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.15); --line3:rgba(255,255,255,.26);
+  --ink:#e8eef8; --ink2:#b6c3d6; --ink3:#7d8ca4; --ink4:#55637a;
+  --good-soft:rgba(15,155,108,.18);
+  --bad-soft:rgba(225,29,72,.18);
+  --warn-soft:rgba(217,119,6,.18);
+  --sh1:0 1px 2px rgba(0,0,0,.35);
+  --sh2:0 2px 5px -2px rgba(0,0,0,.45),0 8px 20px -8px rgba(0,0,0,.55);
+  --sh3:0 16px 42px -16px rgba(0,0,0,.65);
+  color-scheme: dark;
+}
+
+/* 深色下网格底纹要更淡，否则整页发灰 */
+html.dark body{
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+
+/* 输入类控件在深色下需要显式底色，避免仍是白底黑字 */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select{background:var(--surface-2);color:var(--ink);border-color:var(--line2);}
+html.dark input::placeholder,html.dark textarea::placeholder{color:var(--ink3);}
+
+/* 深色模式图标
+   上游对兵种给了 black/ 与 white/ 两套 SVG，快照里默认用黑色版（浅色卡片上才看得见）。
+   这两套图形完全相同、只是黑白之差，深色模式下直接反相即可，无需改任何 JS。
+   彩色图片（武器、载具等）不做处理，它们本身就是带色彩的渲染图。 */
+/* 深色模式图标：
+   ① 兵种 / 武器等 —— 数据驱动：profile builder 把上游 white/ 版本写进 metadata.imageUrlDark，
+      前端 useIconSrc() 按主题挑选，彩色渲染图不会被误反相，rank 徽章与 LV 角标不受影响；
+   ② 模式图标 —— 上游 CDN 只有 modes/bf6/xxx.svg 这一个纯黑版本（没有 white/ 目录），
+      只能靠反相，所以单独给 .ic-mode 加规则。 */
+html.dark .ic-mode{filter:invert(1) hue-rotate(180deg);}
+/* tactical-obliteration.svg 是唯一一个硬编码 fill="#fff" 的模式图标，
+   浅色背景下白底白图看不见，所以它在浅色模式下才需要反相。 */
+html:not(.dark) .ic-mode-white{filter:invert(1) hue-rotate(180deg);}
+
+/* 顶栏与主题切换按钮 */
+.app-header{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);border-color:var(--line2);}
+.mode-toggle{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;font-size:12px;line-height:1;
+  border:1px solid var(--line2);background:var(--surface-2);color:var(--ink2);cursor:pointer;border-radius:var(--r);}
+.mode-toggle:hover{border-color:var(--acc-line);color:var(--acc);}
+.mode-toggle .mode-ico{font-size:13px;color:var(--acc);}
+
+/* 允许主题切换时平滑过渡，但不要拖慢首屏 */
+html.theme-anim,html.theme-anim *{transition:background-color .18s ease,border-color .18s ease,color .18s ease;}
 /* ===== 预览设计系统整体照搬：直角 / 橙色 / Rajdhani / 网格底纹 ===== */
 /* ==========================================================================
    OpenBF6Tracker — 浅色主题设计系统 v3
@@ -172,6 +238,8 @@
   --line:rgba(15,23,42,.08); --line2:rgba(15,23,42,.14); --line3:rgba(15,23,42,.22);
   --ink:#0f172a; --ink2:#475569; --ink3:#94a3b8; --ink4:#cbd5e1;
   --acc:#e8590c; --acc2:#f59e0b; --acc-soft:rgba(232,89,12,.08); --acc-line:rgba(232,89,12,.35);
+  /* 主题色的 RGB 分量，供 rgba(var(--acc-rgb), .x) 使用（光晕 / 阴影 / 浅底） */
+  --acc-rgb:232, 89, 12;
   --good:#0f9b6c; --good-soft:rgba(15,155,108,.10);
   --bad:#e11d48;  --bad-soft:rgba(225,29,72,.09);
   --warn:#d97706; --warn-soft:rgba(217,119,6,.09);
@@ -197,9 +265,10 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .shell{max-width:var(--maxw);margin:0 auto;padding:0 24px 64px}
 
 /* ===================== 顶栏 ===================== */
-.top{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.88);
-  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
-  border-bottom:1px solid var(--line2)}
+/* 这里原本有一条 .top 吸顶规则，但站点顶栏实际用的是 .app-header，
+   .top 只被两种元素使用：战报模式明细行（.mrow .top）和明细卡（.omode top）。
+   那条规则会把明细卡当成吸顶条固定在顶部、盖住标题栏，所以直接去掉。 */
+.top{position:static}
 .top-in{max-width:var(--maxw);margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;gap:24px}
 .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .brand .logo{width:40px;height:40px;object-fit:contain;flex-shrink:0}
@@ -259,7 +328,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
   border-radius:var(--r);transition:.15s;display:inline-flex;align-items:center;gap:8px;box-shadow:var(--sh1)}
 .btn:hover{border-color:var(--line3);background:var(--surface-2);transform:translateY(-1px)}
 .btn.primary{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-color:transparent;
-  box-shadow:0 7px 18px -8px rgba(232,89,12,.62);font-weight:500}
+  box-shadow:0 7px 18px -8px rgba(var(--acc-rgb), .62);font-weight:500}
 .btn.primary:hover{filter:brightness(1.06)}
 .btn.s{padding:6px 12px;font-size:12.5px}
 
@@ -289,7 +358,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .hero{margin-top:22px;position:relative;background:var(--surface);border:1px solid var(--line2);
   border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden}
 .hero::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(90% 160% at 12% -40%,rgba(232,89,12,.10),transparent 62%),
+  background:radial-gradient(90% 160% at 12% -40%,rgba(var(--acc-rgb), .10),transparent 62%),
              radial-gradient(80% 140% at 96% 140%,rgba(37,99,235,.05),transparent 58%)}
 .hero::after{content:'';position:absolute;left:0;right:0;top:0;height:3px;
   background:linear-gradient(90deg,var(--acc),var(--acc2),transparent)}
@@ -315,7 +384,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .ssel:focus{border-color:var(--acc)}
 .sgo{height:52px;padding:0 30px;font-size:15px;font-weight:500;color:#fff;border-radius:var(--r);
   background:linear-gradient(135deg,var(--acc),var(--acc2));
-  box-shadow:0 9px 22px -10px rgba(232,89,12,.7);transition:.18s;display:inline-flex;align-items:center;gap:9px}
+  box-shadow:0 9px 22px -10px rgba(var(--acc-rgb), .7);transition:.18s;display:inline-flex;align-items:center;gap:9px}
 .sgo:hover{filter:brightness(1.06);transform:translateY(-1px)}
 .shint{margin-top:16px;font-size:12.5px;color:var(--ink3);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 .shint b{color:var(--ink2);font-weight:500;cursor:pointer;border-bottom:1px dashed var(--line3);padding-bottom:1px}
@@ -385,17 +454,19 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .phero{position:relative;background:var(--surface);border:1px solid var(--line2);
   border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden}
 .phero::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(120% 150% at 88% -30%,rgba(232,89,12,.09),transparent 60%),
-             radial-gradient(90% 130% at 4% 130%,rgba(37,99,235,.05),transparent 55%)}
+  background:radial-gradient(120% 150% at 88% -30%,rgba(var(--acc-rgb), .09),transparent 60%),
+             radial-gradient(90% 130% at 4% 130%,rgba(var(--acc-rgb), .05),transparent 55%)}
 .phero-in{position:relative;display:flex;align-items:center;gap:22px;padding:26px 28px;flex-wrap:wrap}
 .rk{position:relative;flex-shrink:0}
 .rk img{width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 5px 12px rgba(15,23,42,.15))}
 .rk .tier{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
-  background:var(--ink);color:#fff;font:700 10px/1 var(--f-num);letter-spacing:1.6px;
+  /* 固定用深色底：这个角标压在彩色 rank 徽章上，深浅两种模式下都要是同一块黑标签，
+     所以不能用 var(--ink)（深色模式会变成浅色，白底白字看不见） */
+  background:#0f172a;color:#fff;font:700 10px/1 var(--f-num);letter-spacing:1.6px;
   padding:4px 9px;clip-path:polygon(0 0,100% 0,100% 68%,68% 100%,0 100%)}
 .hmeta .nm{font:700 29px/1 var(--f-num);letter-spacing:1.2px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
 .hmeta .pl{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12.5px;color:var(--ink3);flex-wrap:wrap}
-.hmeta .pl .alias{color:var(--acc);background:rgba(232,89,12,.08);border:1px solid rgba(232,89,12,.22);padding:1px 7px;letter-spacing:.2px;cursor:default}
+.hmeta .pl .alias{color:var(--acc);background:var(--acc-soft);border:1px solid var(--acc-line);padding:1px 7px;letter-spacing:.2px;cursor:default}
 .pill{border:1px solid var(--line2);padding:2px 10px;border-radius:0;font-size:11.5px;
   color:var(--ink2);background:var(--surface-2)}
 .pill.acc{border-color:var(--acc-line);color:var(--acc);background:var(--acc-soft)}
@@ -419,8 +490,8 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .stripm+.stripm::before{content:'';position:absolute;left:0;top:22%;height:56%;width:1px;
   background:linear-gradient(180deg,transparent,var(--line2),transparent)}
 .stripm .v{font:700 28px/1 var(--f-num);font-variant-numeric:tabular-nums}
-.stripm .l{font-size:10.5px;color:var(--ink3);letter-spacing:1.7px;margin-top:8px}
-.stripm .d{font-size:11.5px;margin-top:4px;color:var(--ink4);font-variant-numeric:tabular-nums;min-height:17px}
+.stripm .l{font-size:12.5px;color:var(--ink2);letter-spacing:1.1px;margin-top:8px;font-weight:500}
+.stripm .d{font-size:12.5px;margin-top:5px;color:var(--ink3);font-variant-numeric:tabular-nums;min-height:18px}
 .stripm .v.a{color:var(--acc)} .stripm .v.g{color:var(--good)} .stripm .v.b{color:var(--bad)}
 
 /* ===================== 三层导航 ===================== */
@@ -488,7 +559,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .msrow .v{font:700 24px/1.15 var(--f-num);font-variant-numeric:tabular-nums}
 .msrow .v.a{color:var(--acc)} ..msrow .v.g{color:var(--good)} .msrow .v.b{color:var(--bad)}
 .msrow .v.sm{font-size:19px}
-.msrow .l{font-size:10.5px;color:var(--ink3);letter-spacing:1.5px;margin-top:6px;white-space:nowrap}
+.msrow .l{font-size:12.5px;color:var(--ink2);letter-spacing:1px;margin-top:7px;white-space:nowrap;font-weight:500}
 /* 副标固定占位，缺省用 &nbsp; 占位，避免行高不齐 */
 .msrow .sub{font-size:11px;color:var(--ink4);margin-top:3px;font-variant-numeric:tabular-nums;min-height:16px}
 /* K/D 比例条：前绿后红 + 百分比 */
@@ -530,6 +601,23 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .chip img{width:22px;height:22px;object-fit:contain}
 .chip .nm{color:var(--ink2)}
 .chip b{font:700 15px var(--f-num);color:var(--acc)}
+/* 战报里的兵种卡：图标 + 中文名 + 本局实际数据 */
+.mkits{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.mkit{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);
+  background:var(--surface-2);padding:11px 13px;border-radius:0}
+.mkic{width:38px;height:38px;object-fit:contain;flex-shrink:0;
+  filter:var(--f-kit,none)}
+.mkic-ph{display:inline-block;background:var(--surface-3);border:1px solid var(--line)}
+.mktx{min-width:0;flex:1}
+.mknm{display:flex;align-items:baseline;gap:7px;font-size:15px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mken{font:600 10px var(--f-num);letter-spacing:1.6px;color:var(--ink3)}
+.mkst{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:5px;font-size:12px;color:var(--ink3)}
+.mkst b{font:700 14px var(--f-num);color:var(--ink2);margin-left:3px}
+.mkst b.a{color:var(--acc)}
+.mkst b.b{color:var(--bad)}
+.mkst .mut{opacity:.75}
+
 .brief{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 22px}
 .bc2{padding:0}
 .bl{font-size:10.5px;color:var(--ink3);letter-spacing:1.3px}
@@ -715,11 +803,13 @@ tr:hover td{background:var(--surface-2)}
    对应原站 GET /api/stats/percentiles + PlayerClient.tsx 的 PctBar：
    绿→黄→橙→红 的分布条，圆点标出该玩家的位置。 */
 .pct{position:relative;margin-top:8px}
-.pct .cap{font-size:10px;color:var(--ink3);margin-bottom:3px;letter-spacing:.3px}
-.pct .rail{width:100%;height:6px;position:relative;cursor:pointer;
+.pct .cap{font-size:11.5px;color:var(--ink3);margin-bottom:4px;letter-spacing:.3px}
+.pct .rail{width:100%;height:7px;position:relative;cursor:pointer;border-radius:9999px;
   background:linear-gradient(to right,#4ade80,#facc15,#f97316,#ef4444)}
 .pct .knob{position:absolute;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;
   border:2px solid #0f172a;z-index:2;box-shadow:0 1px 3px rgba(15,23,42,.35)}
+/* 深色模式下描边改成白色，否则深色描边在深底上看不出圆点边界 */
+html.dark .pct .knob{border-color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .pct .tip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
   background:#1a1d21;color:#fff;padding:13px;box-shadow:var(--sh3);z-index:50;width:264px;
   border:1px solid #2b2f36;text-align:left}
@@ -740,10 +830,14 @@ tr:hover td{background:var(--surface-2)}
 .pct .tip .ft b{color:#fff;font-weight:500}
 
 /* 能力分布网格：同上，无网格线 */
-.dist{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.dc{background:var(--surface);border:1px solid var(--line2);padding:16px 18px;box-shadow:var(--sh1)}
+/* 生涯 / 战斗 / 更多数据：一组统计项连成一片（对照预览的 .ov / .ov .c），
+   不再是一项一张卡片，避免整页被切成几十个小方块。 */
+.dist{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 24px;
+  background:var(--surface);border:1px solid var(--line2);box-shadow:var(--sh1);
+  padding:22px 24px;margin-bottom:18px}
+.dc{background:transparent;border:none;padding:0;box-shadow:none}
 .dc .dv{font:700 23px/1.1 var(--f-num);font-variant-numeric:tabular-nums}
-.dc .dl{font-size:11px;color:var(--ink3);letter-spacing:1.4px;margin-top:4px}
+.dc .dl{font-size:13.5px;color:var(--ink2);letter-spacing:.6px;margin-top:6px;font-weight:500}
 @media(max-width:1000px){.dist{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.dist{grid-template-columns:1fr}}
 

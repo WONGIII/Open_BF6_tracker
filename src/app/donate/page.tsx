@@ -11,11 +11,11 @@ const tiers = [
 
 export default function DonatePage() {
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#eef1f5]">
+    <div className="min-h-[calc(100vh-56px)] bg-[color:var(--bg)]">
       <div className="max-w-[560px] mx-auto px-4 py-10">
-        <h1 className="text-xl font-bold text-[#0f172a] mb-2">玩家名字颜色说明</h1>
-        <p className="text-sm text-[#94a3b8] mb-8">
-          想要让你的名字在网站上显示特殊颜色？通过<a href="/contact" className="text-[#e8590c] hover:underline">联系我们</a>提交申请，管理员会手动处理。
+        <h1 className="text-xl font-bold text-[color:var(--ink)] mb-2">玩家名字颜色说明</h1>
+        <p className="text-sm text-[color:var(--ink3)] mb-8">
+          想要让你的名字在网站上显示特殊颜色？通过<a href="/contact" className="text-[color:var(--acc)] hover:underline">联系我们</a>提交申请，管理员会手动处理。
         </p>
 
         <div className="space-y-2">
@@ -25,15 +25,15 @@ export default function DonatePage() {
                 <span className={`${t.cls} text-base`}>WANGIII1I1</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-[#0f172a]">{t.label}</div>
-                <div className="text-[11px] text-[#94a3b8]">{t.desc}</div>
+                <div className="text-sm font-medium text-[color:var(--ink)]">{t.label}</div>
+                <div className="text-[11px] text-[color:var(--ink3)]">{t.desc}</div>
               </div>
             </div>
           ))}
         </div>
 
         <div className="card p-5 mt-8 bg-[#edf2ff] border-[#bac8ff] text-center">
-          <p className="text-sm text-[#e8590c] mb-3">想要赞助？</p>
+          <p className="text-sm text-[color:var(--acc)] mb-3">想要赞助？</p>
           <a href="/contact" className="btn-primary text-sm inline-flex">联系我们 &rarr;</a>
         </div>
       </div>

@@ -49,7 +49,7 @@ export default function CookiesPage() {
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-[color:var(--ink3)] transition-transform ${
                   analytics ? "translate-x-5" : "translate-x-0"
                 }`}
               />

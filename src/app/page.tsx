@@ -50,22 +50,22 @@ export default function HomePage() {
     : topMarks.filter((p) => p.credibility === credFilter);
 
   return (
-    <div className="bg-[#eef1f5] min-h-[calc(100vh-56px)]">
+    <div className="bg-[color:var(--bg)] min-h-[calc(100vh-56px)]">
       {/* Hero */}
       <section className="max-w-[1320px] mx-auto px-6 pt-8">
-        <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_2px_5px_-2px_rgba(15,23,42,.07),0_8px_20px_-8px_rgba(15,23,42,.11)]">
-          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#e8590c] via-[#f59e0b] to-transparent" />
+        <div className="relative bg-[color:var(--surface)] border border-[rgba(15,23,42,.14)] shadow-[0_2px_5px_-2px_rgba(15,23,42,.07),0_8px_20px_-8px_rgba(15,23,42,.11)]">
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[var(--acc)] via-[var(--acc2)] to-transparent" />
           <div className="px-8 py-10 sm:px-11 sm:py-11">
-            <span className="inline-flex items-center gap-2 border border-[rgba(15,23,42,.14)] bg-[#f8fafc] px-3 py-1 text-xs text-[#475569] tracking-[1.6px]">
-              <span className="w-[7px] h-[7px] rounded-full bg-[#0f9b6c] shadow-[0_0_0_4px_rgba(15,155,108,.15)]" />
+            <span className="inline-flex items-center gap-2 border border-[rgba(15,23,42,.14)] bg-[color:var(--surface-2)] px-3 py-1 text-xs text-[color:var(--ink2)] tracking-[1.6px]">
+              <span className="w-[7px] h-[7px] rounded-full bg-[color:var(--good)] shadow-[0_0_0_4px_rgba(15,155,108,.15)]" />
               GameTools Network
             </span>
-            <h1 className="text-[30px] sm:text-[38px] font-bold text-[#0f172a] leading-tight mt-5 mb-2">
+            <h1 className="text-[30px] sm:text-[38px] font-bold text-[color:var(--ink)] leading-tight mt-5 mb-2">
               {t("home.hero.title").includes("战绩")
-                ? <>{t("home.hero.title").split("战绩")[0]}<span className="text-[#e8590c]">战绩</span>{t("home.hero.title").split("战绩")[1] || ""}</>
+                ? <>{t("home.hero.title").split("战绩")[0]}<span className="text-[color:var(--acc)]">战绩</span>{t("home.hero.title").split("战绩")[1] || ""}</>
                 : t("home.hero.title")}
             </h1>
-            <p className="text-sm text-[#94a3b8] mb-7">Battlefield 6</p>
+            <p className="text-sm text-[color:var(--ink3)] mb-7">Battlefield 6</p>
             <SearchBar showTip />
           </div>
         </div>
@@ -74,27 +74,27 @@ export default function HomePage() {
       {/* Stats */}
       <section className="max-w-[1320px] mx-auto px-6 pt-5">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
-            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
-            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.trackedPlayers")}</div>
+          <div className="relative bg-[color:var(--surface)] border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[var(--acc)] to-[var(--acc2)]" />
+            <div className="text-[11px] text-[color:var(--ink3)] tracking-[2px]">{t("home.stats.trackedPlayers")}</div>
             <div className="stat-number text-[32px] font-bold leading-none mt-3">{counts.playersTracked.toLocaleString()}</div>
           </div>
-          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
-            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
-            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.matchesRecorded")}</div>
+          <div className="relative bg-[color:var(--surface)] border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[var(--acc)] to-[var(--acc2)]" />
+            <div className="text-[11px] text-[color:var(--ink3)] tracking-[2px]">{t("home.stats.matchesRecorded")}</div>
             <div className="stat-number text-[32px] font-bold leading-none mt-3">{counts.matchesTracked.toLocaleString()}</div>
           </div>
-          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
-            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#0f9b6c] to-[#34d399]" />
-            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">{t("home.stats.serviceStatus")}</div>
+          <div className="relative bg-[color:var(--surface)] border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[var(--good)] to-[#34d399]" />
+            <div className="text-[11px] text-[color:var(--ink3)] tracking-[2px]">{t("home.stats.serviceStatus")}</div>
             <div className="flex items-center gap-2 mt-4">
-              <span className="status-dot bg-[#0f9b6c] status-dot-healthy" />
-              <span className="text-lg font-semibold text-[#0f9b6c]">Online</span>
+              <span className="status-dot bg-[color:var(--good)] status-dot-healthy" />
+              <span className="text-lg font-semibold text-[color:var(--good)]">Online</span>
             </div>
           </div>
-          <div className="relative bg-white border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
-            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[#e8590c] to-[#f59e0b]" />
-            <div className="text-[11px] text-[#94a3b8] tracking-[2px]">数据更新</div>
+          <div className="relative bg-[color:var(--surface)] border border-[rgba(15,23,42,.14)] shadow-[0_1px_2px_rgba(15,23,42,.05)] px-6 py-5 overflow-hidden">
+            <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-[var(--acc)] to-[var(--acc2)]" />
+            <div className="text-[11px] text-[color:var(--ink3)] tracking-[2px]">数据更新</div>
             <div className="stat-number text-[22px] font-bold leading-none mt-4">{updatedDate || "—"}</div>
           </div>
         </div>
@@ -105,14 +105,14 @@ export default function HomePage() {
       {/* Player Marks Ranking */}
       <section className="max-w-[1320px] mx-auto px-6 py-8">
           <div className="flex flex-col gap-4 mb-5">
-            <h2 className="text-lg font-bold text-[#0f172a]">{t("home.topMarks.title")}</h2>
+            <h2 className="text-lg font-bold text-[color:var(--ink)]">{t("home.topMarks.title")}</h2>
 
             {/* Credibility filter tabs */}
-            <div className="flex items-center gap-1 bg-[#f1f5f9] rounded-none p-0.5 w-fit">
+            <div className="flex items-center gap-1 bg-[color:var(--surface-3)] rounded-none p-0.5 w-fit">
               <button
                 onClick={() => setCredFilter("all")}
                 className={`px-3 py-1 rounded-none text-xs font-medium transition-colors ${
-                  credFilter === "all" ? "bg-white text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[#94a3b8] hover:text-[#475569]"
+                  credFilter === "all" ? "bg-[color:var(--surface)] text-[color:var(--ink)] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[color:var(--ink3)] hover:text-[color:var(--ink2)]"
                 }`}
               >
                 {t("home.topMarks.allCat")}
@@ -122,7 +122,7 @@ export default function HomePage() {
                   key={cred.id}
                   onClick={() => setCredFilter(cred.id)}
                   className={`px-3 py-1 rounded-none text-xs font-medium transition-colors ${
-                    credFilter === cred.id ? "bg-white text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[#94a3b8] hover:text-[#475569]"
+                    credFilter === cred.id ? "bg-[color:var(--surface)] text-[color:var(--ink)] shadow-[0_1px_2px_rgba(15,23,42,.05)]" : "text-[color:var(--ink3)] hover:text-[color:var(--ink2)]"
                   }`}
                 >
                   {cred.labelZh}
@@ -138,8 +138,8 @@ export default function HomePage() {
                   onClick={() => setTimeFilter(f)}
                   className={`text-xs px-3 py-1 rounded transition-colors ${
                     timeFilter === f
-                      ? "text-[#e8590c] bg-[#e8590c]/8 font-medium"
-                      : "text-[#94a3b8] hover:text-[#475569]"
+                      ? "text-[color:var(--acc)] bg-[color:var(--acc)]/8 font-medium"
+                      : "text-[color:var(--ink3)] hover:text-[color:var(--ink2)]"
                   }`}
                 >
                   {f === "7d" ? t("home.topMarks.time7d") : f === "30d" ? t("home.topMarks.time30d") : t("home.topMarks.timeAll")}
@@ -148,15 +148,15 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-xs text-[#b6c0cc] mb-4">{t("home.topMarks.subtitle")}</p>
+          <p className="text-xs text-[color:var(--ink3)] mb-4">{t("home.topMarks.subtitle")}</p>
 
           {loading ? (
             <div className="card p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="card p-4 animate-pulse">
-                  <div className="h-3 bg-[#f1f5f9] rounded w-1/3 mb-2" />
-                  <div className="h-4 bg-[#f1f5f9] rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-[#f1f5f9] rounded w-1/2" />
+                  <div className="h-3 bg-[color:var(--surface-3)] rounded w-1/3 mb-2" />
+                  <div className="h-4 bg-[color:var(--surface-3)] rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-[color:var(--surface-3)] rounded w-1/2" />
                 </div>
               ))}
             </div>
@@ -177,7 +177,7 @@ export default function HomePage() {
                       </div>
                       <div className="val3">
                         {player.totalMarks}
-                        <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 400, marginLeft: 4 }}>次举报</span>
+                        <span style={{ fontSize: 12, color: "var(--ink3)", fontWeight: 400, marginLeft: 4 }}>次举报</span>
                       </div>
                       <div className="xt">Lv.{player.playerLevel}</div>
                     </Link>
@@ -186,7 +186,7 @@ export default function HomePage() {
               </div>
             </div>
           ) : (
-            <div className="card p-10 text-center text-[#94a3b8] text-sm">{t("home.topMarks.empty")}</div>
+            <div className="card p-10 text-center text-[color:var(--ink3)] text-sm">{t("home.topMarks.empty")}</div>
           )}
 
           <div className="text-center mt-5">
@@ -230,11 +230,11 @@ export default function HomePage() {
       {/* Streamers */}
       {streamers.length > 0 && (
         <section className="max-w-[1320px] mx-auto px-6 pb-10">
-            <h2 className="text-lg font-bold text-[#0f172a] mb-4">{t("home.streamers.title")}</h2>
+            <h2 className="text-lg font-bold text-[color:var(--ink)] mb-4">{t("home.streamers.title")}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {streamers.map((s) => (
                 <div key={s.id} className="card p-4 flex flex-col items-center text-center gap-2">
-                  <SponsorName userId={String(s.platformId)} name={s.name} className="text-xs font-medium text-[#0f172a]" />
+                  <SponsorName userId={String(s.platformId)} name={s.name} className="text-xs font-medium text-[color:var(--ink)]" />
                   <div className="flex flex-wrap gap-1 justify-center">
                     {s.platforms.map((p, i) => (
                       <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-[10px] px-2 py-1">
@@ -298,7 +298,7 @@ function ServiceCards() {
               <tr key={item.key}>
                 <td><span className={"status-dot " + anim} />{item.label}</td>
                 <td><span className={"tk " + tk}>{label}</span></td>
-                <td style={{ color: "#94a3b8" }}>{g.title}</td>
+                <td style={{ color: "var(--ink3)" }}>{g.title}</td>
               </tr>
             );
           }))}

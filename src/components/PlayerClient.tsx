@@ -5,6 +5,7 @@ import SearchBar, { saveToHistory } from "@/components/SearchBar";
 import { SponsorName } from "@/components/SponsorContext";
 import { fetchPlayerProfile, fetchPlayerMatches, fetchSuspicionSummary, submitSuspicionReport } from "@/lib/api";
 import { useAuth } from "@/components/AuthContext";
+import { useTheme } from "@/components/ThemeController";
 import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/types";
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
@@ -134,8 +135,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
 
   const fmtCd = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  if (loading || !profileData) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[#dfe5ec] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
-  if (error) { console.log("[PlayerClient] showing error, error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[#0f172a] mb-2">未找到玩家</h2><p className="text-[#94a3b8] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
+  if (loading || !profileData) return <div className="max-w-[1100px] mx-auto px-4 py-8"><div className="animate-pulse space-y-6"><div className="h-8 bg-[color:var(--line2)] rounded w-64"/><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{Array.from({length:8}).map((_,i)=><div key={i} className="card h-20"/>)}</div></div></div>;
+  if (error) { console.log("[PlayerClient] showing error, error:", error); return <div className="max-w-[480px] mx-auto px-4 py-16 text-center"><h2 className="text-xl font-bold text-[color:var(--ink)] mb-2">未找到玩家</h2><p className="text-[color:var(--ink3)] text-sm mb-8">未找到与该标识符匹配的玩家。请检查后重试。</p><SearchBar/></div>; }
   
   const info = (profileData.platformInfo || {}) as Record<string, unknown>;
   const handle = String(info.platformUserHandle || "");
@@ -175,11 +176,11 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const showMatches = l1 === "matches";
   const showCareerOverview = l1 === "all" && l2 === "career";
 
-  const navBtn = (active: boolean) => `text-[15px] font-bold relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#0f172a]" : "text-[#b6c0cc]"}`;
-  const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[#0f172a]" : "text-[#b6c0cc]"}`;
+  const navBtn = (active: boolean) => `text-[15px] font-bold relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[color:var(--ink)]" : "text-[color:var(--ink3)]"}`;
+  const navBtn2 = (active: boolean) => `text-[14px] font-medium relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none ${active ? "text-[color:var(--ink)]" : "text-[color:var(--ink3)]"}`;
 
   const l1Items: { id: Level1; label: string }[] = [{ id: "all", label: "全部" }, { id: "matches", label: `战报 (${matches.length})` }, { id: "multiplayer", label: "全面战争" }, { id: "redsec", label: "禁区冲突" }, { id: "marks", label: `标记 ${suspicion ? `(${suspicion.totalReports})` : ""}` }];
-  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s5", label: "SEASON 5" }, { id: "s4", label: "SEASON 4" }, { id: "s3", label: "SEASON 3" }, { id: "s2", label: "SEASON 2" }, { id: "s1", label: "SEASON 1" }];
+  const l2Items: { id: Level2; label: string }[] = [{ id: "career", label: "生涯" }, { id: "s5", label: "赛季 5" }, { id: "s4", label: "赛季 4" }, { id: "s3", label: "赛季 3" }, { id: "s2", label: "赛季 2" }, { id: "s1", label: "赛季 1" }];
   const l3Items: { id: Level3; label: string }[] = [{ id: "overview", label: "总览" }, { id: "weapons", label: "武器" }, { id: "vehicles", label: "载具" }, { id: "gadgets", label: "装备" }, { id: "classes", label: "兵种" }, { id: "modes", label: "模式" }, { id: "maps", label: "地图" }, { id: "melee", label: "近战" }];
 
     const trackedCount = matchTotal || parseInt(sv("matchesPlayed").replace(/,/g, ""), 10) || 0;
@@ -201,7 +202,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   })();
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#eef1f5]">
+    <div className="min-h-[calc(100vh-56px)] bg-[color:var(--bg)]">
       <div className="max-w-[1320px] mx-auto px-6 py-7">
                 <div className="phero mb-4">
           <div className="phero-in">
@@ -215,7 +216,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
               </div>
               <div className="pl">
                 {platformLogo[platformSlug] && <img src={platformLogo[platformSlug]} alt={platformSlug} style={{ width: 16, height: 16, objectFit: "contain" }} />}
-                <span style={{ letterSpacing: "1.4px", fontWeight: 500, color: "#475569" }}>{platformSlug.toUpperCase()}</span>
+                <span style={{ letterSpacing: "1.4px", fontWeight: 500, color: "var(--ink2)" }}>{platformSlug.toUpperCase()}</span>
                 <span>唯一 ID {ident}</span>
                 <span>·</span>
                 <span>最近更新 {loadedLabel}</span>
@@ -256,11 +257,11 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           <div className="stripm"><div className="v" style={{ fontSize: 24 }}>{sv("timePlayed")}</div><div className="l">时长</div><div className="d">{sv("matchesPlayed")} 场</div></div>
         </div>
         <div className="card px-5 pt-4 pb-0 mb-4 mt-[18px]">
-          <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[#dfe5ec]">
+          <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">
             {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}
           </div>
-          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[#dfe5ec]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
-            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[#dfe5ec]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"#0f172a":"#b6c0cc"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
+          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
+            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[color:var(--line2)]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"var(--ink)":"var(--ink3)"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
         </div>
         {showMatches ? <>
           <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
@@ -304,7 +305,7 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
   });
   if (l3 === "overview") {
     const raw = isCareer ? seasonGm.filter((s: Segment) => catFilter ? (s.attributes?.category as string) === catFilter : true) : flt(seasonGm);
-    if (!raw.length) return <p className="text-[#b6c0cc] text-sm py-8 text-center">暂无数据</p>;
+    if (!raw.length) return <p className="text-[color:var(--ink3)] text-sm py-8 text-center">暂无数据</p>;
     const ag = aggregateSegments(raw), ov = buildAggOverview(ag);
     return <OverviewMain ov={ov} topW={[]} topV={[]} topK={[]} topM={[]} kits={[]} seasonGm={[]} title={title}/>;
   }
@@ -326,7 +327,7 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
       if (l3==="classes") return <ClassesDetail kits={kits}/>;
       if (l3==="modes") return <ModesDetail gamemodes={gamemodes}/>;
       if (l3==="maps") return <MapsDetail levels={levels}/>;
-      if (l3==="melee") return melees.length ? <MeleeDetail melees={melees}/> : <p className="text-[#b6c0cc] text-sm py-8 text-center">暂无近战数据</p>;
+      if (l3==="melee") return melees.length ? <MeleeDetail melees={melees}/> : <p className="text-[color:var(--ink3)] text-sm py-8 text-center">暂无近战数据</p>;
     }
     return null;
   }
@@ -342,23 +343,24 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
 }
 
 function SeasonSubList({ items, title, fields, image, format }: { items: Segment[]; title: string; fields?: {k:string;l:string}[]; image?: boolean; format?: string }) {
-  if (!items.length) return <p className="text-[#b6c0cc] text-sm py-8 text-center">{title}</p>;
+  const icon = useIconSrc();
+  if (!items.length) return <p className="text-[color:var(--ink3)] text-sm py-8 text-center">{title}</p>;
   const grouped: Record<string, Segment[]> = {};
   for (const it of items) { const gn = (it.metadata?.gamemodeName || "其他") as string; if (!grouped[gn]) grouped[gn] = []; grouped[gn].push(it); }
   return <div className="space-y-5">{Object.entries(grouped).map(([gn, group]) => (
-    <div key={gn}><h4 className="text-xs font-semibold text-[#475569] mb-2">{gn}</h4>
+    <div key={gn}><h4 className="text-xs font-semibold text-[color:var(--ink2)] mb-2">{gn}</h4>
       {format === "map" ? <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{group.map((it,i) => (
         <div key={(it.metadata?.name as string)+"-"+i} className="card p-3">
           {it.metadata?.imageUrl && <img src={it.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}
-          <div className="font-medium text-xs text-[#0f172a]">{it.metadata?.name as string}</div>
-          <div className="text-[10px] text-[#94a3b8]">{it.stats.wins?.displayValue}胜 · {it.stats.losses?.displayValue}负 · {it.stats.matches?.displayValue}场</div>
+          <div className="font-medium text-xs text-[color:var(--ink)]">{it.metadata?.name as string}</div>
+          <div className="text-[10px] text-[color:var(--ink3)]">{it.stats.wins?.displayValue}胜 · {it.stats.losses?.displayValue}负 · {it.stats.matches?.displayValue}场</div>
         </div>
       ))}</div>
       : <div className="space-y-2">{group.map((it,i) => (
         <div key={(it.metadata?.name as string)+"-"+i} className="card p-3 flex items-center gap-3">
-          {image && it.metadata?.imageUrl && <img src={it.metadata.imageUrl as string} alt="" className="w-9 h-9 object-contain shrink-0"/>}
-          <div className="flex-1 min-w-0"><div className="font-semibold text-[#0f172a] text-sm">{it.metadata?.name as string}</div>
-            {fields && <div className="flex gap-3 text-xs">{fields.map(f => <span key={f.k} className="text-[#94a3b8]">{f.l} <span className="font-semibold text-[#0f172a]">{it.stats[f.k]?.displayValue}</span></span>)}</div>}
+          {image && icon(it) && <img src={icon(it)} alt="" className="w-9 h-9 object-contain shrink-0"/>}
+          <div className="flex-1 min-w-0"><div className="font-semibold text-[color:var(--ink)] text-sm">{it.metadata?.name as string}</div>
+            {fields && <div className="flex gap-3 text-xs">{fields.map(f => <span key={f.k} className="text-[color:var(--ink3)]">{f.l} <span className="font-semibold text-[color:var(--ink)]">{it.stats[f.k]?.displayValue}</span></span>)}</div>}
           </div>
         </div>
       ))}</div>}
@@ -426,12 +428,12 @@ function OverviewMain({ ov, topW, topV, topK, topM, kits, seasonGm, title }: { o
   const extS = [{k:"assists",l:"助攻"},{k:"accuracy",l:"命中率"},{k:"damagePerMinute",l:"DPM"},{k:"damagePerMatch",l:"每场伤害"},{k:"killsPerMatch",l:"每场击杀"},{k:"winPercent",l:"胜率%"},{k:"distanceTraveled",l:"行进距离"},{k:"enemiesSpotted",l:"发现敌人"},{k:"gadgetsDestoyed",l:"拆装置"},{k:"heals",l:"治疗"},{k:"humanKd",l:"真人 K/D"},{k:"humanKills",l:"真人击杀"},{k:"humanKpm",l:"真人 KPM"},{k:"humanPercent",l:"真人击杀率"},{k:"infantryKd",l:"步兵 K/D"},{k:"playerTakeDowns",l:"处决"},{k:"playtimeDriving",l:"驾驶时间"},{k:"playtimeFlying",l:"飞行时间"},{k:"resupplies",l:"补给"},{k:"saviorKills",l:"救星击杀"},{k:"shotsFired",l:"射击数"},{k:"shotsHit",l:"命中数"},{k:"squadmateRevive",l:"小队救人"},{k:"thrownThrowables",l:"投掷物"},{k:"vehiclesDestroyed",l:"载具摧毁"},{k:"xpTotal",l:"总 XP"},{k:"careerPlayerRank",l:"生涯等级"}];
 const combS = [{k:"headShots",l:"爆头"},{k:"damageDealt",l:"总伤害"},{k:"headshotsPercent",l:"爆头率"},{k:"killAssists",l:"击杀助攻"},{k:"revives",l:"急救"},{k:"repairs",l:"修复"},{k:"wins",l:"胜利"},{k:"losses",l:"战败"}];
   return <div className="space-y-6">
-    {title && <h3 className="text-sm font-semibold text-[#475569]">{title}</h3>}
+    {title && <h3 className="text-sm font-semibold text-[color:var(--ink2)]">{title}</h3>}
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {topW[0]&&<BestCard label="最佳武器" name={topW[0].metadata?.name as string} img={topW[0].metadata?.imageUrl as string} value={topW[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
-      {topV[0]&&<BestCard label="最佳载具" name={topV[0].metadata?.name as string} img={topV[0].metadata?.imageUrl as string} value={topV[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
-      {topK[0]&&<BestCard label="最佳兵种" name={topK[0].metadata?.name as string} img={topK[0].metadata?.imageUrl as string} value={topK[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
-      {topM[0]&&<BestCard label="最佳模式" name={topM[0].metadata?.name as string} img={topM[0].metadata?.imageUrl as string} value={topM[0].stats.wins?.displayValue||"0"} unit="胜利"/>}
+      {topW[0]&&<BestCard label="最佳武器" name={topW[0].metadata?.name as string} seg={topW[0]} value={topW[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
+      {topV[0]&&<BestCard label="最佳载具" name={topV[0].metadata?.name as string} seg={topV[0]} value={topV[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
+      {topK[0]&&<BestCard label="最佳兵种" name={_cn(topK[0].metadata?.name as string)} seg={topK[0]} value={topK[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
+      {topM[0]&&<BestCard label="最佳模式" name={_cn(topM[0].metadata?.name as string)} seg={topM[0]} value={topM[0].stats.wins?.displayValue||"0"} unit="胜利"/>}
     </div>
     <h3 className="section-title">生涯</h3>
     <div className="dist">{allS.map(s => stat(s.k, s.l))}</div>
@@ -447,29 +449,36 @@ const combS = [{k:"headShots",l:"爆头"},{k:"damageDealt",l:"总伤害"},{k:"he
   </div>;
 }
 
-function BestCard({ label, name, img, value, unit }: { label: string; name: string; img?: string; value: string; unit: string }) { return <div className="ocard">{img && <img className="pic" src={img} alt="" />}<div className="tx"><div className="nm2">{name}</div><div className="cat">{label}</div></div><div className="rt"><div className="v">{value}</div><div className="u">{unit}</div></div></div>; }
-function WpCard({ w }: { w: Segment }) { return <div className="ocard">{w.metadata?.imageUrl && <img className="pic" src={w.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{w.metadata?.name as string}</div><div className="cat">{w.metadata?.category as string}</div></div><div className="rt"><div className="v">{w.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
-function VhCard({ v }: { v: Segment }) { return <div className="ocard">{v.metadata?.imageUrl && <img className="pic" src={v.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{v.metadata?.name as string}</div><div className="cat">{v.metadata?.category as string}</div></div><div className="rt"><div className="v">{v.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
-function KitCard({ k }: { k: Segment }) { return <div className="okit">{k.metadata?.imageUrl && <img className="pic" src={k.metadata.imageUrl as string} alt="" />}<div className="nm2">{k.metadata?.name as string}</div><div className="big">{k.stats.kills?.displayValue}</div><div className="sub">击杀 · K/D {k.stats.kd?.displayValue || "-"} · KPM {k.stats.killsPerMinute?.displayValue || "-"}</div></div>; }
-function ModeCard({ m }: { m: Segment }) { return <div className="omode">{m.metadata?.imageUrl && <img className="pic" src={m.metadata.imageUrl as string} alt="" />}<div className="tx"><div className="nm2">{m.metadata?.name as string}</div><div className="g3"><div><div className="k">胜</div><div className="v a">{m.stats.wins?.displayValue || 0}</div></div><div><div className="k">K/D</div><div className="v">{m.stats.kd?.displayValue || "-"}</div></div><div><div className="k">KPM</div><div className="v">{m.stats.kpm?.displayValue || "-"}</div></div></div></div></div>; }
+function BestCard({ label, name, seg, value, unit }: { label: string; name: string; seg?: Segment; value: string; unit: string }) {
+  const icon = useIconSrc();
+  const iconCls = useIconCls();
+  const src = icon(seg);
+  return <div className="ocard">{src && <img className={"pic " + iconCls(seg)} src={src} alt="" />}<div className="tx"><div className="nm2">{name}</div><div className="cat">{label}</div></div><div className="rt"><div className="v">{value}</div><div className="u">{unit}</div></div></div>;
+}
+function WpCard({ w }: { w: Segment }) { const icon = useIconSrc(); const src = icon(w); return <div className="ocard">{src && <img className="pic" src={src} alt="" />}<div className="tx"><div className="nm2">{w.metadata?.name as string}</div><div className="cat">{w.metadata?.category as string}</div></div><div className="rt"><div className="v">{w.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
+function VhCard({ v }: { v: Segment }) { const icon = useIconSrc(); const src = icon(v); return <div className="ocard">{src && <img className="pic" src={src} alt="" />}<div className="tx"><div className="nm2">{v.metadata?.name as string}</div><div className="cat">{v.metadata?.category as string}</div></div><div className="rt"><div className="v">{v.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
+function KitCard({ k }: { k: Segment }) { const icon = useIconSrc(); const src = icon(k); return <div className="okit">{src && <img className="pic" src={src} alt="" />}<div className="nm2">{_cn(k.metadata?.name as string)}</div><div className="big">{k.stats.kills?.displayValue}</div><div className="sub">击杀 · K/D {k.stats.kd?.displayValue || "-"} · KPM {k.stats.killsPerMinute?.displayValue || "-"}</div></div>; }
+function ModeCard({ m }: { m: Segment }) { const icon = useIconSrc(); const src = icon(m); return <div className="omode">{src && <img className="pic ic-mode" src={src} alt="" />}<div className="tx"><div className="nm2">{m.metadata?.name as string}</div><div className="g3"><div><div className="k">胜</div><div className="v a">{m.stats.wins?.displayValue || 0}</div></div><div><div className="k">K/D</div><div className="v">{m.stats.kd?.displayValue || "-"}</div></div><div><div className="k">KPM</div><div className="v">{m.stats.kpm?.displayValue || "-"}</div></div></div></div></div>; }
 
 type DetailField = [string, string];
 
 function DetailCard({ seg, category, fields }: { seg: Segment; category?: string; fields: DetailField[] }) {
+  const icon = useIconSrc();
+  const iconCls = useIconCls();
   const st = seg.stats as Record<string, { displayValue?: string } | undefined>;
   const dv = (k: string) => st?.[k]?.displayValue;
   const shown = fields.map(([k, label]) => [label, dv(k)] as [string, string | undefined]).filter(([, v]) => v !== undefined && v !== "" && v !== "0");
   return (
     <div className="omode top">
-      {seg.metadata?.imageUrl && <img className="pic" src={seg.metadata.imageUrl as string} alt="" />}
+      {icon(seg) && <img className={"pic " + iconCls(seg)} src={icon(seg)} alt="" />}
       <div className="tx">
-        <div className="nm2">{seg.metadata?.name as string}</div>
+        <div className="nm2">{_cn(seg.metadata?.name as string)}</div>
         {category && <div className="cat">{category}</div>}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 mt-3">
           {shown.map(([label, value]) => (
             <div key={label}>
-              <div className="text-[11px] text-[#94a3b8]">{label}</div>
-              <div className="stat-number text-[17px] font-bold text-[#0f172a] leading-tight">{value}</div>
+              <div className="text-[11px] text-[color:var(--ink3)]">{label}</div>
+              <div className="stat-number text-[17px] font-bold text-[color:var(--ink)] leading-tight">{value}</div>
             </div>
           ))}
         </div>
@@ -537,9 +546,69 @@ function MeleeDetail({ melees }: { melees: Segment[] }) {
   ))}</div>;
 }
 function MapsDetail({ levels }: { levels: Segment[] }) {
-  return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[#0f172a] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[#94a3b8] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
+  return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[color:var(--ink)] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[color:var(--ink3)] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
 }
 type GroupItem = { metadata: Segment["metadata"]; stats: Segment["stats"] };
+
+/** 上游给的英文名 -> 中文（兵种 + 常见模式），取不到就原样显示 */
+const KIT_CN: Record<string, string> = {
+  Assault: "突击兵", Engineer: "工程兵", Support: "支援兵", Recon: "侦察兵",
+};
+const MODE_CN: Record<string, string> = {
+  Conquest: "征服", Breakthrough: "突破模式", Rush: "突袭", "Team deathmatch": "团队死斗",
+  "Squad deathmatch": "小队死斗", Domination: "制霸", Escalation: "升级",
+  "King of the Hill": "占山为王", "Carrier Strike": "航母打击", Gauntlet: "试炼场",
+};
+const _cn = (n?: string): string => (n ? (KIT_CN[n] || MODE_CN[n] || n) : "");
+
+/**
+ * 按当前主题挑图标地址。
+ *
+ * 上游对同一个图标给了两套 URL（profile builder 会把白色那版写进 metadata.imageUrlDark）：
+ *   兵种 image = .../black/Assault.svg   imageUrlDark = .../white/Assault.svg
+ *   武器 image = .../T_UI_xxx.webp        imageUrlDark = .../white/T_UI_xxx.webp（白色剪影）
+ * 深色模式下必须换成白色版本，否则黑色 SVG 完全看不见。
+ * 没有深色版本的（地图缩略图等实景图）会退回原图。
+ */
+/**
+ * 该图标是否需要 CSS 反相。
+ *
+ * 只有模式图标需要：上游 CDN 上模式只有 modes/bf6/xxx.svg 这一个纯黑版本，
+ * 没有 white/ 目录，所以拿不到白色版本，只能反相。
+ * 直接看图标地址里有没有 /modes/ 最可靠（不依赖 segment 的 type 字段叫什么）。
+ */
+/**
+ * 上游模式图标里唯一一个「本来就是白色」的例外。
+ * 其余模式 SVG 都用 fill="currentColor"，在 <img> 里渲染成黑色；
+ * 只有 tactical-obliteration.svg 硬编码 fill="#fff"。
+ * 所以它要在【浅色模式】下反相（白底白图看不见），其余在【深色模式】下反相。
+ */
+const WHITE_MODE_ICONS = ["tactical-obliteration"];
+
+function useIconCls() {
+  return (seg?: { metadata?: Record<string, unknown> } | null): string => {
+    const md = (seg?.metadata || {}) as Record<string, unknown>;
+    const u = String(md.imageUrl || md.imageUrlDark || "");
+    if (!u.includes("/modes/")) return "";
+    if (WHITE_MODE_ICONS.some((k) => u.includes(k))) return "ic-mode-white";
+    return "ic-mode";
+  };
+}
+
+function useIconSrc() {
+  const { isDark } = useTheme();
+  return (seg?: { metadata?: Record<string, unknown> } | null): string => {
+    const md = (seg?.metadata || {}) as Record<string, unknown>;
+    const src = (md.imageUrl as string) || "";
+    if (!isDark) return src;
+    const dark = md.imageUrlDark as string | undefined;
+    if (dark) return dark;
+    // 兼容改造前就已缓存的老档案：它们没有 imageUrlDark 字段，
+    // 按上游 CDN 的命名规则推导（classes/bf6/black/x.svg -> classes/bf6/white/x.svg）
+    if (src.includes("/black/")) return src.replace("/black/", "/white/");
+    return src;
+  };
+}
 
 // 战报是「差分」数据，计时器类字段（累计时长、乘坐时长等）每局都会变动，
 // 所以几乎每个武器/装备都会出现在分组里，且只带一个 timePlayed。
@@ -586,7 +655,8 @@ function _segFacts(
   return parts.join(" · ");
 }
 function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; expanded: string | null; onToggle: (id: string | null) => void }) {
-  if (matches.length === 0) return <p className="text-[#b6c0cc] text-sm">暂无战报</p>;
+  const icon = useIconSrc();
+  if (matches.length === 0) return <p className="text-[color:var(--ink3)] text-sm">暂无战报</p>;
   return <div className="space-y-3">{matches.map((m, idx) => {
     const matchData = m as unknown as Record<string, unknown>;
     const mSegments = (matchData.segments || []) as Segment[];
@@ -643,7 +713,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
     const statusLabel = killsNum > 0 && winNum === 0 && lossNum === 0 && !hasModeMatch && mapsPlayed === 0 ? "中途退出"
       : winNum === 0 && lossNum === 0 && mapsPlayed > 0 ? "平局"
       : winNum > lossNum ? "胜利" : lossNum > winNum ? "战败" : "平局";
-    const statusColor = statusLabel === "胜利" ? "#0f9b6c" : statusLabel === "战败" ? "#e11d48" : "#94a3b8";
+    const statusColor = statusLabel === "胜利" ? "var(--good)" : statusLabel === "战败" ? "var(--bad)" : "var(--ink3)";
     const ts = (matchData.metadata as Record<string, unknown> | undefined)?.timestamp as string | undefined;
     const timeStr = ts ? new Date(ts).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
         const isExpanded = expanded === (m.id || String(idx));
@@ -656,8 +726,8 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
     const spmNum = secNum > 0 ? _nv((ov?.stats as any)?.score) / (secNum / 60) : 0;
     const hsPct = killsNum > 0 ? Math.round(hsNum / killsNum * 100) : 0;
     const rowCls = statusLabel === "胜利" ? "win" : statusLabel === "战败" ? "loss" : "draw";
-    const mapImg = (topMap?.metadata?.imageUrl as string) || "";
-    const modeImg = (topMode?.metadata?.imageUrl as string) || "";
+    const mapImg = icon(topMap);
+    const modeImg = icon(topMode);
     const modeName = (topMode?.metadata?.name as string) || "";
     const mapName = (topMap?.metadata?.name as string) || modeName || "—";
     const nb = "\u00a0";
@@ -683,7 +753,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
         <div className="msrow"><div className={"v " + (kdNum >= 1 ? "g" : "b")}>{kdNum.toFixed(2)}</div><div className="l">K/D</div>
           <div className="sub" style={{ minHeight: 0 }}><div className="kdbar">
             <div className="track2" style={{ ["--p" as string]: kdPct + "%" } as React.CSSProperties} />
-            <div className="kdpct"><span style={{ color: "#0f9b6c" }}>{kdPct}%</span><span style={{ color: "#e11d48" }}>{100 - kdPct}%</span></div>
+            <div className="kdpct"><span style={{ color: "var(--good)" }}>{kdPct}%</span><span style={{ color: "var(--bad)" }}>{100 - kdPct}%</span></div>
           </div></div></div>
         <div className="msrow"><div className="v">{kpmNum.toFixed(2)}</div><div className="l">KPM</div><div className="sub">{nb}</div></div>
         <div className="msrow"><div className="v sm">{score || "0"}</div><div className="l">得分</div><div className="sub">{spmNum.toFixed(0)} SPM</div></div>
@@ -698,20 +768,53 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
         </div></section>
         {mModes.length > 0 && <section className="sect"><div className="sec-t">模式明细</div>
           {mModes.map(md => <div key={md.metadata?.name as string} className="mrow">
-            <div className="top">{md.metadata?.imageUrl && <img src={md.metadata.imageUrl as string} alt="" />}<span className="nm">{md.metadata?.name}</span><span className="kk">{md.stats?.kills?.displayValue}</span><span style={{ fontSize: 12, color: "#94a3b8" }}>击杀</span></div>
-            <div className="meta"><span>死亡 <b>{md.stats?.deaths?.displayValue || 0}</b></span><span>K/D <b>{(md.stats as any)?.kd?.displayValue || "-"}</b></span><span>KPM <b>{(md.stats as any)?.kpm?.displayValue || "-"}</b></span></div>
+            <div className="top">{icon(md) && <img className="ic-mode" src={icon(md)} alt="" />}<span className="nm">{_cn(md.metadata?.name as string)}</span><span className="kk">{md.stats?.kills?.displayValue}</span><span style={{ fontSize: 12, color: "var(--ink3)" }}>击杀</span></div>
+            {/* 上游对部分模式（如歼灭模式）不给 deaths/kd，缺失时显示 "-" 而不是 0 */}
+            {/* 上游对部分模式不给某些字段（例如歼灭模式没有 deaths/kd/kpm），
+                缺数据时整项不渲染，而不是显示一个没有意义的 "-" */}
+            <div className="meta">
+              {md.stats?.deaths?.displayValue != null && <span>死亡 <b>{md.stats.deaths.displayValue}</b></span>}
+              {(md.stats as any)?.kd?.displayValue != null && <span>K/D <b>{(md.stats as any).kd.displayValue}</b></span>}
+              {(md.stats as any)?.kpm?.displayValue != null && <span>KPM <b>{(md.stats as any).kpm.displayValue}</b></span>}
+            </div>
           </div>)}</section>}
-        {mKits.length > 0 && <section className="sect"><div className="sec-t">兵种</div><div className="chips">
-          {mKits.map(k => <span key={k.metadata?.name as string} className="chip"><span className="nm">{k.metadata?.name}</span><b>{k.stats?.kills?.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>杀</span>{k.stats?.deaths && <><b style={{ color: "#e11d48" }}>{k.stats.deaths.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>死</span></>}</span>)}
-        </div></section>}
+        {mKits.length > 0 && <section className="sect"><div className="sec-t">兵种</div>
+          <div className="mkits">
+            {mKits.map(k => {
+              const st = (k.stats || {}) as Record<string, { displayValue?: string; value?: number } | undefined>;
+              const nm = String(k.metadata?.name || "");
+              const cn = KIT_CN[nm] || nm;
+              const kd = st.kd?.displayValue ?? ((st.kills?.value || 0) / Math.max(1, st.deaths?.value || 0)).toFixed(2);
+              return (
+                <div key={nm} className="mkit">
+                  {k.metadata?.imageUrl
+                    ? <img className="mkic" src={icon(k)} alt="" />
+                    : <span className="mkic mkic-ph" />}
+                  <div className="mktx">
+                    <div className="mknm">{cn}<span className="mken">{nm.toUpperCase()}</span></div>
+                    <div className="mkst">
+                      <span>击杀 <b className="a">{st.kills?.displayValue || 0}</b></span>
+                      <span>死亡 <b className="b">{st.deaths?.displayValue || 0}</b></span>
+                      <span>K/D <b>{kd}</b></span>
+                      {st.revives?.value ? <span>救援 <b>{st.revives.displayValue}</b></span> : null}
+                      {st.heals?.value ? <span>治疗 <b>{st.heals.displayValue}</b></span> : null}
+                      {st.assists?.value ? <span>协助 <b>{st.assists.displayValue}</b></span> : null}
+                      {st.timePlayed?.displayValue ? <span className="mut">{st.timePlayed.displayValue}</span> : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>}
         {mWeapons.length > 0 && <section className="sect"><div className="sec-t">武器</div>
-          {mWeapons.map(w => <div key={w.metadata?.name as string} className="row">{w.metadata?.imageUrl && <img className="ic" src={w.metadata.imageUrl as string} alt="" />}<span className="nm">{w.metadata?.name}</span><span className="val">{_segFacts(w.stats, [["击杀", "kills"], ["爆头", "headshots"], ["命中", "accuracy"], ["助攻", "assists"]])}{w.stats?.killsPerMinute?.displayValue ? " · " + w.stats.killsPerMinute.displayValue + " KPM" : ""}</span></div>)}
+          {mWeapons.map(w => <div key={w.metadata?.name as string} className="row">{icon(w) && <img className="ic" src={icon(w)} alt="" />}<span className="nm">{w.metadata?.name}</span><span className="val">{_segFacts(w.stats, [["击杀", "kills"], ["爆头", "headshots"], ["命中", "accuracy"], ["助攻", "assists"]])}{w.stats?.killsPerMinute?.displayValue ? " · " + w.stats.killsPerMinute.displayValue + " KPM" : ""}</span></div>)}
         </section>}
         {mVehicles.length > 0 && <section className="sect"><div className="sec-t">载具</div>
-          {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{v.metadata?.imageUrl && <img className="ic" src={v.metadata.imageUrl as string} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val">{_segFacts(v.stats, [["击杀", "kills"], ["摧毁", "destroyed"], ["伤害", "damageTo"], ["行驶", "distanceTraveled"], ["携带", "spawns"]])}</span></div>)}
+          {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{icon(v) && <img className="ic" src={icon(v)} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val">{_segFacts(v.stats, [["击杀", "kills"], ["摧毁", "destroyed"], ["伤害", "damageTo"], ["行驶", "distanceTraveled"], ["携带", "spawns"]])}</span></div>)}
         </section>}
         {mGadgets.length > 0 && <section className="sect"><div className="sec-t">装备</div>
-          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{g.metadata?.imageUrl && <img className="ic" src={g.metadata.imageUrl as string} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["击杀", "kills"], ["索敌", "spots"], ["使用", "uses"], ["携带", "spawns"], ["伤害", "damage"]], false)}</span></div>)}
+          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["击杀", "kills"], ["索敌", "spots"], ["使用", "uses"], ["携带", "spawns"], ["伤害", "damage"]], false)}</span></div>)}
         </section>}
         {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
           {mMelee.map(g => <div key={g.metadata?.name as string} className="row"><span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
@@ -732,20 +835,21 @@ const fmtDuration = (s: number): string => {
 };
 
 function SeasonBreakdown({ segments }: { segments: Segment[] }) {
+  const icon = useIconSrc();
   const grouped: Record<string, Record<string, Segment[]>> = {};
   for (const s of segments) { const season = (s.attributes?.season as string) || "其他"; const cat = (s.attributes?.category as string) || "其他"; if (!grouped[season]) grouped[season] = {}; if (!grouped[season][cat]) grouped[season][cat] = []; grouped[season][cat].push(s); }
   return <div className="space-y-8">
     <h3 className="section-title">赛季统计</h3>
     {Object.entries(grouped).sort(([a],[b])=>b.localeCompare(a)).map(([season,cats])=>(
       <div key={season}>
-        <h4 className="text-sm font-semibold text-[#0f172a] mb-3">{season}</h4>
+        <h4 className="text-sm font-semibold text-[color:var(--ink)] mb-3">{season}</h4>
         {Object.entries(cats).map(([cat,items])=>(
           <div key={cat} className="mb-5">
-            <h5 className="text-[11px] font-medium text-[#94a3b8] tracking-[1.6px] mb-3">{cat}</h5>
+            <h5 className="text-[11px] font-medium text-[color:var(--ink3)] tracking-[1.6px] mb-3">{cat}</h5>
             <div className="ogrid c3">
               {items.map(g=>(
                 <div key={(g.attributes?.key as string) || (g.metadata?.name as string)} className="omode">
-                  {g.metadata?.imageUrl && <img className="pic" src={g.metadata.imageUrl as string} alt="" />}
+                  {icon(g) && <img className={"pic" + (String(g.type).includes("mode") ? " ic-mode" : "")} src={icon(g)} alt="" />}
                   <div className="tx">
                     <div className="nm2">{g.metadata?.name as string}</div>
                     <div className="g3">
@@ -766,22 +870,22 @@ function SeasonBreakdown({ segments }: { segments: Segment[] }) {
  }
 
 function MarksDetail({ suspicion, markingTypes, setMarkingTypes, onSubmit, loading }: { suspicion: SuspicionSummary | null; markingTypes: SuspicionType[]; setMarkingTypes: (v: SuspicionType[]) => void; onSubmit: () => void; loading: boolean }) {
-  if (!suspicion) return <p className="text-[#b6c0cc] text-sm">加载中...</p>;
+  if (!suspicion) return <p className="text-[color:var(--ink3)] text-sm">加载中...</p>;
   const toggle = (type: SuspicionType) => { if (markingTypes.includes(type)) setMarkingTypes(markingTypes.filter(x=>x!==type)); else setMarkingTypes([...markingTypes,type]); };
   return <div className="space-y-4">
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#e8590c]">{suspicion.totalReports}</div><div className="text-[11px] text-[#94a3b8]">总举报数</div></div>
-      <div className="card p-4 text-center"><div className="text-xl font-bold text-[#e8590c]">{suspicion.uniqueReporters}</div><div className="text-[11px] text-[#94a3b8]">独立举报者</div></div>
-      {CREDIBILITY_LEVELS.map(c => { const n = suspicion.credibilityBreakdown?.[c.id]||0; if (n===0) return null; return <div key={c.id} className="card p-4 text-center" style={{borderTop:`2px solid ${c.color}`}}><div className="text-lg font-bold" style={{color:c.color}}>{n}</div><div className="text-[11px] text-[#94a3b8]">{c.labelZh}</div></div>; })}
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[color:var(--acc)]">{suspicion.totalReports}</div><div className="text-[11px] text-[color:var(--ink3)]">总举报数</div></div>
+      <div className="card p-4 text-center"><div className="text-xl font-bold text-[color:var(--acc)]">{suspicion.uniqueReporters}</div><div className="text-[11px] text-[color:var(--ink3)]">独立举报者</div></div>
+      {CREDIBILITY_LEVELS.map(c => { const n = suspicion.credibilityBreakdown?.[c.id]||0; if (n===0) return null; return <div key={c.id} className="card p-4 text-center" style={{borderTop:`2px solid ${c.color}`}}><div className="text-lg font-bold" style={{color:c.color}}>{n}</div><div className="text-[11px] text-[color:var(--ink3)]">{c.labelZh}</div></div>; })}
     </div>
-    <div className="card p-5"><h3 className="font-semibold text-[#0f172a] mb-2">社区标记</h3><p className="text-xs text-[#94a3b8] mb-4">通过举报可疑行为来维护健康的游戏环境。</p>
-      {suspicion.viewerMarkedToday ? <div className="bg-[#edf2ff] border border-[#bac8ff] rounded p-3 text-xs text-[#e8590c]">你今天已标记过该玩家。</div> : <>
-        <p className="text-xs text-[#94a3b8] mb-3">请选择至少一个类别：</p>
+    <div className="card p-5"><h3 className="font-semibold text-[color:var(--ink)] mb-2">社区标记</h3><p className="text-xs text-[color:var(--ink3)] mb-4">通过举报可疑行为来维护健康的游戏环境。</p>
+      {suspicion.viewerMarkedToday ? <div className="bg-[#edf2ff] border border-[#bac8ff] rounded p-3 text-xs text-[color:var(--acc)]">你今天已标记过该玩家。</div> : <>
+        <p className="text-xs text-[color:var(--ink3)] mb-3">请选择至少一个类别：</p>
         <div className="flex flex-wrap gap-2 mb-4">{SUSPICION_TYPES.map(st => <button key={st.id} onClick={()=>toggle(st.id)} className={`pill-tag cursor-pointer text-[11px] px-3 py-1.5 ${markingTypes.includes(st.id)?"ring-2 ring-offset-1":"opacity-75 hover:opacity-100"}`} style={{backgroundColor:st.color}}>{st.label}</button>)}</div>
         <button onClick={onSubmit} disabled={markingTypes.length===0||loading} className="btn-primary text-xs">{loading?"...":"提交举报"}</button>
       </>}
     </div>
-    {suspicion.typeBreakdown && <div className="card p-5"><h3 className="font-semibold text-[#0f172a] mb-3 text-sm">分类统计</h3><div className="space-y-2">{SUSPICION_TYPES.map(st=>{const c=suspicion.typeBreakdown[st.id]||0;const mx=Math.max(...Object.values(suspicion.typeBreakdown),1);return <div key={st.id} className="flex items-center gap-3 text-xs"><span className="w-16 text-[#475569]">{st.label}</span><div className="flex-1 bg-[#f1f5f9] rounded-full h-2 overflow-hidden"><div className="h-full rounded-full" style={{width:`${(c/mx)*100}%`,backgroundColor:st.color}}/></div><span className="w-6 text-right tabular-nums text-[#94a3b8]">{c}</span></div>;})}</div></div>}
+    {suspicion.typeBreakdown && <div className="card p-5"><h3 className="font-semibold text-[color:var(--ink)] mb-3 text-sm">分类统计</h3><div className="space-y-2">{SUSPICION_TYPES.map(st=>{const c=suspicion.typeBreakdown[st.id]||0;const mx=Math.max(...Object.values(suspicion.typeBreakdown),1);return <div key={st.id} className="flex items-center gap-3 text-xs"><span className="w-16 text-[color:var(--ink2)]">{st.label}</span><div className="flex-1 bg-[color:var(--surface-3)] rounded-full h-2 overflow-hidden"><div className="h-full rounded-full" style={{width:`${(c/mx)*100}%`,backgroundColor:st.color}}/></div><span className="w-6 text-right tabular-nums text-[color:var(--ink3)]">{c}</span></div>;})}</div></div>}
   </div>;
 }
 

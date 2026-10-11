@@ -165,7 +165,7 @@ function hasMovement(block: Record<string, unknown>): boolean {
 
 interface GroupItem {
   key: string;
-  metadata: { name: string; imageUrl: string };
+  metadata: { name: string; imageUrl: string; imageUrlDark?: string };
   stats: Record<string, unknown>;
 }
 
@@ -266,6 +266,8 @@ function computeGroupDelta(
       metadata: {
         name,
         imageUrl: String(md.imageUrl || ""),
+        // 深色模式的白色版本图标，由 profile builder 一并写入快照
+        imageUrlDark: String((md as unknown as Record<string, unknown>).imageUrlDark || ""),
       },
       stats: block,
     });

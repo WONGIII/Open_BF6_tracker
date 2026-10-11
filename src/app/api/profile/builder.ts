@@ -36,6 +36,28 @@ function _classImg(item: Record<string, unknown> | undefined): string {
   return resolveImage((item.id as string) || undefined, (item.altImage || item.image || "") as string);
 }
 
+/**
+ * 上游对图标同时提供了深浅两套：
+ *   兵种：image = .../white/Assault.svg   altImage = .../black/Assault.svg
+ *   武器：image = .../T_UI_xxx.webp        altImage = .../white/T_UI_xxx.webp
+ * 深色模式下必须换成白色版本，否则黑色 SVG 在深底上完全看不见。
+ * 这里把白色那版的地址一并输出为 imageUrlDark，由前端按当前主题选择。
+ */
+function _darkImg(item: Record<string, unknown> | undefined): string {
+  if (!item) return "";
+  const img = String(item.image || "");
+  const alt = String(item.altImage || "");
+  if (img.includes("/white/")) return img;
+  if (alt.includes("/white/")) return alt;
+  return "";
+}
+
+/** 生成 metadata：始终带上 imageUrlDark（没有深色版本时为空串） */
+function _md(item: Record<string, unknown> | undefined, extra: Record<string, unknown> = {}): Record<string, unknown> {
+  const imageUrlDark = _darkImg(item);
+  return imageUrlDark ? { ...extra, imageUrlDark } : { ...extra };
+}
+
 // TRN stat shape: { value, displayValue, displayType, displayName, displayCategory }
 function _stat(value: number, type = "Number", name = "", cat = ""): Record<string, unknown> {
   let dv = String(Math.round(value));
@@ -178,14 +200,14 @@ export function buildTrnProfileResponse(
     const nm = cn[String(c.className || "").toLowerCase()] || (c.className as string) || "";
     const ck = _n(c.kills), ct = _n(c.secondsPlayed), cs = _n(c.score);
     const cspm = ct > 0 ? Math.round(cs / (ct / 60)) : 0;
-    segments.push({ type: "kit", attributes: {}, metadata: { name: nm, imageUrl: _classImg(c) }, stats: { kills: _stat(ck, "Number", "Kills", "Kit"), deaths: _stat(_n(c.deaths), "Number", "Deaths", "Kit"), kd: _stat(_n(c.killDeath), "NumberPrecision2", "K/D", "Kit"), timePlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), secondsPlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), score: _stat(cs, "Number", "Score", "Kit"), killsPerMinute: _stat(_n(c.kpm), "NumberPrecision2", "KPM", "Kit"), scorePerMinute: _stat(cspm, "Number", "SPM", "Kit"), assists: _stat(_n(c.assists), "Number", "Assists", "Kit"), revives: _stat(_n(c.revives), "Number", "Revives", "Kit"), spawns: _stat(_n(c.spawns), "Number", "Spawns", "Kit") } });
+    segments.push({ type: "kit", attributes: {}, metadata: { name: nm, imageUrl: _classImg(c), imageUrlDark: _darkImg(c) }, stats: { kills: _stat(ck, "Number", "Kills", "Kit"), deaths: _stat(_n(c.deaths), "Number", "Deaths", "Kit"), kd: _stat(_n(c.killDeath), "NumberPrecision2", "K/D", "Kit"), timePlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), secondsPlayed: _stat(ct, "TimeSeconds", "Time", "Kit"), score: _stat(cs, "Number", "Score", "Kit"), killsPerMinute: _stat(_n(c.kpm), "NumberPrecision2", "KPM", "Kit"), scorePerMinute: _stat(cspm, "Number", "SPM", "Kit"), assists: _stat(_n(c.assists), "Number", "Assists", "Kit"), revives: _stat(_n(c.revives), "Number", "Revives", "Kit"), spawns: _stat(_n(c.spawns), "Number", "Spawns", "Kit") } });
   }
 
   // Weapons
   for (const wp of (stats.weapons || []) as Record<string, unknown>[]) {
     const n = (wp.weaponName || wp.name || "") as string;
     const kk = _n(wp.kills), tt = _n(wp.secondsPlayed || wp.timeEquipped), ff = _n(wp.shotsFired), hh = _n(wp.shotsHit);
-    segments.push({ type: "weapon", attributes: {}, metadata: { name: n, imageUrl: _img(wp), category: CAT_ZH[(wp.type as string)||""] || (wp.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Weapon"), killsPerMinute: _stat(tt?parseFloat((kk/(tt/60)).toFixed(2)):0,"NumberPrecision2","KPM","Weapon"), headshots: _stat(_n(wp.headshots||wp.headShots),"Number","HS","Weapon"), headshotKills: _stat(_n(wp.headshotKills),"Number","HS Kills","Weapon"), bodyKills: _stat(_n(wp.bodyKills),"Number","Body Kills","Weapon"), hipfireKills: _stat(_n(wp.hipfireKills),"Number","Hipfire Kills","Weapon"), scopedKills: _stat(_n(wp.scopedKills),"Number","Scoped Kills","Weapon"), multiKills: _stat(_n(wp.multiKills),"Number","Multi Kills","Weapon"), damage: _stat(_n(wp.damage),"Number","Damage","Weapon"), assistsDamage: _stat(_n(wp.assistsDamage),"Number","Assist Damage","Weapon"), shotsFired: _stat(ff,"Number","Shots Fired","Weapon"), shotsHit: _stat(hh,"Number","Shots Hit","Weapon"), spawns: _stat(_n(wp.spawns),"Number","Spawns","Weapon"), accuracy: _stat(ff?parseFloat(((hh/ff)*100).toFixed(1)):0,"Percentage","Acc","Weapon"), timeEquipped: _stat(tt,"TimeSeconds","Time","Weapon") } });
+    segments.push({ type: "weapon", attributes: {}, metadata: { name: n, imageUrl: _img(wp), imageUrlDark: _darkImg(wp), category: CAT_ZH[(wp.type as string)||""] || (wp.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Weapon"), killsPerMinute: _stat(tt?parseFloat((kk/(tt/60)).toFixed(2)):0,"NumberPrecision2","KPM","Weapon"), headshots: _stat(_n(wp.headshots||wp.headShots),"Number","HS","Weapon"), headshotKills: _stat(_n(wp.headshotKills),"Number","HS Kills","Weapon"), bodyKills: _stat(_n(wp.bodyKills),"Number","Body Kills","Weapon"), hipfireKills: _stat(_n(wp.hipfireKills),"Number","Hipfire Kills","Weapon"), scopedKills: _stat(_n(wp.scopedKills),"Number","Scoped Kills","Weapon"), multiKills: _stat(_n(wp.multiKills),"Number","Multi Kills","Weapon"), damage: _stat(_n(wp.damage),"Number","Damage","Weapon"), assistsDamage: _stat(_n(wp.assistsDamage),"Number","Assist Damage","Weapon"), shotsFired: _stat(ff,"Number","Shots Fired","Weapon"), shotsHit: _stat(hh,"Number","Shots Hit","Weapon"), spawns: _stat(_n(wp.spawns),"Number","Spawns","Weapon"), accuracy: _stat(ff?parseFloat(((hh/ff)*100).toFixed(1)):0,"Percentage","Acc","Weapon"), timeEquipped: _stat(tt,"TimeSeconds","Time","Weapon") } });
   }
   // Weapon groups (weaponGroups)
   for (const wg of (stats.weaponGroups || []) as Record<string, unknown>[]) {
@@ -197,7 +219,7 @@ export function buildTrnProfileResponse(
   // Vehicles
   for (const v of (stats.vehicles || []) as Record<string, unknown>[]) {
     const n = (v.vehicleName || v.name || "") as string, kk = _n(v.kills), tt = _n(v.timeIn || v.secondsPlayed || v.timeInVehicle);
-    segments.push({ type: "vehicle", attributes: {}, metadata: { name: n, imageUrl: _img(v), category: CAT_ZH[(v.type as string)||""] || (v.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Vehicle"), killsPerMinute: _stat(_n(v.killsPerMinute),"NumberPrecision2","KPM","Vehicle"), destroyed: _stat(_n(v.destroyed||v.vehiclesDestroyed),"Number","Destroyed","Vehicle"), damage: _stat(_n(v.damage),"Number","Damage","Vehicle"), damageTo: _stat(_n(v.damageTo),"Number","DmgTaken","Vehicle"), roadKills: _stat(_n(v.roadKills),"Number","RoadKills","Vehicle"), multiKills: _stat(_n(v.multiKills),"Number","Multi Kills","Vehicle"), driverAssists: _stat(_n(v.driverAssists),"Number","Driver Assists","Vehicle"), passengerAssists: _stat(_n(v.passengerAssists),"Number","Passenger Assists","Vehicle"), assists: _stat(_n(v.assists),"Number","Assists","Vehicle"), vehiclesDestroyedWith: _stat(_n(v.vehiclesDestroyedWith),"Number","Vehicles Destroyed","Vehicle"), distanceTraveled: _stat(_n(v.distanceTraveled),"Number","Distance","Vehicle"), timeInVehicle: _stat(tt,"TimeSeconds","Time","Vehicle"), timeIn: _stat(tt,"TimeSeconds","Time","Vehicle"), spawns: _stat(_n(v.spawns),"Number","Spawns","Vehicle") } });
+    segments.push({ type: "vehicle", attributes: {}, metadata: { name: n, imageUrl: _img(v), imageUrlDark: _darkImg(v), category: CAT_ZH[(v.type as string)||""] || (v.type as string)||"" }, stats: { kills: _stat(kk,"Number","Kills","Vehicle"), killsPerMinute: _stat(_n(v.killsPerMinute),"NumberPrecision2","KPM","Vehicle"), destroyed: _stat(_n(v.destroyed||v.vehiclesDestroyed),"Number","Destroyed","Vehicle"), damage: _stat(_n(v.damage),"Number","Damage","Vehicle"), damageTo: _stat(_n(v.damageTo),"Number","DmgTaken","Vehicle"), roadKills: _stat(_n(v.roadKills),"Number","RoadKills","Vehicle"), multiKills: _stat(_n(v.multiKills),"Number","Multi Kills","Vehicle"), driverAssists: _stat(_n(v.driverAssists),"Number","Driver Assists","Vehicle"), passengerAssists: _stat(_n(v.passengerAssists),"Number","Passenger Assists","Vehicle"), assists: _stat(_n(v.assists),"Number","Assists","Vehicle"), vehiclesDestroyedWith: _stat(_n(v.vehiclesDestroyedWith),"Number","Vehicles Destroyed","Vehicle"), distanceTraveled: _stat(_n(v.distanceTraveled),"Number","Distance","Vehicle"), timeInVehicle: _stat(tt,"TimeSeconds","Time","Vehicle"), timeIn: _stat(tt,"TimeSeconds","Time","Vehicle"), spawns: _stat(_n(v.spawns),"Number","Spawns","Vehicle") } });
   }
   // Vehicle groups
   for (const vg of (stats.vehicleGroups || []) as Record<string, unknown>[]) {
@@ -221,7 +243,7 @@ export function buildTrnProfileResponse(
     const gsec = _n(g.secondsPlayed);
     const gmatches = _n(g.matches);
     segments.push({
-      type: "gamemode", attributes: {}, metadata: { name: gzh, imageUrl: _img(g) },
+      type: "gamemode", attributes: {}, metadata: { name: gzh, imageUrl: _img(g), imageUrlDark: _darkImg(g) },
       stats: {
         wins: _stat(_n(g.wins), "Number", "Wins", "Gamemode"),
         losses: _stat(_n(g.losses), "Number", "Losses", "Gamemode"),
@@ -260,20 +282,20 @@ export function buildTrnProfileResponse(
   for (const gg of (stats.gameModeGroups || []) as Record<string, unknown>[]) {
     const n = (gg.gamemodeName || gg.name || "") as string;
     if (!n || n === "All") continue;
-    segments.push({ type: "gamemode-category", attributes: {}, metadata: { name: n, imageUrl: _img(gg) }, stats: { kills: _stat(_n(gg.kills),"Number","Kills","GameModeGroup"), winPercent: _stat(_p(gg.winPercent),"Percentage","Win%","GameModeGroup") } });
+    segments.push({ type: "gamemode-category", attributes: {}, metadata: { name: n, imageUrl: _img(gg), imageUrlDark: _darkImg(gg) }, stats: { kills: _stat(_n(gg.kills),"Number","Kills","GameModeGroup"), winPercent: _stat(_p(gg.winPercent),"Percentage","Win%","GameModeGroup") } });
   }
 
   // Maps
   let mp = (stats.maps || []) as Record<string, unknown>[];
   if (!Array.isArray(mp) && typeof stats.maps === "object") mp = Object.entries(stats.maps as Record<string, unknown>).map(([k, v]) => ({ mapName: k, ...(v as object) }));
-  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map"), secondsPlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map"), timePlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map") } });
+  for (const m of mp) segments.push({ type: "level", attributes: {}, metadata: { name: String(m.mapName || m.name || ""), imageUrl: _img(m), imageUrlDark: _darkImg(m) }, stats: { wins: _stat(_n(m.wins), "Number", "Wins", "Map"), losses: _stat(_n(m.losses), "Number", "Losses", "Map"), matchesPlayed: _stat(_n(m.matchesPlayed || m.matches || m.roundsPlayed), "Number", "Matches", "Map"), secondsPlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map"), timePlayed: _stat(_n(m.secondsPlayed || _timeToSeconds(m.timePlayed)), "TimeSeconds", "Time", "Map") } });
 
   // Gadgets
   for (const g of (stats.gadgets || []) as Record<string, unknown>[]) {
     // 上游 gadget 带 damage / uses / spots / assistsDamage 等，此前只输出了 kills，
     // delta 声明的那些计数器全部取不到。
     const gsec = _n(g.secondsPlayed);
-    segments.push({ type: "gadget", attributes: {}, metadata: { name: String(g.gadgetName || g.name || ""), imageUrl: _img(g) }, stats: {
+    segments.push({ type: "gadget", attributes: {}, metadata: { name: String(g.gadgetName || g.name || ""), imageUrl: _img(g), imageUrlDark: _darkImg(g) }, stats: {
       kills: _stat(_n(g.kills), "Number", "Kills", "Gadget"),
       damage: _stat(_n(g.damage), "Number", "Damage", "Gadget"),
       uses: _stat(_n(g.uses), "Number", "Uses", "Gadget"),
@@ -333,7 +355,7 @@ export function buildTrnProfileResponse(
       segments.push({
         type: "season-gamemode",
         attributes: { season: seasonLabel, category, key: `${seasonKey}/${modeKey}` },
-        metadata: { name: gzh, imageUrl: _img(modeData) },
+        metadata: { name: gzh, imageUrl: _img(modeData), imageUrlDark: _darkImg(modeData) },
         stats: {
           kills: _stat(gk, "Number", "Kills", "Season"),
           deaths: _stat(gd, "Number", "Deaths", "Season"),
@@ -360,7 +382,7 @@ export function buildTrnProfileResponse(
       for (const wp of (modeData.weapons || []) as Record<string, unknown>[]) {
         const kk = _n(wp.kills); if (kk <= 0) continue;
         const n = String(wp.weaponName || wp.name || "");
-        segments.push({ type: "season-weapon", attributes: attr, metadata: { name: n, imageUrl: _img(wp), gamemodeName: gzh },
+        segments.push({ type: "season-weapon", attributes: attr, metadata: { name: n, imageUrl: _img(wp), imageUrlDark: _darkImg(wp), gamemodeName: gzh },
           stats: { kills: _stat(kk,"Number","Kills","SWpn"), kpm: _stat(_n(wp.killsPerMinute),"NumberPrecision2","KPM","SWpn"), accuracy: _stat(_p(wp.accuracy),"Percentage","ACC","SWpn"), headshots: _stat(_p(wp.headshots||wp.headshots),"Percentage","HS%","SWpn"), timeEquipped: _stat(_n(wp.timeEquipped),"TimeSeconds","Time","SWpn") } });
       }
       for (const wp of (modeData.weaponGroups || []) as Record<string, unknown>[]) {
@@ -373,7 +395,7 @@ export function buildTrnProfileResponse(
       for (const v of (modeData.vehicles || []) as Record<string, unknown>[]) {
         const kk = _n(v.kills); if (kk <= 0) continue;
         const n = String(v.vehicleName || v.name || "");
-        segments.push({ type: "season-vehicle", attributes: attr, metadata: { name: n, imageUrl: _img(v), gamemodeName: gzh },
+        segments.push({ type: "season-vehicle", attributes: attr, metadata: { name: n, imageUrl: _img(v), imageUrlDark: _darkImg(v), gamemodeName: gzh },
           stats: { kills: _stat(kk,"Number","Kills","SVeh"), kpm: _stat(_n(v.killsPerMinute),"NumberPrecision2","KPM","SVeh"), destroyed: _stat(_n(v.destroyed||v.vehiclesDestroyed),"Number","Destroyed","SVeh"), timeIn: _stat(_n(v.timeIn),"TimeSeconds","Time","SVeh") } });
       }
       for (const v of (modeData.vehicleGroups || []) as Record<string, unknown>[]) {
@@ -386,7 +408,7 @@ export function buildTrnProfileResponse(
       for (const g of (modeData.gadgets || []) as Record<string, unknown>[]) {
         const kk = _n(g.kills); if (kk <= 0) continue;
         const n = String(g.gadgetName || g.name || "");
-        segments.push({ type: "season-gadget", attributes: attr, metadata: { name: n, imageUrl: _img(g), gamemodeName: gzh },
+        segments.push({ type: "season-gadget", attributes: attr, metadata: { name: n, imageUrl: _img(g), imageUrlDark: _darkImg(g), gamemodeName: gzh },
           stats: { kills: _stat(kk,"Number","Kills","SGad") } });
       }
       for (const g of (modeData.gadgetGroups || []) as Record<string, unknown>[]) {
@@ -402,20 +424,20 @@ export function buildTrnProfileResponse(
         const nm = cn[String(c.className || "").toLowerCase()] || (c.className as string) || "";
         const ck = _n(c.kills), ct = _n(c.secondsPlayed);
         if (ck <= 0) continue;
-        segments.push({ type: "season-class", attributes: attr, metadata: { name: nm, imageUrl: _classImg(c), gamemodeName: gzh },
+        segments.push({ type: "season-class", attributes: attr, metadata: { name: nm, imageUrl: _classImg(c), imageUrlDark: _darkImg(c), gamemodeName: gzh },
           stats: { kills: _stat(ck,"Number","Kills","SKit"), kd: _stat(_n(c.killDeath),"NumberPrecision2","K/D","SKit"), kpm: _stat(ct?parseFloat((ck/(ct/60)).toFixed(2)):0,"NumberPrecision2","KPM","SKit"), timePlayed: _stat(ct,"TimeSeconds","Time","SKit"), score: _stat(_n(c.score),"Number","Score","SKit") } });
       }
 
       for (const m of (modeData.maps || []) as Record<string, unknown>[]) {
         const mn = String(m.mapName || m.name || ""); if (!mn || mn === "All") continue;
-        segments.push({ type: "season-map", attributes: attr, metadata: { name: mn, imageUrl: _img(m), gamemodeName: gzh },
+        segments.push({ type: "season-map", attributes: attr, metadata: { name: mn, imageUrl: _img(m), imageUrlDark: _darkImg(m), gamemodeName: gzh },
           stats: { wins: _stat(_n(m.wins),"Number","Wins","SMap"), losses: _stat(_n(m.losses),"Number","Losses","SMap"), matches: _stat(_n(m.matches),"Number","Matches","SMap"), winPercent: _stat(_p(m.winPercent),"Percentage","Win%","SMap") } });
       }
 
       for (const m of (modeData.gameModes || []) as Record<string, unknown>[]) {
         const gn = String(m.gamemodeName || m.name || "");
         if (!gn || gn === "All" || gn === "Official" || gn === "Multiplayer") continue;
-        segments.push({ type: "season-mode", attributes: attr, metadata: { name: MODE_ZH[gn] || gn, imageUrl: _img(m), gamemodeName: gzh },
+        segments.push({ type: "season-mode", attributes: attr, metadata: { name: MODE_ZH[gn] || gn, imageUrl: _img(m), imageUrlDark: _darkImg(m), gamemodeName: gzh },
           stats: { wins: _stat(_n(m.wins),"Number","Wins","SMode"), losses: _stat(_n(m.losses),"Number","Losses","SMode"), kills: _stat(_n(m.kills),"Number","Kills","SMode"), kd: _stat(_n(m.killDeath),"NumberPrecision2","K/D","SMode"), kpm: _stat(_n(m.kpm),"NumberPrecision2","KPM","SMode"), matches: _stat(_n(m.matches),"Number","Matches","SMode") } });
       }
 
