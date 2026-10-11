@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchStats, fetchStatsById, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
-import { getProfile, upsertProfile, touchSearchTimestamp } from "@/lib/db";
+import { getProfile, upsertProfile, touchSearchTimestamp, setProfileDisplayName, getAliases, upsertAliases } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 
@@ -38,7 +38,15 @@ async function buildAndStore(
   const response = buildTrnProfileResponse(stats as any, profileData, displayName, platform, hash);
   const identifier = String(stats.userId);
   upsertProfile(identifier, displayName, platform, hash, response);
-  return NextResponse.json(response);
+
+  // 顺手把当前名字记成别名，方便以后用同一个账号的其它名字搜到
+  try {
+    upsertAliases([{ identifier, platform, alias: displayName, source: "profile" }]);
+  } catch {
+    // 写别名失败不影响档案返回
+  }
+  const aliases = getAliases(identifier).filter((a) => a !== displayName);
+  return NextResponse.json({ ...response, aliases });
 }
 
 export async function GET(request: NextRequest) {
@@ -60,8 +68,24 @@ export async function GET(request: NextRequest) {
     const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;
     const pid = ((cached as any).data?.platformInfo?.platformUserIdentifier) as string | undefined;
     if (pid) touchSearchTimestamp(pid);
+
+    // 缓存的用户名如果退化成了一串数字 ID（档案是在没有 name 参数的情况下构建的，
+    // 比如直接粘贴 nucleusId 查询），用本次请求传入的名字修正它。
+    // 只在「当前名字 == 标识符」时改写，不会覆盖掉真实用户名。
+    if (displayNameOverride && pid) {
+      const curName = String((cached as any).data?.platformInfo?.platformUserHandle || "");
+      if (curName && curName === String(pid) && displayNameOverride !== curName) {
+        if (setProfileDisplayName(String(pid), displayNameOverride)) {
+          (cached as any).data.platformInfo.platformUserHandle = displayNameOverride;
+        }
+      }
+    }
+
     refreshInBackground(query, storedPlatform);
-    return NextResponse.json(cached);
+
+    // 附带该账号记录过的别名（其它平台上的显示名），用于前端展示
+    const aliases = pid ? getAliases(String(pid)).filter((a) => a !== String((cached as any).data?.platformInfo?.platformUserHandle || "")) : [];
+    return NextResponse.json({ ...cached, aliases });
   }
 
   try {

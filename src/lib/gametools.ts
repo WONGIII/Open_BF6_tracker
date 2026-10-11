@@ -315,13 +315,14 @@ export interface PlayerCandidate {
   personaId: string;
   platformId: string;
   createdAt: string;
+  avatarUrl?: string;
 }
 
-export async function searchPlayersByName(query: string): Promise<PlayerCandidate[]> {
-  const url = `${GAMETOOLS_BASE}/bf6/player/?name=${encodeURIComponent(query)}&limit=100`;
-  // Don't use _fetchJson cache — /bf6/player/ response lacks userId so
-  // cache never gets populated, but _fetchJson's cache lookup on OTHER
-  // endpoints can interfere. Use raw fetch with long timeout.
+// 单次请求 /bf6/player/。
+// Don't use _fetchJson cache — /bf6/player/ response lacks userId so
+// cache never gets populated, but _fetchJson's cache lookup on OTHER
+// endpoints can interfere. Use raw fetch with long timeout.
+async function fetchPlayerSearch(url: string): Promise<PlayerCandidate[]> {
   const resp = await fetch(url, {
     headers: { Accept: "application/json" },
     signal: AbortSignal.timeout(1_000_000),
@@ -335,6 +336,87 @@ export async function searchPlayersByName(query: string): Promise<PlayerCandidat
   const results = (raw as Record<string, unknown>).results;
   if (!Array.isArray(results)) return [];
   return results.map(toCandidate).filter(Boolean) as PlayerCandidate[];
+}
+
+/**
+ * gametools 的全局玩家查询：/bfglobal/player/
+ *
+ * 按 EA 名字 / playerid / oid 解析出该用户的账号标识，
+ * 返回 personaId / userId(nucleusId) / personaName / platformId。
+ * 这是 EA 目录直查，不经过 /bf6/player/ 那套按 URL 缓存的结果，
+ * 所以能作为搜索的兜底补上 EA 账号。
+ * 参数 platform 默认 pc。查不到返回 404。
+ */
+export async function searchBfGlobalPlayer(query: string): Promise<PlayerCandidate[]> {
+  const url = `${GAMETOOLS_BASE}/bfglobal/player/?name=${encodeURIComponent(query)}`;
+  try {
+    const resp = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!resp.ok) return [];
+    const o = (await resp.json()) as Record<string, unknown>;
+    if (!o || typeof o !== "object" || Array.isArray(o)) return [];
+    const id = String(o.userId || "").trim();
+    if (!/^\d{6,}$/.test(id)) return [];
+    return [{
+      displayName: String(o.personaName || query),
+      username: String(o.personaName || query),
+      platform: platformIdToSlug(o.platformId),
+      nucleusId: id,
+      personaId: String(o.personaId || ""),
+      platformId: String(o.platformId ?? ""),
+      createdAt: "",
+      avatarUrl: String(o.avatar || ""),
+    } as PlayerCandidate];
+  } catch {
+    return [];
+  }
+}
+
+/** /bfglobal/ 的 platformId -> 我们的平台 slug */
+function platformIdToSlug(platformId: unknown): string {
+  switch (Number(platformId)) {
+    case 1: return "ea";        // PC / EA App
+    case 2: return "psn";       // PS4/PS5
+    case 4: return "xbox";      // Xbox One
+    default: return "ea";
+  }
+}
+
+export async function searchPlayersByName(query: string): Promise<PlayerCandidate[]> {
+  const q = encodeURIComponent(query);
+
+  // 同时请求三个不同参数组合的 URL，然后合并去重。
+  //
+  // 原因：上游按「完整 URL」缓存结果，并且会把查询 EA 后端失败时的空结果也缓存下来，
+  // 所以同一个名字换个参数可能就是完全不同的结果。另外 limit=100 是上游的上限边界值，
+  // 实测这个取值会命中坏路径：
+  //   ?name=西伯利亚土狗&limit=100 -> 0 条（稳定复现）
+  //   ?name=西伯利亚土狗          -> 2 条
+  //   ?name=wang&limit=100        -> 0 条   而 &limit=60 是 50 条
+  // 因此这里只用「不带 limit」「limit=60」「limit=99」三种写法，并行请求后合并。
+  const urls = [
+    `${GAMETOOLS_BASE}/bf6/player/?name=${q}`,
+    `${GAMETOOLS_BASE}/bf6/player/?name=${q}&limit=60`,
+    `${GAMETOOLS_BASE}/bf6/player/?name=${q}&limit=99`,
+  ];
+
+  const settled = await Promise.allSettled(urls.map((u) => fetchPlayerSearch(u)));
+
+  const merged: PlayerCandidate[] = [];
+  const seen = new Set<string>();
+  for (const res of settled) {
+    if (res.status !== "fulfilled") continue;
+    for (const c of res.value) {
+      // 同一个 EA 账号在不同平台上的 nucleusId 是相同的，所以必须带上平台一起判重
+      const key = `${c.nucleusId}::${c.platform}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(c);
+    }
+  }
+  return merged;
 }
 
 function toCandidate(r: unknown): PlayerCandidate | null {

@@ -68,6 +68,22 @@ function _migrate(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_matches_player ON matches(platform_user_identifier, created_at DESC);
 
+    -- 玩家别名：同一个 EA 账号在不同平台上可能有不同的显示名
+    -- （实测 真不是赵括 是 Steam 显示名，而该账号的 EA 名是 advice2024，
+    -- 两者 nucleusId 相同）。搜索命中的名字都记在这里，供后续本地匹配使用。
+    CREATE TABLE IF NOT EXISTS player_aliases (
+      platform_user_identifier TEXT NOT NULL,
+      platform TEXT NOT NULL DEFAULT '',
+      alias TEXT NOT NULL,
+      alias_lower TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'search',
+      created_at TEXT NOT NULL,
+      last_seen_at TEXT NOT NULL,
+      PRIMARY KEY (platform_user_identifier, alias_lower)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_alias_lower ON player_aliases(alias_lower);
+
     CREATE TABLE IF NOT EXISTS tracked_count_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       calculated_at TEXT NOT NULL,
@@ -228,6 +244,99 @@ export function touchSearchTimestamp(platformUserIdentifier: string): void {
   const db = getDb();
   db.prepare("UPDATE profiles SET last_searched_at = ? WHERE platform_user_identifier = ?")
     .run(new Date().toISOString(), platformUserIdentifier);
+}
+
+/** 记录一个别名（同名重复记录只刷新时间，不覆盖首次来源） */
+export function upsertAlias(
+  platformUserIdentifier: string,
+  platform: string,
+  alias: string,
+  source = "search"
+): void {
+  const name = String(alias || "").trim();
+  const ident = String(platformUserIdentifier || "").trim();
+  if (!name || !ident) return;
+  const now = new Date().toISOString();
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO player_aliases
+       (platform_user_identifier, platform, alias, alias_lower, source, created_at, last_seen_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(platform_user_identifier, alias_lower) DO UPDATE SET
+       last_seen_at = excluded.last_seen_at,
+       platform = excluded.platform,
+       alias = excluded.alias`
+  ).run(ident, String(platform || ""), name, name.toLowerCase(), source, now, now);
+}
+
+/** 批量记录别名 */
+export function upsertAliases(
+  rows: { identifier: string; platform?: string; alias: string; source?: string }[]
+): void {
+  if (!rows.length) return;
+  const db = getDb();
+  const tx = db.transaction(() => {
+    for (const r of rows) upsertAlias(r.identifier, r.platform || "", r.alias, r.source || "search");
+  });
+  tx();
+}
+
+/** 某个档案的全部别名（按最近出现时间倒序） */
+export function getAliases(platformUserIdentifier: string): string[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT alias FROM player_aliases
+        WHERE platform_user_identifier = ?
+        ORDER BY last_seen_at DESC`
+    )
+    .all(platformUserIdentifier) as { alias: string }[];
+  return rows.map((r) => r.alias);
+}
+
+/**
+ * 按别名查找已追踪档案的 ID。
+ * 返回命中的 identifier 列表，供 /api/search 做本地兜底匹配。
+ */
+export function findTrackedByAlias(query: string): { identifier: string; alias: string; platform: string }[] {
+  const q = String(query || "").trim().toLowerCase();
+  if (q.length < 2) return [];
+  const db = getDb();
+  return db
+    .prepare(
+      `SELECT a.platform_user_identifier AS identifier, a.alias, a.platform
+         FROM player_aliases a
+         JOIN profiles p ON p.platform_user_identifier = a.platform_user_identifier
+        WHERE a.alias_lower LIKE ?
+        ORDER BY a.last_seen_at DESC
+        LIMIT 50`
+    )
+    .all("%" + q + "%") as { identifier: string; alias: string; platform: string }[];
+}
+
+/**
+ * 修正档案的显示名。
+ *
+ * 档案按纯数字 ID 查询时（例如直接粘贴 nucleusId，或跳转时没带 name 参数），
+ * 拿不到用户名就会退化成用 ID 当名字并被缓存下来，之后所有访问都显示这串数字。
+ * 这里只改写 platformUserHandle，其余字段一律保持原样。
+ */
+export function setProfileDisplayName(platformUserIdentifier: string, name: string): boolean {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT trn_profile_json FROM profiles WHERE platform_user_identifier = ?")
+    .get(platformUserIdentifier) as { trn_profile_json: string } | undefined;
+  if (!row?.trn_profile_json) return false;
+  try {
+    const json = JSON.parse(row.trn_profile_json) as { data?: { platformInfo?: Record<string, unknown> } };
+    if (!json?.data?.platformInfo) return false;
+    json.data.platformInfo.platformUserHandle = name;
+    db.prepare("UPDATE profiles SET name = ?, trn_profile_json = ? WHERE platform_user_identifier = ?")
+      .run(name, JSON.stringify(json), platformUserIdentifier);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function upsertProfile(

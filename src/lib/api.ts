@@ -38,7 +38,12 @@ export async function fetchPlayerProfile(
   platform?: string,
   displayName?: string,
   refresh?: boolean
-): Promise<{ data: { platformInfo: Record<string, unknown>; segments: Record<string, unknown>[] }; deltaInfo: Record<string, unknown> }> {
+): Promise<{
+  data: { platformInfo: Record<string, unknown>; segments: Record<string, unknown>[] };
+  deltaInfo: Record<string, unknown>;
+  /** 该账号记录过的其它名字（其它平台显示名） */
+  aliases?: string[];
+}> {
   const isNumericId = /^\d{10,}$/.test(query);
   const key = isNumericId ? "identifier" : "query";
   const params = new URLSearchParams({ [key]: query });

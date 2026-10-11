@@ -28,6 +28,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const [refreshCountdown, setRefreshCountdown] = useState(300);
   const [refreshing, setRefreshing] = useState(false);
   const [matchTotal, setMatchTotal] = useState(0);
+  // 该账号记录过的别名（其它平台上的显示名）
+  const [aliases, setAliases] = useState<string[]>([]);
   const [matchPage, setMatchPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
@@ -47,6 +49,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         console.log("[PlayerClient] resp received, has data:", !!resp.data, "segments:", (resp.data as any)?.segments?.length);
         if (cancelled) { console.log("[PlayerClient] cancelled after fetch"); return; }
         setProfileData(resp.data as Record<string, unknown>);
+        setAliases(resp.aliases || []);
         const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
         const resIdent = String(resInfo.platformUserIdentifier || "");
         // Save to search history (localStorage)
@@ -99,6 +102,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
       const urlPlatform = urlParams.get("platform") || undefined;
       const resp = await fetchPlayerProfile(playerId, urlPlatform, displayName, true);
       setProfileData(resp.data as Record<string, unknown>);
+      setAliases(resp.aliases || []);
       const resInfo = (resp.data.platformInfo || {}) as Record<string, unknown>;
       const resIdent = String(resInfo.platformUserIdentifier || "");
       const [md, sd] = await Promise.all([
@@ -217,6 +221,15 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
                 <span>最近更新 {loadedLabel}</span>
                 <span>·</span>
                 <span>已追踪 {trackedCount} 场</span>
+                {aliases.length > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="alias" title={aliases.join(" / ")}>
+                      别名 {aliases.slice(0, 3).join(" / ")}
+                      {aliases.length > 3 ? ` 等 ${aliases.length} 个` : ""}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="hero-sp" />
