@@ -276,6 +276,12 @@ export function upsertAlias(
   const name = String(alias || "").trim();
   const ident = String(platformUserIdentifier || "").trim();
   if (!name || !ident) return;
+  // 别名必须是用户名，不能是「唯一 ID」。
+  // 上游/档案在拿不到用户名时会用 nucleusId 兜底当作 displayName，
+  // 那种纯数字串存进别名表毫无意义（而且会显示成「别名 1015016008889」）。
+  if (/^\d{5,}$/.test(name)) return;
+  // 和标识符本身完全相同的也不算别名
+  if (name === ident) return;
   const now = new Date().toISOString();
   const db = getDb();
   db.prepare(

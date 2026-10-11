@@ -31,6 +31,8 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
   const [matchTotal, setMatchTotal] = useState(0);
   // 该账号记录过的别名（其它平台上的显示名）
   const [aliases, setAliases] = useState<string[]>([]);
+  // 地图分类的两种视图：全部地图 / 按模式分组
+  const [mapView, setMapView] = useState<"all" | "bymode">("all");
   const [matchPage, setMatchPage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
@@ -258,11 +260,28 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
         </div>
         <div className="card px-5 pt-4 pb-0 mb-4 mt-[18px]">
           <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">
-            {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}
+            {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[color:var(--acc)]"/>}</button>)}
           </div>
-          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div>
-            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[color:var(--line2)]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"var(--ink)":"var(--ink3)"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[#f97316]"/>}</button>)}</div></>}
+          {!showMatches && l1 !== "marks" && <><div className="flex items-center gap-7 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">{l2Items.map(item => <button key={item.id} onClick={() => setL2(item.id)} className={navBtn2(l2===item.id)}>{item.label}{l2===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[color:var(--acc)]"/>}</button>)}</div>
+            <div className="flex items-center gap-5 pb-3 flex-wrap border-b border-[color:var(--line2)]">{l3Items.map(item => <button key={item.id} onClick={() => setL3(item.id)} className="text-[13px] relative pb-1 transition-colors cursor-pointer bg-transparent border-0 outline-none" style={{color:l3===item.id?"var(--ink)":"var(--ink3)"}}>{item.label}{l3===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[color:var(--acc)]"/>}</button>)}</div></>}
         </div>
+        {/* 地图分类的两种视图：全部地图 / 按模式分组（生涯与赛季都提供） */}
+        {!showMatches && l1 !== "marks" && l3 === "maps" && (
+          <div className="flex items-center gap-2 pb-3 flex-wrap">
+            <span className="text-[12px] text-[color:var(--ink3)] mr-1">地图视图</span>
+            {([["all", "全部地图"], ["bymode", "按模式分组"]] as const).map(([id, label]) => (
+              <button key={id} onClick={() => setMapView(id)}
+                className="text-[12.5px] px-3 py-1 border transition-colors"
+                style={{
+                  borderColor: mapView === id ? "var(--acc)" : "var(--line2)",
+                  color: mapView === id ? "var(--acc)" : "var(--ink2)",
+                  background: mapView === id ? "var(--acc-soft)" : "var(--surface-2)",
+                }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         {showMatches ? <>
           <MatchesDetail matches={matches} expanded={expandedMatch} onToggle={setExpandedMatch}/>
           {matches.length < matchTotal && (
@@ -283,11 +302,13 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           :l3==="vehicles"?<VehiclesDetail vehicles={vehicles} cats={[]}/>
           :l3==="classes"?<ClassesDetail kits={kits}/>
           :l3==="modes"?<ModesDetail gamemodes={gamemodes}/>
-          :l3==="maps"?<MapsDetail levels={levels}/>
+          :l3==="maps"?(mapView==="bymode"
+            ? <MapGrid items={seasonMaps} showMode/>
+            : <MapGrid items={levels.filter((x: Segment) => (x.metadata?.name as string) !== "All")}/>)
           :l3==="gadgets"?<GadgetsDetail gadgets={gadgets}/>
           :l3==="melee"?<MeleeDetail melees={melees}/>
           :<OverviewMain ov={o} topW={topW} topV={topV} topK={topK} topM={topM} kits={kits} seasonGm={seasonGm}/>}
-        </> : <FilteredView l1={l1} l2={l2} l3={l3} seasonGm={seasonGm} seasonWeapons={seasonWeapons} seasonVehicles={seasonVehicles} seasonGadgets={seasonGadgets} seasonClasses={seasonClasses} seasonMaps={seasonMaps} seasonModes={seasonModes} seasonMelee={seasonMelee} weapons={weapons} vehicles={vehicles} kits={kits} gamemodes={gamemodes} levels={levels} gadgets={gadgets} melees={melees} catFilter={catFilter} seasonFilter={seasonFilter}/>
+        </> : <FilteredView l1={l1} l2={l2} l3={l3} seasonGm={seasonGm} seasonWeapons={seasonWeapons} seasonVehicles={seasonVehicles} seasonGadgets={seasonGadgets} seasonClasses={seasonClasses} seasonMaps={seasonMaps} seasonModes={seasonModes} seasonMelee={seasonMelee} weapons={weapons} vehicles={vehicles} kits={kits} gamemodes={gamemodes} levels={levels} gadgets={gadgets} melees={melees} catFilter={catFilter} seasonFilter={seasonFilter} mapView={mapView}/>
         }
       </div>
     </div>
@@ -295,7 +316,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
 }
 
 // ============================================================
-function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, seasonGadgets, seasonClasses, seasonMaps, seasonModes, seasonMelee, weapons, vehicles, kits, gamemodes, levels, gadgets, melees, catFilter, seasonFilter }: any) {
+function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, seasonGadgets, seasonClasses, seasonMaps, seasonModes, seasonMelee, weapons, vehicles, kits, gamemodes, levels, gadgets, melees, catFilter, seasonFilter, mapView }: any) {
   const title = `${catFilter || ""} · ${l2 === "career" ? "生涯" : seasonFilter || ""}`;
   const isCareer = l2 === "career";
   const flt = (segs: Segment[]) => segs.filter((s: Segment) => {
@@ -313,12 +334,14 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
     if (catFilter) {
       // Category career = aggregate ALL seasons by category
       const cf = (s: Segment) => (s.attributes?.category as string) === catFilter;
-      if (l3==="weapons") return <SeasonSubList items={seasonWeapons.filter(cf).filter((w:Segment)=>((w.stats.kills?.value||0)>0))} title="暂无武器数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"accuracy",l:"ACC"},{k:"headshots",l:"HS%"}]} image/>;
-      if (l3==="vehicles") return <SeasonSubList items={seasonVehicles.filter(cf).filter((v:Segment)=>((v.stats.kills?.value||0)>0))} title="暂无载具数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"destroyed",l:"摧毁"}]} image/>;
+      if (l3==="weapons") return <SeasonSubList items={seasonWeapons.filter(cf).filter((w:Segment)=>((w.stats.kills?.value||0)>0))} title="暂无武器数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"accuracy",l:"ACC"},{k:"headshots",l:"HS%"}]}/>;
+      if (l3==="vehicles") return <SeasonSubList items={seasonVehicles.filter(cf).filter((v:Segment)=>((v.stats.kills?.value||0)>0))} title="暂无载具数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"destroyed",l:"摧毁"}]}/>;
       if (l3==="gadgets") return <SeasonSubList items={seasonGadgets.filter(cf).filter((g:Segment)=>((g.stats.kills?.value||0)>0))} title="暂无装备数据" fields={[{k:"kills",l:"击杀"}]} />;
-      if (l3==="classes") return <SeasonSubList items={seasonClasses.filter(cf).filter((c:Segment)=>((c.stats.kills?.value||0)>0))} title="暂无兵种数据" fields={[{k:"kills",l:"击杀"},{k:"kd",l:"K/D"},{k:"kpm",l:"KPM"},{k:"timePlayed",l:"时长"}]} image/>;
+      if (l3==="classes") return <SeasonSubList items={seasonClasses.filter(cf).filter((c:Segment)=>((c.stats.kills?.value||0)>0))} title="暂无兵种数据" fields={[{k:"kills",l:"击杀"},{k:"kd",l:"K/D"},{k:"kpm",l:"KPM"},{k:"timePlayed",l:"时长"}]}/>;
       if (l3==="modes") return <SeasonSubList items={seasonModes.filter(cf)} title="暂无模式数据" fields={[{k:"kills",l:"击杀"},{k:"wins",l:"胜"},{k:"losses",l:"负"},{k:"kd",l:"K/D"}]} />;
-      if (l3==="maps") return <SeasonSubList items={seasonMaps.filter(cf)} title="暂无地图数据" format="map" />;
+      if (l3==="maps") return mapView === "bymode"
+        ? <MapGrid items={seasonMaps.filter(cf)} showMode/>
+        : <MapGrid items={_aggMaps(seasonMaps.filter(cf))}/>;
       if (l3==="melee") return <SeasonSubList items={seasonMelee.filter(cf).filter((m:Segment)=>((m.stats.kills?.value||0)>0))} title="暂无近战数据" fields={[{k:"kills",l:"击杀"},{k:"takedowns",l:"处决"},{k:"kpm",l:"KPM"}]} />;
     } else {
       if (l3==="weapons") return <WeaponsDetail weapons={weapons} cats={[]}/>;
@@ -326,46 +349,72 @@ function FilteredView({ l1, l2, l3, seasonGm, seasonWeapons, seasonVehicles, sea
       if (l3==="gadgets") return <GadgetsDetail gadgets={gadgets}/>;
       if (l3==="classes") return <ClassesDetail kits={kits}/>;
       if (l3==="modes") return <ModesDetail gamemodes={gamemodes}/>;
-      if (l3==="maps") return <MapsDetail levels={levels}/>;
+      if (l3==="maps") return mapView === "bymode"
+        ? <MapGrid items={seasonMaps} showMode/>
+        : <MapGrid items={levels.filter((x: Segment) => (x.metadata?.name as string) !== "All")}/>;
       if (l3==="melee") return melees.length ? <MeleeDetail melees={melees}/> : <p className="text-[color:var(--ink3)] text-sm py-8 text-center">暂无近战数据</p>;
     }
     return null;
   }
   // Season-specific
-  if (l3==="weapons") return <SeasonSubList items={flt(seasonWeapons).filter((w:Segment)=>((w.stats.kills?.value||0)>0))} title="暂无武器数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"accuracy",l:"ACC"},{k:"headshots",l:"HS%"}]} image/>;
-  if (l3==="vehicles") return <SeasonSubList items={flt(seasonVehicles).filter((v:Segment)=>((v.stats.kills?.value||0)>0))} title="暂无载具数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"destroyed",l:"摧毁"}]} image/>;
+  if (l3==="weapons") return <SeasonSubList items={flt(seasonWeapons).filter((w:Segment)=>((w.stats.kills?.value||0)>0))} title="暂无武器数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"accuracy",l:"ACC"},{k:"headshots",l:"HS%"}]}/>;
+  if (l3==="vehicles") return <SeasonSubList items={flt(seasonVehicles).filter((v:Segment)=>((v.stats.kills?.value||0)>0))} title="暂无载具数据" fields={[{k:"kills",l:"击杀"},{k:"kpm",l:"KPM"},{k:"destroyed",l:"摧毁"}]}/>;
   if (l3==="gadgets") return <SeasonSubList items={flt(seasonGadgets).filter((g:Segment)=>((g.stats.kills?.value||0)>0))} title="暂无装备数据" fields={[{k:"kills",l:"击杀"}]} />;
-  if (l3==="classes") return <SeasonSubList items={flt(seasonClasses).filter((c:Segment)=>((c.stats.kills?.value||0)>0))} title="暂无兵种数据" fields={[{k:"kills",l:"击杀"},{k:"kd",l:"K/D"},{k:"kpm",l:"KPM"},{k:"timePlayed",l:"时长"}]} image/>;
+  if (l3==="classes") return <SeasonSubList items={flt(seasonClasses).filter((c:Segment)=>((c.stats.kills?.value||0)>0))} title="暂无兵种数据" fields={[{k:"kills",l:"击杀"},{k:"kd",l:"K/D"},{k:"kpm",l:"KPM"},{k:"timePlayed",l:"时长"}]}/>;
   if (l3==="modes") return <SeasonSubList items={flt(seasonModes)} title="暂无模式数据" fields={[{k:"kills",l:"击杀"},{k:"wins",l:"胜"},{k:"losses",l:"负"},{k:"kd",l:"K/D"}]} />;
-  if (l3==="maps") return <SeasonSubList items={flt(seasonMaps)} title="暂无地图数据" format="map" />;
+  if (l3==="maps") return mapView === "bymode"
+    ? <MapGrid items={flt(seasonMaps)} showMode/>
+    : <MapGrid items={_aggMaps(flt(seasonMaps))}/>;
   if (l3==="melee") return <SeasonSubList items={flt(seasonMelee).filter((m:Segment)=>((m.stats.kills?.value||0)>0))} title="暂无近战数据" fields={[{k:"kills",l:"击杀"},{k:"takedowns",l:"处决"},{k:"kpm",l:"KPM"}]} />;
   return null;
 }
 
-function SeasonSubList({ items, title, fields, image, format }: { items: Segment[]; title: string; fields?: {k:string;l:string}[]; image?: boolean; format?: string }) {
-  const icon = useIconSrc();
+/**
+ * 赛季 / 分类维度的子列表。
+ *
+ * 直接复用生涯那套 DetailCard（.omode top：左图标 + 左对齐的数据格），
+ * 不再自己画一套居中的卡片，保证与生涯完全同款。
+ * groupBy="mode" 时按 metadata.gamemodeName 分组（赛季数据才有这个字段）。
+ */
+function SeasonSubList({ items, title, fields, groupBy }: {
+  items: Segment[]; title: string; fields?: { k: string; l: string }[]; groupBy?: "mode";
+}) {
+  const use = useIconSrc();
+  const cls = useIconCls();
   if (!items.length) return <p className="text-[color:var(--ink3)] text-sm py-8 text-center">{title}</p>;
-  const grouped: Record<string, Segment[]> = {};
-  for (const it of items) { const gn = (it.metadata?.gamemodeName || "其他") as string; if (!grouped[gn]) grouped[gn] = []; grouped[gn].push(it); }
-  return <div className="space-y-5">{Object.entries(grouped).map(([gn, group]) => (
-    <div key={gn}><h4 className="text-xs font-semibold text-[color:var(--ink2)] mb-2">{gn}</h4>
-      {format === "map" ? <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{group.map((it,i) => (
-        <div key={(it.metadata?.name as string)+"-"+i} className="card p-3">
-          {it.metadata?.imageUrl && <img src={it.metadata.imageUrl as string} alt="" className="w-full h-12 object-cover rounded mb-1"/>}
-          <div className="font-medium text-xs text-[color:var(--ink)]">{it.metadata?.name as string}</div>
-          <div className="text-[10px] text-[color:var(--ink3)]">{it.stats.wins?.displayValue}胜 · {it.stats.losses?.displayValue}负 · {it.stats.matches?.displayValue}场</div>
-        </div>
-      ))}</div>
-      : <div className="space-y-2">{group.map((it,i) => (
-        <div key={(it.metadata?.name as string)+"-"+i} className="card p-3 flex items-center gap-3">
-          {image && icon(it) && <img src={icon(it)} alt="" className="w-9 h-9 object-contain shrink-0"/>}
-          <div className="flex-1 min-w-0"><div className="font-semibold text-[color:var(--ink)] text-sm">{it.metadata?.name as string}</div>
-            {fields && <div className="flex gap-3 text-xs">{fields.map(f => <span key={f.k} className="text-[color:var(--ink3)]">{f.l} <span className="font-semibold text-[color:var(--ink)]">{it.stats[f.k]?.displayValue}</span></span>)}</div>}
-          </div>
-        </div>
-      ))}</div>}
+  const fieldsSafe = (fields || []).map((f) => [f.k, f.l] as [string, string]);
+
+  const renderList = (list: Segment[]) => (
+    <div className="ogrid c2">
+      {list.map((it, i) => (
+        <DetailCard
+          key={((it.metadata?.name as string) || "x") + "-" + i}
+          seg={it}
+          category={it.metadata?.category as string | undefined}
+          fields={fieldsSafe}
+        />
+      ))}
     </div>
-  ))}</div>;
+  );
+
+  if (groupBy !== "mode") return renderList(items);
+
+  const grouped: Record<string, Segment[]> = {};
+  for (const it of items) {
+    const gn = (it.metadata?.gamemodeName || "其他") as string;
+    if (!grouped[gn]) grouped[gn] = [];
+    grouped[gn].push(it);
+  }
+  return (
+    <div className="space-y-7">
+      {Object.entries(grouped).map(([gn, group]) => (
+        <div key={gn}>
+          <h4 className="text-xs font-semibold text-[color:var(--ink2)] mb-3">{gn}</h4>
+          {renderList(group)}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 // ============================================================
@@ -380,6 +429,26 @@ function aggregateSegments(segments: Segment[]): AggStats {
   }
   return {kills,deaths,wins,losses,matches,seconds,damage,headshots,revives,repairs,assists,score};
 }
+/** 把同一张地图在多个模式下的记录合并成一条（赛季数据里同一张图会出现多次） */
+function _aggMaps(items: Segment[]): Segment[] {
+  const m = new Map<string, Segment>();
+  const KEYS = ["wins", "losses", "matchesPlayed", "matches", "timePlayed", "kills", "deaths"];
+  for (const s of items) {
+    const nm = String(s.metadata?.name || "");
+    if (!nm || nm === "All") continue;
+    if (!m.has(nm)) { m.set(nm, { ...s, stats: { ...(s.stats as object) } as Segment["stats"] }); continue; }
+    const cur = m.get(nm) as unknown as { stats: Record<string, { value?: number; displayValue?: string } | undefined> };
+    for (const k of KEYS) {
+      const a = cur.stats[k];
+      const b = (s.stats as Record<string, { value?: number; displayValue?: string } | undefined>)[k];
+      if (!a && !b) continue;
+      const v = (a?.value || 0) + (b?.value || 0);
+      cur.stats[k] = { ...(a || b), value: v, displayValue: v.toLocaleString() };
+    }
+  }
+  return [...m.values()];
+}
+
 function fN(v:number):string{return Math.round(v).toLocaleString();}
 function fT(s:number):string{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?`${h}h ${m}m`:`${m}m`;}
 function buildAggOverview(agg:AggStats):Record<string,{value:number;displayValue:string}>{
@@ -545,6 +614,59 @@ function MeleeDetail({ melees }: { melees: Segment[] }) {
     ]} />
   ))}</div>;
 }
+/** 单张地图卡：大图 + 胜负 + 胜率条（可选显示所属模式） */
+function MapCard({ m, mode }: { m: Segment; mode?: string }) {
+  const icon = useIconSrc();
+  const w = m.stats.wins?.value || 0;
+  const l = m.stats.losses?.value || 0;
+  const tot = (m.stats.matchesPlayed?.value || 0) || (w + l);
+  const pct = w + l ? Math.round((w / (w + l)) * 100) : 0;
+  const img = (m.metadata?.imageUrl as string) || "";
+  return (
+    <div className="mapc">
+      {img ? <img className="mapimg" src={img} alt="" /> : <span className="mapimg mapimg-ph" />}
+      <div className="mapnm">{m.metadata?.name as string}</div>
+      <div className="maprow">
+        <span className="mw">{w} 胜</span>
+        <span className="ml">{l} 负</span>
+        {tot > 0 && <span className="mut">{tot} 场</span>}
+      </div>
+      {/* 绿=胜、红=负，两段占比条；没有任何胜负记录时不画 */}
+      {(w + l) > 0 && (
+        <div className="mapbar">
+          <i className="w" style={{ width: pct + "%" }} />
+          <i className="l" style={{ width: (100 - pct) + "%" }} />
+        </div>
+      )}
+      {mode && <div className="mapmode">{mode}</div>}
+    </div>
+  );
+}
+
+/** 地图网格；showMode=true 时按「在什么模式里玩过」分组 */
+function MapGrid({ items, showMode }: { items: Segment[]; showMode?: boolean }) {
+  if (!items.length) return <p className="text-[color:var(--ink3)] text-sm py-8 text-center">暂无地图数据</p>;
+  if (!showMode) {
+    return <div className="mapgrid">{items.map((m, i) => <MapCard key={((m.metadata?.name as string) || "m") + i} m={m} />)}</div>;
+  }
+  const grouped: Record<string, Segment[]> = {};
+  for (const m of items) {
+    const g = String(m.metadata?.gamemodeName || "其他");
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(m);
+  }
+  return (
+    <div className="space-y-7">
+      {Object.entries(grouped).map(([g, list]) => (
+        <div key={g}>
+          <h4 className="text-xs font-semibold text-[color:var(--ink2)] mb-3">{g}</h4>
+          <div className="mapgrid">{list.map((m, i) => <MapCard key={((m.metadata?.name as string) || "m") + i} m={m} />)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MapsDetail({ levels }: { levels: Segment[] }) {
   return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[color:var(--ink)] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[color:var(--ink3)] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
 }

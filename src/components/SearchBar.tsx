@@ -72,16 +72,22 @@ export default function SearchBar({ className = "", showTip = false }: SearchBar
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // 请求序号：只有最后一次发出的请求才允许写结果，
+  // 否则「先发出的慢请求」或上游偶发的空结果会把已经显示出来的候选覆盖掉。
+  const reqSeqRef = useRef(0);
 
   const showDropdown = focused && (fetching || candidates.length > 0);
 
   const fetchCandidates = useCallback(async (q: string) => {
+    const seq = ++reqSeqRef.current;
     try {
       const res = await fetch(`/api/search?query=${encodeURIComponent(q.trim())}`);
       const data = await res.json();
+      if (seq !== reqSeqRef.current) return;   // 已有更新的请求，丢弃本次结果
       setCandidates((data.results || []) as Candidate[]);
       setSelectedIdx(-1);
     } catch {
+      if (seq !== reqSeqRef.current) return;
       setCandidates([]);
     }
   }, []);
@@ -196,7 +202,7 @@ function toApiPlatform(c: Candidate): string {
           <div className="absolute top-full left-0 right-0 mt-1 bg-[color:var(--surface)] border border-[color:var(--line2)] rounded-none shadow-lg z-50 max-h-80 overflow-y-auto">
             {fetching && candidates.length === 0 && (
               <div className="px-4 py-3 text-sm text-[color:var(--ink3)] flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border-2 border-[#ddd] border-t-[var(--acc)] rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-[color:var(--line3)] border-t-[color:var(--acc)] rounded-full animate-spin" />
                 正在搜索...
               </div>
             )}
@@ -215,9 +221,10 @@ function toApiPlatform(c: Candidate): string {
             {candidates.map((c, i) => (
               <div
                 key={c.nucleusId}
-                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm hover:bg-[color:var(--bg)] transition-colors group ${i === selectedIdx ? "bg-[#edf2ff]" : ""}`}
+                className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors group ${i === selectedIdx ? "bg-[color:var(--acc-soft)]" : ""}`}
                 onClick={() => goToPlayer(c)}
                 onMouseEnter={() => setSelectedIdx(i)}
+                onMouseLeave={() => setSelectedIdx((cur) => (cur === i ? -1 : cur))}
               >
                 <img
                   src={PLATFORM_LOGOS[c.platform] || "/ea-logo.svg"}
@@ -227,14 +234,14 @@ function toApiPlatform(c: Candidate): string {
                 {c.rankImage && <img src={c.rankImage} alt="" className="w-5 h-5 object-contain shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <span className="font-medium text-[color:var(--ink)]">{c.displayName}</span>
-                  {c.tracked && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e8f5e9] text-[#2e7d32] ml-2 shrink-0">已追踪</span>}
+                  {c.tracked && <span className="text-[10px] px-1.5 py-0.5 ml-2 shrink-0" style={{ background: "var(--good-soft)", color: "var(--good)" }}>已追踪</span>}
                   {c.rank && <span className="text-[11px] text-[color:var(--ink3)] ml-2">Rank {c.rank}</span>}
                 </div>
                 <span className="text-[color:var(--ink3)] text-xs ml-auto shrink-0 tabular-nums">{c.nucleusId}</span>
                 {!query.trim() && !c.tracked && (
                   <button
                     type="button"
-                    className="ml-1 w-5 h-5 flex items-center justify-center rounded text-[color:var(--ink4)] hover:text-[color:var(--bad)] hover:bg-[#fff0f0] opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    className="ml-1 w-5 h-5 flex items-center justify-center text-[color:var(--ink4)] hover:text-[color:var(--bad)] hover:bg-[color:var(--bad-soft)] opacity-0 group-hover:opacity-100 transition-all shrink-0"
                     onClick={(e) => { e.stopPropagation(); removeFromHistory(c.nucleusId); setCandidates(prev => prev.filter(x => x.nucleusId !== c.nucleusId)); }}
                     title="删除"
                   >
