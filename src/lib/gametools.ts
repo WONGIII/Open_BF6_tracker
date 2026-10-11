@@ -374,6 +374,46 @@ export async function searchBfGlobalPlayer(query: string): Promise<PlayerCandida
   }
 }
 
+/**
+ * gametools 的全局玩家搜索：/bfglobal/search/
+ *
+ * 只接 name 一个参数，返回数组：
+ *   { personaId, personaName, userId, platformId, avatar, battlelog, mutualFriends }
+ * 支持部分匹配（实测 name=chawu 返回 5 条），可作为 /bf6/player/ 之外的补充来源。
+ */
+export async function searchBfGlobalByName(query: string): Promise<PlayerCandidate[]> {
+  const url = `${GAMETOOLS_BASE}/bfglobal/search/?name=${encodeURIComponent(query)}`;
+  try {
+    const resp = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!resp.ok) return [];
+    const raw = (await resp.json()) as unknown;
+    if (!Array.isArray(raw)) return [];
+    const out: PlayerCandidate[] = [];
+    for (const item of raw) {
+      if (!item || typeof item !== "object") continue;
+      const o = item as Record<string, unknown>;
+      const id = String(o.userId || "").trim();
+      if (!/^\d{6,}$/.test(id)) continue;
+      out.push({
+        displayName: String(o.personaName || query),
+        username: String(o.personaName || query),
+        platform: platformIdToSlug(o.platformId),
+        nucleusId: id,
+        personaId: String(o.personaId || ""),
+        platformId: String(o.platformId ?? ""),
+        createdAt: "",
+        avatarUrl: String(o.avatar || ""),
+      } as PlayerCandidate);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 /** /bfglobal/ 的 platformId -> 我们的平台 slug */
 function platformIdToSlug(platformId: unknown): string {
   switch (Number(platformId)) {

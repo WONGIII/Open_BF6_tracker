@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchPlayersByName, searchBfGlobalPlayer } from "@/lib/gametools";
+import { searchPlayersByName, searchBfGlobalPlayer, searchBfGlobalByName } from "@/lib/gametools";
 import { searchEaByName } from "@/lib/ripbf";
 import { listProfileIdentifiers, getProfile, findTrackedByAlias, upsertAliases } from "@/lib/db";
 
@@ -106,10 +106,11 @@ export async function GET(request: NextRequest) {
     //   ② rip-bf /api/eaid/      — 直连 EA 目录，作为 EA 账号的兜底
     let upstream: Candidate[] = [];
     let upstreamError = "";
-    const [gtRes, ripRes, globRes] = await Promise.allSettled([
+    const [gtRes, ripRes, globRes, globSearchRes] = await Promise.allSettled([
       searchPlayersByName(query),
       searchEaByName(query),
       searchBfGlobalPlayer(query),
+      searchBfGlobalByName(query),
     ]);
     // gtCount 单独记录 gametools 的条数，供下面的混合大小写重试判断使用
     let gtCount = 0;
@@ -125,6 +126,10 @@ export async function GET(request: NextRequest) {
     // gametools /bfglobal/player/ —— EA 目录直查，不走 /bf6/player/ 那套 URL 缓存
     const globList: Candidate[] = globRes.status === "fulfilled"
       ? (globRes.value as Candidate[]).map((c) => ({ ...c, source: "bfglobal" }))
+      : [];
+    // gametools /bfglobal/search/ —— 支持部分匹配，作为补充来源
+    const globSearchList: Candidate[] = globSearchRes.status === "fulfilled"
+      ? (globSearchRes.value as Candidate[]).map((c) => ({ ...c, source: "bfglobal-search" }))
       : [];
 
     // gametools 的 /bf6/player/ 按「字面字符串」缓存结果，且缓存里的空结果可能是
@@ -162,7 +167,7 @@ export async function GET(request: NextRequest) {
     //   · 同一个账号不会重复显示（chawu691 在 ea/steam/xboxone 上 nucleusId 相同，只显示一条）
     const seen = new Set<string>();
     const merged: Candidate[] = [];
-    for (const c of [...upstream, ...globList, ...ripList, ...local]) {
+    for (const c of [...upstream, ...globList, ...globSearchList, ...ripList, ...local]) {
       const id = String(c.nucleusId || "").trim();
       if (!id || seen.has(id)) continue;
       seen.add(id);

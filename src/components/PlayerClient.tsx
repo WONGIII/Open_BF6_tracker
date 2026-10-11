@@ -540,6 +540,51 @@ function MapsDetail({ levels }: { levels: Segment[] }) {
   return <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{levels.map(m => <div key={m.metadata?.name as string} className="card p-4">{m.metadata?.imageUrl&&<img src={m.metadata.imageUrl as string} alt="" className="w-full h-16 object-cover rounded mb-2"/>}<div className="font-medium text-[#0f172a] text-xs">{m.metadata?.name as string}</div><div className="text-[10px] text-[#94a3b8] mt-1">{m.stats.wins?.displayValue} 胜 · {m.stats.losses?.displayValue} 负 · {m.stats.matchesPlayed?.displayValue} 场</div></div>)}</div>;
 }
 type GroupItem = { metadata: Segment["metadata"]; stats: Segment["stats"] };
+
+// 战报是「差分」数据，计时器类字段（累计时长、乘坐时长等）每局都会变动，
+// 所以几乎每个武器/装备都会出现在分组里，且只带一个 timePlayed。
+// 这些条目并不代表本局用过，必须过滤掉，否则装备列表会列出几十个没用过的东西。
+const _TIME_ONLY_KEYS = new Set([
+  "timePlayed", "secondsPlayed", "timeEquipped", "timeInVehicle", "timeIn", "timeInAir",
+]);
+
+/** 该分组条目在本局是否有真实使用（除计时器外还有任何大于 0 的计数） */
+function _segUsed(entry: { stats?: Record<string, { value?: number } | undefined> } | undefined): boolean {
+  const st = entry?.stats;
+  if (!st) return false;
+  return Object.entries(st).some(
+    ([k, v]) => !_TIME_ONLY_KEYS.has(k) && ((v as { value?: number } | undefined)?.value || 0) > 0
+  );
+}
+
+/** 过滤掉只带计时器的条目 */
+function _onlyUsed<T extends { stats?: Record<string, { value?: number } | undefined> }>(items: T[]): T[] {
+  return items.filter((x) => _segUsed(x));
+}
+
+/**
+ * 用该条目本局真实发生过的数值拼一句说明。
+ * 战报里很多条目击杀为 0（例如只是开过、被打过、放过技能），
+ * 只显示「击杀 0」没有信息量，这里把实际有值的字段都列出来。
+ */
+function _segFacts(
+  stats: Segment["stats"] | undefined,
+  fields: [string, string][],
+  alwaysShowFirst = true
+): string {
+  const st = (stats || {}) as Record<string, { value?: number; displayValue?: string } | undefined>;
+  const parts: string[] = [];
+  fields.forEach(([label, key], i) => {
+    const v = st[key];
+    const num = v?.value || 0;
+    if (num > 0) {
+      parts.push(`${label} ${v?.displayValue ?? num}`);
+    } else if (i === 0 && alwaysShowFirst) {
+      parts.push(`${label} 0`);
+    }
+  });
+  return parts.join(" · ");
+}
 function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; expanded: string | null; onToggle: (id: string | null) => void }) {
   if (matches.length === 0) return <p className="text-[#b6c0cc] text-sm">暂无战报</p>;
   return <div className="space-y-3">{matches.map((m, idx) => {
@@ -558,22 +603,22 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
       // New format: pull from overview.metadata
       const asSeg = (items: GroupItem[] | undefined, type: string): Segment[] =>
         (items || []).map(g => ({ type, metadata: g.metadata, stats: g.stats } as Segment));
-      mWeapons = asSeg(ovMeta.weapons, "weapon").sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills))).slice(0,5);
-      mVehicles = asSeg(ovMeta.vehicles, "vehicle").sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills)));
-      mKits = asSeg(ovMeta.kits, "kit");
+      mWeapons = _onlyUsed(asSeg(ovMeta.weapons, "weapon")).sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills))).slice(0,5);
+      mVehicles = _onlyUsed(asSeg(ovMeta.vehicles, "vehicle")).sort((a,b)=>(_nv(b.stats?.kills)-_nv(a.stats?.kills)));
+      mKits = _onlyUsed(asSeg(ovMeta.kits, "kit"));
       mModes = asSeg(ovMeta.gamemodes, "gamemode");
       mMaps = asSeg(ovMeta.levels, "level");
-      mGadgets = asSeg(ovMeta.gadgets, "gadget");
+      mGadgets = _onlyUsed(asSeg(ovMeta.gadgets, "gadget"));
       mMelee = [];
     } else {
       // Old format: flat segments
-      mWeapons = mSegments.filter(s => s.type === "weapon").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0)).slice(0,5);
-      mVehicles = mSegments.filter(s => s.type === "vehicle").sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
-      mKits = mSegments.filter(s => s.type === "kit");
+      mWeapons = _onlyUsed(mSegments.filter(s => s.type === "weapon")).sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0)).slice(0,5);
+      mVehicles = _onlyUsed(mSegments.filter(s => s.type === "vehicle")).sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
+      mKits = _onlyUsed(mSegments.filter(s => s.type === "kit"));
       mModes = mSegments.filter(s => s.type === "gamemode");
       mMaps = mSegments.filter(s => s.type === "level");
-      mGadgets = mSegments.filter(s => s.type === "gadget");
-      mMelee = mSegments.filter(s => s.type === "melee");
+      mGadgets = _onlyUsed(mSegments.filter(s => s.type === "gadget"));
+      mMelee = _onlyUsed(mSegments.filter(s => s.type === "melee"));
     }
 
     // 顶层概览优先。门户等不计入上游官方统计的模式，整局数据只体现在分组里，
@@ -660,13 +705,13 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
           {mKits.map(k => <span key={k.metadata?.name as string} className="chip"><span className="nm">{k.metadata?.name}</span><b>{k.stats?.kills?.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>杀</span>{k.stats?.deaths && <><b style={{ color: "#e11d48" }}>{k.stats.deaths.displayValue}</b><span className="nm" style={{ color: "#94a3b8" }}>死</span></>}</span>)}
         </div></section>}
         {mWeapons.length > 0 && <section className="sect"><div className="sec-t">武器</div>
-          {mWeapons.map(w => <div key={w.metadata?.name as string} className="row">{w.metadata?.imageUrl && <img className="ic" src={w.metadata.imageUrl as string} alt="" />}<span className="nm">{w.metadata?.name}</span><span className="val"><b>{w.stats?.kills?.displayValue}</b> 击杀{w.stats?.killsPerMinute?.displayValue && <> <span className="mut">·</span> {w.stats.killsPerMinute.displayValue} KPM</>}</span></div>)}
+          {mWeapons.map(w => <div key={w.metadata?.name as string} className="row">{w.metadata?.imageUrl && <img className="ic" src={w.metadata.imageUrl as string} alt="" />}<span className="nm">{w.metadata?.name}</span><span className="val">{_segFacts(w.stats, [["击杀", "kills"], ["爆头", "headshots"], ["命中", "accuracy"], ["助攻", "assists"]])}{w.stats?.killsPerMinute?.displayValue ? " · " + w.stats.killsPerMinute.displayValue + " KPM" : ""}</span></div>)}
         </section>}
         {mVehicles.length > 0 && <section className="sect"><div className="sec-t">载具</div>
-          {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{v.metadata?.imageUrl && <img className="ic" src={v.metadata.imageUrl as string} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val"><b>{v.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+          {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{v.metadata?.imageUrl && <img className="ic" src={v.metadata.imageUrl as string} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val">{_segFacts(v.stats, [["击杀", "kills"], ["摧毁", "destroyed"], ["伤害", "damageTo"], ["行驶", "distanceTraveled"], ["携带", "spawns"]])}</span></div>)}
         </section>}
         {mGadgets.length > 0 && <section className="sect"><div className="sec-t">装备</div>
-          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{g.metadata?.imageUrl && <img className="ic" src={g.metadata.imageUrl as string} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{g.metadata?.imageUrl && <img className="ic" src={g.metadata.imageUrl as string} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["击杀", "kills"], ["索敌", "spots"], ["使用", "uses"], ["携带", "spawns"], ["伤害", "damage"]], false)}</span></div>)}
         </section>}
         {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
           {mMelee.map(g => <div key={g.metadata?.name as string} className="row"><span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
