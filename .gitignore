@@ -8,6 +8,8 @@ coverage/
 
 # next.js
 .next/
+# 本地预览用的独立构建目录（NEXT_DIST_DIR=.next-preview）
+.next-*/
 out/
 
 # production
