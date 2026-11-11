@@ -196,6 +196,8 @@ const MODE_ALIASES: Record<string, string> = {
   "redsec solo": "gm_graniteSolo",
   sabotage: "gm_sabotage",
   "tactical obliteration": "gm_oblit",
+  sqdoblit: "gm_sqdoblit",
+  "squad obliteration": "gm_sqdoblit",
 };
 
 function normalizeAliases(map: Record<string, string>): Record<string, string> {

@@ -996,7 +996,8 @@
   "gm_rr_all": "Rapid Royale",
   "gm_dom": "Domination",
   "gm_graniteSolo": "Redsec Solo",
-  "gm_sabotage": "Sabotage"
+  "gm_sabotage": "Sabotage",
+  "gm_sqdoblit": "Squad Obliteration"
  },
  "modeImages": {
   "gm_esc": "/bf6/modes/light/esc.svg",
@@ -1022,7 +1023,8 @@
   "gm_rr_all": "/bf6/modes/light/rr_all.svg",
   "gm_dom": "/bf6/modes/light/dom.svg",
   "gm_graniteSolo": "/bf6/modes/light/graniteSolo.svg",
-  "gm_sabotage": "/bf6/modes/light/sabotage.svg"
+  "gm_sabotage": "/bf6/modes/light/sabotage.svg",
+  "gm_sqdoblit": "/bf6/modes/light/sqdoblit.svg"
  },
  "rankImages": {
   "100": "/bf6/ranks/t_ui_rank_100_sm.png",
@@ -1151,7 +1153,8 @@
   "gm_rr_all": "/bf6/modes/white/rr_all.svg",
   "gm_dom": "/bf6/modes/white/dom.svg",
   "gm_graniteSolo": "/bf6/modes/white/graniteSolo.svg",
-  "gm_sabotage": "/bf6/modes/white/sabotage.svg"
+  "gm_sabotage": "/bf6/modes/white/sabotage.svg",
+  "gm_sqdoblit": "/bf6/modes/white/sqdoblit.svg"
  },
  "classes": {
   "assault": {
