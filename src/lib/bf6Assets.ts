@@ -198,6 +198,11 @@ const MODE_ALIASES: Record<string, string> = {
   "tactical obliteration": "gm_oblit",
   sqdoblit: "gm_sqdoblit",
   "squad obliteration": "gm_sqdoblit",
+  granitesolo: "gm_graniteSolo",
+  graniteduo: "gm_graniteDuo",
+  granitesquad: "gm_brsquad",
+  granitegauntlet: "gm_gntgauntlet",
+  granite: "gm_granite",
 };
 
 function normalizeAliases(map: Record<string, string>): Record<string, string> {
