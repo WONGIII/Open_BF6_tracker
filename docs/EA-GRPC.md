@@ -77,16 +77,27 @@ EA gRPC 不提供头像、军衔、玩家卡片，因此这些字段为空；前
 
 | 方法 | 路径 | 内容 |
 |---|---|---|
-| 档案 | `/santiago.client.player_profile.ClientPlayerProfile/getPlayerProfile` | 档案等级（f6.f1）、345 条生涯/单局最高记录、卡面 GUID、竞技标签 |
+| 档案 | `/santiago.client.player_profile.ClientPlayerProfile/getPlayerProfile` | 345 条生涯/单局最高记录、卡面 GUID、竞技标签（f6.f1 不是等级） |
 | 徽章 | `/santiago.client.player_profile.ClientPlayerProfile/getBadges` | f1 已解锁数；f2 repeated { f1 UUID, f2 阶级, f3 进度 } |
-| 卡面 | `/santiago.client.playercard.ClientPlayerCard/getPlayerCard` | 5 个资源 GUID + 4 个小整数 |
+| 卡面 / 等级 | `/santiago.client.playercard.ClientPlayerCard/getPlayerCard` | 卡面 GUID；**f7 = 玩家等级**（与 gametools `playerCard.rank` 一致），f6/f8/f9 为附加数值 |
 
 请求统一为 `f1 = message { f1 = nucleusId, f3 = platform }`（platform 7 = PC）。
 
 对外接口：`GET /api/player/{nucleusId}/details`（60 秒缓存）。
-玩家页概览条下方会显示「EA 档案」卡片：等级、徽章解锁数 / 进阶数、卡面资源、竞技标签、生涯最高记录。
+等级放回玩家页 Hero 区（`LV.95` + 本地等级图标），「EA 档案」卡片显示徽章、卡面资源和竞技标签。
 
 > 头像图片 URL 仍未打通（EADP 只回 token 本人），因此详情里不含头像。
+
+### 等级图片与本地资源
+
+- 等级图标：下载 gametools 的 `ranks/bf6/t_ui_rank_NNN_sm.png`（1–50 逐级、55–100 每 5 级、110–300 每 10 级，共 80 张），存于 `public/bf6/ranks/`。
+- 武器 / 载具 / 装备 / 兵种 / 模式图标来自 [g1331/bf-manager](https://github.com/g1331/bf-manager)（MIT），复制到 `public/bf6/`。
+- 地图图片复制自 bf-manager；缺失的 European Casino 从 gametools CDN 下载为 `public/bf6/maps/mpdough.webp`。
+- 运行期不再请求 `cdn.gametools.network`，所有图片走本站 `/bf6/...`。
+
+### 赛季拆分
+
+`getStats` 不传 `f4` 维度过滤时会返回 `Season + GameMode` 交叉维度（约 674 KB / 11,076 条）。`src/lib/ea/stats.ts` 按 `(Season, GameMode)` 分组，生成与 gametools `perSeason[SeasonN][GameMode]` 完全一致的结构，前端按赛季分类展示。
 
 ## 服务器列表
 

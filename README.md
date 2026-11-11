@@ -38,12 +38,17 @@
 - **近战武器**：每把刀的击杀、处决、使用次数、KPM、DPM
 - **模式分析**：各游戏模式的胜场、胜率、K/D、KPM、时长
 - **地图统计**：每张地图的胜场和败场
-- 所有图标来自 `src/lib/ea/item-dict.json` 的静态字典，**字典里没有的条目留空**，不显示占位块
+- 所有图标使用本地资源 `public/bf6/`（武器/载具/装备/地图/兵种/模式/等级），**没有资源的条目留空**，不显示占位块
+
+### 赛季分类
+- 原生 `getStats` 全维度响应按 `(Season, GameMode)` 拆成与 gametools 相同的 `perSeason` 结构
+- 支持 Season 1–5，每个赛季内分别查看武器、载具、装备、兵种、模式、地图、近战等子分类
+- 生涯数据为全部赛季自动聚合
 
 ### EA 档案详情（任意玩家）
-- `getPlayerProfile`：档案等级、345 条生涯/单局最高记录、卡面 GUID、竞技标签
+- `getPlayerProfile`：345 条生涯/单局最高记录、卡面 GUID、竞技标签
 - `getBadges`：徽章总数 + 阶级/进度列表
-- `getPlayerCard`：5 个卡面资源 GUID + 小整数
+- `getPlayerCard`：卡面 GUID；**f7 = 真实等级**（wangiii2 = 95，与 gametools 一致），Hero 区显示 `LV.95` + 本地等级图标
 - 玩家页概览下方展示「EA 档案」卡片，接口 `GET /api/player/{nucleusId}/details`
 - 头像接口目前只回 token 本人，未接入
 
@@ -270,6 +275,8 @@ pm2 save
 ## 参考与致谢
 
 本项目战报差分和后台轮询的实现方式参考了 [jo4rchy/battlefield_6_tracker_gametools](https://github.com/jo4rchy/battlefield_6_tracker_gametools) 的源码思路。该仓库未附带开源协议，本项目仅借鉴其架构设计。
+
+BF6 武器 / 载具 / 装备 / 兵种 / 模式 / 地图图片来自 [g1331/bf-manager](https://github.com/g1331/bf-manager)（MIT License）。等级图标与个别缺失地图图从 gametools CDN 一次性下载到本地，运行期不再请求该 CDN。
 
 ## 许可证
 

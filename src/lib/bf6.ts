@@ -18,6 +18,7 @@ import {
   type StatsPlayerKey,
 } from "@/lib/ea/stats";
 import { EaAuthError } from "@/lib/ea/auth";
+import { fetchPlayerCard, rankImagePath } from "@/lib/ea/details";
 import type { Platform } from "@/lib/types";
 
 export { generateUpdateHash } from "@/lib/ea/stats";
@@ -135,12 +136,29 @@ function pickBestPersona(personas: EaPersona[], name: string, platform?: Platfor
   return scored[0].p;
 }
 
+/** 等级来自 getPlayerCard f7（与 gametools playerCard.rank 一致），失败不影响统计 */
+async function attachRank(stats: LegacyStats, nucleusId: string, platform = 7): Promise<LegacyStats> {
+  try {
+    const card = await fetchPlayerCard(nucleusId, platform || 7);
+    const level = card.level;
+    if (level && level > 0) {
+      stats.rank = level;
+      const image = rankImagePath(level);
+      stats.rankImage = image ? { small: image } : {};
+    }
+  } catch {
+    /* 等级拿不到时保持空 */
+  }
+  return stats;
+}
+
 export async function fetchStatsForPersona(p: EaPersona, fallbackName = ""): Promise<LegacyStats | null> {
-  const raw = await fetchRawStatsBatch([
-    { nucleusId: p.nucleusId, personaId: p.personaId, platform: p.platformCode },
-  ]);
+  const raw = await fetchRawStatsBatch(
+    [{ nucleusId: p.nucleusId, personaId: p.personaId, platform: p.platformCode }],
+    { allDimensions: true }
+  );
   if (!raw.length) return null;
-  return mapToLegacyStats(raw[0], fallbackName || p.displayName);
+  return attachRank(mapToLegacyStats(raw[0], fallbackName || p.displayName), p.nucleusId, p.platformCode);
 }
 
 /** 按用户名查统计：先用 EADP 搜索解析 nucleus，再走 getStats */
@@ -158,11 +176,10 @@ export async function fetchStatsById(
 ): Promise<LegacyStats | null> {
   const nucleusId = String(playerId).trim();
   if (!/^\d{6,}$/.test(nucleusId)) return null;
-  const raw = await fetchRawStatsBatch([
-    { nucleusId, platform: platformToCode(platform) },
-  ]);
+  const code = platformToCode(platform);
+  const raw = await fetchRawStatsBatch([{ nucleusId, platform: code }], { allDimensions: true });
   if (!raw.length) return null;
-  return mapToLegacyStats(raw[0], "");
+  return attachRank(mapToLegacyStats(raw[0], ""), nucleusId, code);
 }
 
 /** 由搜索候选直接查统计（避免再次按名字搜索） */
@@ -171,15 +188,13 @@ export async function fetchStatsForCandidate(
   personaId: string,
   platform: string
 ): Promise<LegacyStats | null> {
-  const raw = await fetchRawStatsBatch([
-    {
-      nucleusId,
-      personaId,
-      platform: platformToCode(platform),
-    },
-  ]);
+  const code = platformToCode(platform);
+  const raw = await fetchRawStatsBatch(
+    [{ nucleusId, personaId, platform: code }],
+    { allDimensions: true }
+  );
   if (!raw.length) return null;
-  return mapToLegacyStats(raw[0], "");
+  return attachRank(mapToLegacyStats(raw[0], ""), nucleusId, code);
 }
 
 /* ==================== 批量（后台轮询） ==================== */
@@ -192,11 +207,11 @@ interface BatchPlayerItem {
 
 /**
  * 批量拉取统计。getStats 的 player 字段是 repeated，
- * 一次请求可带多个玩家；按 chunkSize 分批，单批默认 20。
+ * 一次请求可带多个玩家；按 chunkSize 分批，单批默认 5（全维度响应较大）。
  */
 export async function fetchStatsBatchByIds(
   items: BatchPlayerItem[],
-  chunkSize = 20
+  chunkSize = 5
 ): Promise<Map<string, LegacyStats | null>> {
   const out = new Map<string, LegacyStats | null>();
   if (!items.length) return out;
@@ -220,12 +235,14 @@ export async function fetchStatsBatchByIds(
         nucleusId: String(item.player_id || item.user_id || ""),
         platform: platformToCode(item.platform || "origin"),
       }));
-      const raw = await fetchRawStatsBatch(keys);
-      for (const stats of raw) {
-        const pid = stats.nucleusId;
-        if (!out.has(pid)) continue;
-        out.set(pid, mapToLegacyStats(stats, ""));
-      }
+      const raw = await fetchRawStatsBatch(keys, { allDimensions: true });
+      await Promise.all(
+        raw.map(async (stats) => {
+          const pid = stats.nucleusId;
+          if (!out.has(pid)) return;
+          out.set(pid, await attachRank(mapToLegacyStats(stats, ""), pid, stats.platform));
+        })
+      );
     } catch (err) {
       console.error("[ea] batch stats failed:", err instanceof Error ? err.message : err);
     }

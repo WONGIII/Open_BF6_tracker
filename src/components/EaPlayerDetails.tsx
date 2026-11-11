@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 interface PlayerDetails {
   nucleusId: string;
-  level: number | null;
+  rank: number | null;
   card: { guids: string[]; values: number[] };
   badges: { total: number; items: { id: string; tier: number; progress: number }[] };
   competitive: string[];
@@ -83,20 +83,13 @@ export default function EaPlayerDetails({ identifier }: { identifier: string }) 
   return (
     <div className="card px-5 py-4 mt-[14px]">
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-        <div className="flex items-center gap-4">
-          <div>
-            <div className="text-[10px] uppercase tracking-[1.5px] text-[color:var(--ink3)]">EA 档案等级</div>
-            <div className="text-[26px] font-bold leading-none text-[color:var(--acc)]">{data.level ?? "—"}</div>
-          </div>
-          <div className="h-9 w-px bg-[color:var(--line2)]" />
-          <div>
-            <div className="text-[10px] uppercase tracking-[1.5px] text-[color:var(--ink3)]">徽章</div>
-            <div className="text-sm font-semibold text-[color:var(--ink)]">
-              {data.badges.total} 枚已解锁
-              <span className="text-[11px] text-[color:var(--ink3)] font-normal ml-2">
-                共 {data.badges.items.length} 项 · 已进阶 {upgraded} · 最高 T{maxTier || 0}
-              </span>
-            </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-[1.5px] text-[color:var(--ink3)]">徽章</div>
+          <div className="text-sm font-semibold text-[color:var(--ink)]">
+            {data.badges.total} 枚已解锁
+            <span className="text-[11px] text-[color:var(--ink3)] font-normal ml-2">
+              共 {data.badges.items.length} 项 · 已进阶 {upgraded} · 最高 T{maxTier || 0}
+            </span>
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">

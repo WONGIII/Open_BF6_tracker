@@ -12,6 +12,7 @@ import { ensureSession } from "@/lib/ea/auth";
 import { DICE_GRPC_HOST, DICE_TENANCY, PLATFORM_PC } from "@/lib/ea/constants";
 import { unaryGrpc } from "@/lib/ea/grpc";
 import { asInt, asString, decode, pbMsg, pbVarint, type PbField } from "@/lib/ea/proto";
+import itemDict from "@/lib/ea/item-dict.json";
 
 export const PROFILE_METHODS = {
   profile: "/santiago.client.player_profile.ClientPlayerProfile/getPlayerProfile",
@@ -38,12 +39,21 @@ export interface PlayerStatEntry {
 export interface PlayerDetails {
   nucleusId: string;
   platform: number;
-  level: number | null;
+  /** 真实等级：getPlayerCard f7（与 gametools playerCard.rank 一致） */
+  rank: number | null;
   card: PlayerCardInfo;
   badges: { total: number; items: PlayerBadge[] };
   competitive: string[];
   stats: PlayerStatEntry[];
   fetchedAt: string;
+}
+
+const RANK_IMAGES = ((itemDict as Record<string, unknown>).rankImages || {}) as Record<string, string>;
+
+/** gametools 等级图标在本地的路径（下载时按 3 位补零命名） */
+export function rankImagePath(level: number | null | undefined): string {
+  if (!level) return "";
+  return RANK_IMAGES[String(level).padStart(3, "0")] || "";
 }
 
 function playerMessage(nucleusId: string, platform = PLATFORM_PC): Buffer {
@@ -194,6 +204,25 @@ export function parsePlayerProfile(buf: Buffer): {
 
 /* ==================== 对外 ==================== */
 
+/** 只取玩家卡：卡面 GUID + f6..f9（f7 = 等级） */
+export async function fetchPlayerCard(
+  nucleusId: string,
+  platform = PLATFORM_PC
+): Promise<PlayerCardInfo & { level: number | null }> {
+  const id = String(nucleusId).trim();
+  if (!/^\d{6,}$/.test(id)) throw new Error("nucleusId 格式不正确");
+  const session = await ensureSession();
+  const resp = await unaryGrpc(DICE_GRPC_HOST, PROFILE_METHODS.card, playerMessage(id, platform), {
+    timeoutMs: 30_000,
+    metadata: {
+      "x-dice-tenancy": DICE_TENANCY,
+      authorization: `Bearer ${session.sessionJwt}`,
+    },
+  });
+  const card = parsePlayerCard(resp);
+  return { ...card, level: card.values.length > 1 ? card.values[1] : null };
+}
+
 export async function getPlayerDetails(
   nucleusId: string,
   platform = PLATFORM_PC
@@ -221,7 +250,7 @@ export async function getPlayerDetails(
   return {
     nucleusId: id,
     platform,
-    level: profile.level,
+    rank: card.values.length > 1 ? card.values[1] : null,
     card: card.guids.length ? card : profile.card,
     badges,
     competitive: profile.competitive,

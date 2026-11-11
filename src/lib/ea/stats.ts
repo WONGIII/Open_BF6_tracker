@@ -27,7 +27,43 @@ interface ItemInfo {
 
 const ITEMS = itemDict.items as Record<string, ItemInfo>;
 const MAP_NAMES = itemDict.maps as Record<string, string>;
+const MAP_IMAGES = itemDict.mapImages as Record<string, string>;
 const MODE_NAMES = itemDict.modes as Record<string, string>;
+const MODE_IMAGES = itemDict.modeImages as Record<string, string>;
+
+/** getStats 维度里的原始 GameMode 名 → gametools 模式 id（gm_*） */
+const RAW_MODE_KEYS: Record<string, string> = {
+  "Conquest0": "gm_cq",
+  "Breakthrough0": "gm_bt",
+  "MP_TeamDM0": "gm_tdm",
+  "MP_SquadDM0": "gm_sdm",
+  "MP_CarrierStrike0": "gm_carrier",
+  "GraniteSquad0": "gm_brsquad",
+  "GraniteGauntlet0": "gm_gntgauntlet",
+  "GraniteDuo0": "gm_graniteDuo",
+  "GraniteRapidTrio0": "gm_rr_trio",
+  "GraniteRapidSolo0": "gm_rr_solo",
+  "ModBuilderCustom0": "gm_modbuilder0",
+  "MP_SpookyRush0": "gm_spookyrush",
+  "MP_Operations0": "gm_op",
+  "MP_Obliteration0": "gm_oblit",
+  "MP_Escalation0": "gm_esc",
+  "MP_Strikepoint0": "gm_strike",
+  "Rush0": "gm_rush",
+};
+
+function modeDisplayName(rawMode: string): string {
+  const key = RAW_MODE_KEYS[rawMode];
+  if (key && MODE_NAMES[key]) return MODE_NAMES[key];
+  return prettyId(rawMode.replace(/^MP_/i, "").replace(/\d+$/, ""), "");
+}
+
+const CLASS_IMAGES: Record<string, string> = {
+  assault: "/bf6/classes/assault.svg",
+  engineer: "/bf6/classes/engineer.svg",
+  support: "/bf6/classes/support.svg",
+  recon: "/bf6/classes/recon.svg",
+};
 
 export interface StatsPlayerKey {
   nucleusId: string;
@@ -129,10 +165,13 @@ export function parseGetStatsResponse(buf: Buffer): Bf6RawStats[] {
  * 批量拉取多个玩家的全球统计。getStats 的 f2 是 repeated Player，
  * 一次请求可以带多个玩家；调用方控制单批数量（推荐 ≤20）。
  */
-export async function fetchRawStatsBatch(players: StatsPlayerKey[]): Promise<Bf6RawStats[]> {
+export async function fetchRawStatsBatch(
+  players: StatsPlayerKey[],
+  options: { allDimensions?: boolean } = {}
+): Promise<Bf6RawStats[]> {
   if (!players.length) return [];
   const session = await ensureSession();
-  const req = buildGetStatsRequest(players, true);
+  const req = buildGetStatsRequest(players, !options.allDimensions);
   const resp = await unaryGrpc(DICE_GRPC_HOST, METHODS.getStats, req, {
     timeoutMs: 90_000,
     metadata: {
@@ -213,7 +252,11 @@ export interface LegacyStats extends Dict {
  * 把 getStats 的 name->value 映射成项目现有的 stats 形状
  * （与 GameTools /bf6/stats/ 的字段一一对应）。
  */
-export function mapToLegacyStats(raw: Bf6RawStats, fallbackName = ""): LegacyStats {
+export function mapToLegacyStats(
+  raw: Bf6RawStats,
+  fallbackName = "",
+  options: { withSeasons?: boolean } = {}
+): LegacyStats {
   const v = raw.values;
 
   const kills = num(v, "Kills_Total");
@@ -395,6 +438,8 @@ export function mapToLegacyStats(raw: Bf6RawStats, fallbackName = ""): LegacySta
       assists: num(v, `assists_kit_${kit}`),
       revives: num(v, `revives_kit_${kit}`),
       spawns: num(v, `spawns_kit_${kit}`),
+      image: CLASS_IMAGES[kit] || "",
+      altImage: "",
       secondsPlayed: time,
       kpm: time > 0 ? parseFloat((killsC / (time / 60)).toFixed(2)) : 0,
       killDeath: deathsC > 0 ? parseFloat((killsC / deathsC).toFixed(2)) : killsC,
@@ -418,7 +463,8 @@ export function mapToLegacyStats(raw: Bf6RawStats, fallbackName = ""): LegacySta
       id: mode,
       gamemodeName: MODE_NAMES[mode] || MODE_NAMES[mode.toLowerCase()] || prettyId(mode, "gm_"),
       name: MODE_NAMES[mode] || prettyId(mode, "gm_"),
-      image: "",
+      image: MODE_IMAGES[mode] || "",
+      altImage: "",
       kills: gkills,
       deaths: gdeath,
       wins: gwins,
@@ -466,6 +512,8 @@ export function mapToLegacyStats(raw: Bf6RawStats, fallbackName = ""): LegacySta
       id: level,
       mapName: MAP_NAMES[level] || prettyId(level, "lvlmp"),
       name: MAP_NAMES[level] || prettyId(level, "lvlmp"),
+      image: MAP_IMAGES[level] || "",
+      altImage: "",
       wins: mwins,
       losses: mloss,
       matches: mmatches,
@@ -654,7 +702,54 @@ export function mapToLegacyStats(raw: Bf6RawStats, fallbackName = ""): LegacySta
     bestClass: "",
   };
 
+  if (options.withSeasons !== false && raw.dimensioned.length > 0) {
+    stats.perSeason = buildPerSeason(raw, fallbackName);
+  }
+
   return stats;
+}
+
+/**
+ * 把 Season + GameMode 维度的统计拆成 gametools 的 perSeason 结构：
+ *   perSeason[SeasonN][GameMode] = <该赛季该模式的完整统计块>
+ * 只取同时带 Season 和 GameMode 的记录（全局 / 单维度记录不参与拆分）。
+ */
+function buildPerSeason(raw: Bf6RawStats, fallbackName: string): Record<string, Record<string, unknown>> {
+  const groups = new Map<string, Map<string, Record<string, number>>>();
+  for (const d of raw.dimensioned) {
+    const season = d.dims.Season;
+    const mode = d.dims.GameMode;
+    if (!season || season === "PLACEHOLDER" || !mode) continue;
+    let seasonModes = groups.get(season);
+    if (!seasonModes) {
+      seasonModes = new Map();
+      groups.set(season, seasonModes);
+    }
+    let values = seasonModes.get(mode);
+    if (!values) {
+      values = {};
+      seasonModes.set(mode, values);
+    }
+    values[d.name] = d.value;
+  }
+
+  const out: Record<string, Record<string, unknown>> = {};
+  const seasons = [...groups.keys()].sort(
+    (a, b) => Number(a.replace(/[^0-9]/g, "") || 0) - Number(b.replace(/[^0-9]/g, "") || 0)
+  );
+  for (const season of seasons) {
+    const seasonData: Record<string, unknown> = {};
+    for (const [mode, values] of groups.get(season) as Map<string, Record<string, number>>) {
+      const subset: Bf6RawStats = { ...raw, values, dimensioned: [] };
+      const legacy = mapToLegacyStats(subset, fallbackName, { withSeasons: false });
+      seasonData[mode] = {
+        gamemodeName: modeDisplayName(mode),
+        ...legacy,
+      };
+    }
+    out[season] = seasonData;
+  }
+  return out;
 }
 
 export function generateUpdateHash(data: Record<string, unknown>): string {

@@ -4,6 +4,18 @@ import { getProfile, upsertProfile, touchSearchTimestamp, setProfileDisplayName,
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 
+/** 旧档案里可能还留着 gametools CDN 图片，命中时强制用新数据重建 */
+function hasGametoolsAssets(profile: Record<string, unknown>): boolean {
+  const segs = (profile.data as Record<string, unknown> | undefined)?.segments as
+    | Array<Record<string, unknown>>
+    | undefined;
+  if (!Array.isArray(segs)) return false;
+  return segs.some((s) => {
+    const url = (s.metadata as Record<string, unknown> | undefined)?.imageUrl;
+    return typeof url === "string" && url.includes("cdn.gametools.network");
+  });
+}
+
 /** 用 EADP 搜索解析名字 → 选一个最可能的账号 → getStats */
 async function resolveStatsByName(query: string, preferred?: Platform) {
   const candidates = await searchPlayersByName(query).catch(() => []);
@@ -67,6 +79,7 @@ export async function GET(request: NextRequest) {
     const { lookupByName } = await import("@/lib/db");
     cached = forceRefresh ? null : lookupByName(query);
   }
+  if (cached && hasGametoolsAssets(cached as Record<string, unknown>)) cached = null;
   if (cached) {
     const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;
     const pid = ((cached as any).data?.platformInfo?.platformUserIdentifier) as string | undefined;

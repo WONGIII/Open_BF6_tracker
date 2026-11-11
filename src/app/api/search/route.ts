@@ -29,7 +29,9 @@ function profileToCandidate(ident: string, fallbackPlatform = ""): Candidate | n
     platform: String(pi.platformSlug || fallbackPlatform || ""),
     tracked: true,
     rank: rankStat?.displayValue || "?",
-    rankImage: rankStat?.metadata?.imageUrl || "",
+    rankImage: typeof rankStat?.metadata?.imageUrl === "string" && rankStat.metadata.imageUrl.startsWith("/bf6/")
+      ? rankStat.metadata.imageUrl
+      : "",
   };
 }
 
@@ -94,7 +96,9 @@ export async function GET(request: NextRequest) {
           platform: String(pi.platformSlug || row.platform || ""),
           tracked: true,
           rank: rankStat?.displayValue || "?",
-          rankImage: rankStat?.metadata?.imageUrl || "",
+          rankImage: typeof rankStat?.metadata?.imageUrl === "string" && rankStat.metadata.imageUrl.startsWith("/bf6/")
+      ? rankStat.metadata.imageUrl
+      : "",
         });
       }
       return NextResponse.json({ results: tracked });

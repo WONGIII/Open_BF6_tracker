@@ -120,7 +120,7 @@ export function buildTrnProfileResponse(
   // profile 响应可能有 playerCard 包裹，也可能 rank 直接在顶层
   const pc = ((profile.playerCard || profile) as Record<string, unknown>);
   const rank = _n(pc.rank || profile.rank || stats.rank);
-  const rankImg = (pc.rankImage || profile.rankImage || {}) as Record<string, string>;
+  const rankImg = (pc.rankImage || profile.rankImage || stats.rankImage || {}) as Record<string, string>;
   const badges = _n(pc.badges || profile.badges);
   const avatar = (typeof profile.playerCard === "string" ? profile.playerCard : (profile.avatar || stats.avatar || "")) as string;
 
