@@ -418,6 +418,24 @@ export function upsertProfile(
 // Match listing
 // ============================================================
 
+/** 旧数据里可能残留 gametools CDN 图片地址；读库时统一抹掉，避免继续外链 */
+function stripGametoolsUrls<T>(value: T): T {
+  if (typeof value === "string") {
+    return (value.includes("cdn.gametools.network") ? "" : value) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => stripGametoolsUrls(v)) as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = stripGametoolsUrls(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
 export function listMatches(
   platformUserIdentifier: string,
   limit = 20,
@@ -431,7 +449,7 @@ export function listMatches(
     .prepare("SELECT match_json FROM matches WHERE platform_user_identifier = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
     .all(platformUserIdentifier, limit, offset) as { match_json: string }[];
   return {
-    matches: rows.map((r) => JSON.parse(r.match_json) as TrnMatch),
+    matches: rows.map((r) => stripGametoolsUrls(JSON.parse(r.match_json) as TrnMatch)),
     total: totalRow.cnt,
   };
 }
