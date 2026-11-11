@@ -40,6 +40,13 @@
 - **地图统计**：每张地图的胜场和败场
 - 所有图标来自 `src/lib/ea/item-dict.json` 的静态字典，**字典里没有的条目留空**，不显示占位块
 
+### EA 档案详情（任意玩家）
+- `getPlayerProfile`：档案等级、345 条生涯/单局最高记录、卡面 GUID、竞技标签
+- `getBadges`：徽章总数 + 阶级/进度列表
+- `getPlayerCard`：5 个卡面资源 GUID + 小整数
+- 玩家页概览下方展示「EA 档案」卡片，接口 `GET /api/player/{nucleusId}/details`
+- 头像接口目前只回 token 本人，未接入
+
 ### 服务器列表
 - `/servers` 页面 + `GET /api/servers`，走 EA 官方 `ClientPlay/GetFilteredGameServers`
 - 支持名称子串搜索、分页（默认 100 台/页）、区域 / 模式 / 地图 / 标签展示

@@ -71,6 +71,23 @@ sid / remid
 
 EA gRPC 不提供头像、军衔、玩家卡片，因此这些字段为空；前端原本就按「上游没有就留空」处理。
 
+## 玩家详情（任意 nucleusId）
+
+只要拿到 nucleusId，就能查任意玩家的公开档案，不需要对方在线或同意：
+
+| 方法 | 路径 | 内容 |
+|---|---|---|
+| 档案 | `/santiago.client.player_profile.ClientPlayerProfile/getPlayerProfile` | 档案等级（f6.f1）、345 条生涯/单局最高记录、卡面 GUID、竞技标签 |
+| 徽章 | `/santiago.client.player_profile.ClientPlayerProfile/getBadges` | f1 已解锁数；f2 repeated { f1 UUID, f2 阶级, f3 进度 } |
+| 卡面 | `/santiago.client.playercard.ClientPlayerCard/getPlayerCard` | 5 个资源 GUID + 4 个小整数 |
+
+请求统一为 `f1 = message { f1 = nucleusId, f3 = platform }`（platform 7 = PC）。
+
+对外接口：`GET /api/player/{nucleusId}/details`（60 秒缓存）。
+玩家页概览条下方会显示「EA 档案」卡片：等级、徽章解锁数 / 进阶数、卡面资源、竞技标签、生涯最高记录。
+
+> 头像图片 URL 仍未打通（EADP 只回 token 本人），因此详情里不含头像。
+
 ## 服务器列表
 
 `GET /api/servers?name=&offset=&limit=` → `/servers` 页面。请求字段：

@@ -6,6 +6,7 @@ import { SponsorName } from "@/components/SponsorContext";
 import { fetchPlayerProfile, fetchPlayerMatches, fetchSuspicionSummary, submitSuspicionReport } from "@/lib/api";
 import { useAuth } from "@/components/AuthContext";
 import { useTheme } from "@/components/ThemeController";
+import EaPlayerDetails from "@/components/EaPlayerDetails";
 import type { TrnMatch, SuspicionSummary, SuspicionType, Segment } from "@/lib/types";
 import { SUSPICION_TYPES, CREDIBILITY_LEVELS } from "@/lib/types";
 
@@ -258,6 +259,7 @@ export default function PlayerClient({ playerId: encodedPlayerId }: { playerId: 
           <div className="stripm"><div className="v">{sv("accuracy")}</div><div className="l">命中率</div><div className="d">{sv("shotsHit")} / {sv("shotsFired")}</div></div>
           <div className="stripm"><div className="v" style={{ fontSize: 24 }}>{sv("timePlayed")}</div><div className="l">时长</div><div className="d">{sv("matchesPlayed")} 场</div></div>
         </div>
+        <EaPlayerDetails identifier={ident} />
         <div className="card px-5 pt-4 pb-0 mb-4 mt-[18px]">
           <div className="flex items-center gap-6 pb-3 mb-3 flex-wrap border-b border-[color:var(--line2)]">
             {l1Items.map(item => <button key={item.id} onClick={() => { setL1(item.id); setL2("career"); }} className={navBtn(l1===item.id)}>{item.label}{l1===item.id && <span className="absolute -bottom-[13px] left-0 w-full h-[3px] rounded-t-sm bg-[color:var(--acc)]"/>}</button>)}
