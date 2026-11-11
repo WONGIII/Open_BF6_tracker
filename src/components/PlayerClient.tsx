@@ -529,7 +529,7 @@ function BestCard({ label, name, seg, value, unit }: { label: string; name: stri
 function WpCard({ w }: { w: Segment }) { const icon = useIconSrc(); const src = icon(w); return <div className="ocard">{src && <img className="pic" src={src} alt="" />}<div className="tx"><div className="nm2">{w.metadata?.name as string}</div><div className="cat">{w.metadata?.category as string}</div></div><div className="rt"><div className="v">{w.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
 function VhCard({ v }: { v: Segment }) { const icon = useIconSrc(); const src = icon(v); return <div className="ocard">{src && <img className="pic" src={src} alt="" />}<div className="tx"><div className="nm2">{v.metadata?.name as string}</div><div className="cat">{v.metadata?.category as string}</div></div><div className="rt"><div className="v">{v.stats.kills?.displayValue}</div><div className="u">击杀</div></div></div>; }
 function KitCard({ k }: { k: Segment }) { const icon = useIconSrc(); const src = icon(k); return <div className="okit">{src && <img className="pic" src={src} alt="" />}<div className="nm2">{_cn(k.metadata?.name as string)}</div><div className="big">{k.stats.kills?.displayValue}</div><div className="sub">击杀 · K/D {k.stats.kd?.displayValue || "-"} · KPM {k.stats.killsPerMinute?.displayValue || "-"}</div></div>; }
-function ModeCard({ m }: { m: Segment }) { const icon = useIconSrc(); const src = icon(m); return <div className="omode">{src && <img className="pic ic-mode" src={src} alt="" />}<div className="tx"><div className="nm2">{m.metadata?.name as string}</div><div className="g3"><div><div className="k">胜</div><div className="v a">{m.stats.wins?.displayValue || 0}</div></div><div><div className="k">K/D</div><div className="v">{m.stats.kd?.displayValue || "-"}</div></div><div><div className="k">KPM</div><div className="v">{m.stats.kpm?.displayValue || "-"}</div></div></div></div></div>; }
+function ModeCard({ m }: { m: Segment }) { const icon = useIconSrc(); const cls = useIconCls(); const src = icon(m); return <div className="omode">{src && <img className={"pic " + cls(m)} src={src} alt="" />}<div className="tx"><div className="nm2">{m.metadata?.name as string}</div><div className="g3"><div><div className="k">胜</div><div className="v a">{m.stats.wins?.displayValue || 0}</div></div><div><div className="k">K/D</div><div className="v">{m.stats.kd?.displayValue || "-"}</div></div><div><div className="k">KPM</div><div className="v">{m.stats.kpm?.displayValue || "-"}</div></div></div></div></div>; }
 
 type DetailField = [string, string];
 
@@ -713,6 +713,8 @@ function useIconCls() {
   return (seg?: { metadata?: Record<string, unknown> } | null): string => {
     const md = (seg?.metadata || {}) as Record<string, unknown>;
     const u = String(md.imageUrl || md.imageUrlDark || "");
+    // 本地资源已经区分 light / white 两套，不能再叠加 CSS 反相
+    if (u.startsWith("/bf6/")) return "";
     if (!u.includes("/modes/")) return "";
     if (WHITE_MODE_ICONS.some((k) => u.includes(k))) return "ic-mode-white";
     return "ic-mode";
@@ -780,6 +782,7 @@ function _segFacts(
 }
 function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; expanded: string | null; onToggle: (id: string | null) => void }) {
   const icon = useIconSrc();
+  const iconCls = useIconCls();
   if (matches.length === 0) return <p className="text-[color:var(--ink3)] text-sm">暂无战报</p>;
   return <div className="space-y-3">{matches.map((m, idx) => {
     const matchData = m as unknown as Record<string, unknown>;
@@ -810,7 +813,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
       mVehicles = _onlyUsed(mSegments.filter(s => s.type === "vehicle")).sort((a,b)=>(b.stats.kills?.value||0)-(a.stats.kills?.value||0));
       mKits = _onlyUsed(mSegments.filter(s => s.type === "kit"));
       mModes = mSegments.filter(s => s.type === "gamemode");
-      mMaps = mSegments.filter(s => s.type === "level");
+      mMaps = mSegments.filter(s => s.type === "level" && String(s.metadata?.name || "").toLowerCase() !== "all");
       mGadgets = _onlyUsed(mSegments.filter(s => s.type === "gadget"));
       mMelee = _onlyUsed(mSegments.filter(s => s.type === "melee"));
     }
@@ -892,7 +895,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
         </div></section>
         {mModes.length > 0 && <section className="sect"><div className="sec-t">模式明细</div>
           {mModes.map(md => <div key={md.metadata?.name as string} className="mrow">
-            <div className="top">{icon(md) && <img className="ic-mode" src={icon(md)} alt="" />}<span className="nm">{_cn(md.metadata?.name as string)}</span><span className="kk">{md.stats?.kills?.displayValue}</span><span style={{ fontSize: 12, color: "var(--ink3)" }}>击杀</span></div>
+            <div className="top">{icon(md) && <img className={iconCls(md)} src={icon(md)} alt="" />}<span className="nm">{_cn(md.metadata?.name as string)}</span><span className="kk">{md.stats?.kills?.displayValue}</span><span style={{ fontSize: 12, color: "var(--ink3)" }}>击杀</span></div>
             {/* 上游对部分模式（如歼灭模式）不给 deaths/kd，缺失时显示 "-" 而不是 0 */}
             {/* 上游对部分模式不给某些字段（例如歼灭模式没有 deaths/kd/kpm），
                 缺数据时整项不渲染，而不是显示一个没有意义的 "-" */}
@@ -960,6 +963,7 @@ const fmtDuration = (s: number): string => {
 
 function SeasonBreakdown({ segments }: { segments: Segment[] }) {
   const icon = useIconSrc();
+  const iconCls = useIconCls();
   const grouped: Record<string, Record<string, Segment[]>> = {};
   for (const s of segments) { const season = (s.attributes?.season as string) || "其他"; const cat = (s.attributes?.category as string) || "其他"; if (!grouped[season]) grouped[season] = {}; if (!grouped[season][cat]) grouped[season][cat] = []; grouped[season][cat].push(s); }
   return <div className="space-y-8">
@@ -973,7 +977,7 @@ function SeasonBreakdown({ segments }: { segments: Segment[] }) {
             <div className="ogrid c3">
               {items.map(g=>(
                 <div key={(g.attributes?.key as string) || (g.metadata?.name as string)} className="omode">
-                  {icon(g) && <img className={"pic" + (String(g.type).includes("mode") ? " ic-mode" : "")} src={icon(g)} alt="" />}
+                  {icon(g) && <img className={"pic " + iconCls(g)} src={icon(g)} alt="" />}
                   <div className="tx">
                     <div className="nm2">{g.metadata?.name as string}</div>
                     <div className="g3">

@@ -92,8 +92,12 @@ EA gRPC 不提供头像、军衔、玩家卡片，因此这些字段为空；前
 
 - 等级图标：下载 gametools 的 `ranks/bf6/t_ui_rank_NNN_sm.png`（1–50 逐级、55–100 每 5 级、110–300 每 10 级，共 80 张），存于 `public/bf6/ranks/`。
 - 武器 / 载具 / 装备 / 兵种 / 模式图标来自 [g1331/bf-manager](https://github.com/g1331/bf-manager)（MIT），复制到 `public/bf6/`。
+- 兵种图标额外从 gametools 下载 black / white 两套（浅色用黑色，深色用白色）。
+- 模式图标生成本地 `modes/light`（深色填充）与 `modes/white`（白色）两套，浅色模式不再出现白底白图。
+- 等级图标按 gametools 档位规则：1–50 逐级、55–100 每 5 级、110–500 每 10 级、1000；查询时取不大于当前等级的最高档（568 → 500，1209 → 1000）。
 - 地图图片复制自 bf-manager；缺失的 European Casino 从 gametools CDN 下载为 `public/bf6/maps/mpdough.webp`。
 - 运行期不再请求 `cdn.gametools.network`，所有图片走本站 `/bf6/...`。
+- 旧战报读取时会按名称把武器 / 装备 / 载具 / 兵种 / 模式 / 地图图标重新映射到本地资源（`src/lib/bf6Assets.ts`）。
 
 ### 赛季拆分
 

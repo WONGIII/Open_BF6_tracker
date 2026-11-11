@@ -9,6 +9,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { buildDeltaMatch } from "./delta";
+import { enrichMatchImages } from "./bf6Assets";
 import type {
   TrnProfile,
   TrnMatch,
@@ -449,7 +450,7 @@ export function listMatches(
     .prepare("SELECT match_json FROM matches WHERE platform_user_identifier = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
     .all(platformUserIdentifier, limit, offset) as { match_json: string }[];
   return {
-    matches: rows.map((r) => stripGametoolsUrls(JSON.parse(r.match_json) as TrnMatch)),
+    matches: rows.map((r) => enrichMatchImages(stripGametoolsUrls(JSON.parse(r.match_json) as TrnMatch))),
     total: totalRow.cnt,
   };
 }

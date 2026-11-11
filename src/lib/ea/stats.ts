@@ -30,6 +30,11 @@ const MAP_NAMES = itemDict.maps as Record<string, string>;
 const MAP_IMAGES = itemDict.mapImages as Record<string, string>;
 const MODE_NAMES = itemDict.modes as Record<string, string>;
 const MODE_IMAGES = itemDict.modeImages as Record<string, string>;
+const MODE_ALT_IMAGES = (itemDict as Record<string, unknown>).modeAltImages as Record<string, string>;
+const CLASS_ICONS = (itemDict as Record<string, unknown>).classes as Record<
+  string,
+  { image: string; altImage: string }
+>;
 
 /** getStats 维度里的原始 GameMode 名 → gametools 模式 id（gm_*） */
 const RAW_MODE_KEYS: Record<string, string> = {
@@ -438,8 +443,8 @@ export function mapToLegacyStats(
       assists: num(v, `assists_kit_${kit}`),
       revives: num(v, `revives_kit_${kit}`),
       spawns: num(v, `spawns_kit_${kit}`),
-      image: CLASS_IMAGES[kit] || "",
-      altImage: "",
+      image: CLASS_ICONS[kit]?.image || "",
+      altImage: CLASS_ICONS[kit]?.altImage || "",
       secondsPlayed: time,
       kpm: time > 0 ? parseFloat((killsC / (time / 60)).toFixed(2)) : 0,
       killDeath: deathsC > 0 ? parseFloat((killsC / deathsC).toFixed(2)) : killsC,
@@ -464,7 +469,7 @@ export function mapToLegacyStats(
       gamemodeName: MODE_NAMES[mode] || MODE_NAMES[mode.toLowerCase()] || prettyId(mode, "gm_"),
       name: MODE_NAMES[mode] || prettyId(mode, "gm_"),
       image: MODE_IMAGES[mode] || "",
-      altImage: "",
+      altImage: MODE_ALT_IMAGES[mode] || "",
       kills: gkills,
       deaths: gdeath,
       wins: gwins,

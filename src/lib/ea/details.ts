@@ -49,11 +49,23 @@ export interface PlayerDetails {
 }
 
 const RANK_IMAGES = ((itemDict as Record<string, unknown>).rankImages || {}) as Record<string, string>;
+const RANK_LEVELS = Object.keys(RANK_IMAGES)
+  .map((k) => ({ key: k, level: Number(k) }))
+  .filter((x) => Number.isFinite(x.level))
+  .sort((a, b) => a.level - b.level);
 
-/** gametools 等级图标在本地的路径（下载时按 3 位补零命名） */
+/**
+ * 等级图标使用 gametools 的「档位」规则：优先精确匹配，找不到就取
+ * 不大于当前等级的最高档（例如 568 → 500 档，1209 → 1000 档）。
+ */
 export function rankImagePath(level: number | null | undefined): string {
-  if (!level) return "";
-  return RANK_IMAGES[String(level).padStart(3, "0")] || "";
+  if (!level || level <= 0) return "";
+  let best = RANK_LEVELS[0];
+  for (const item of RANK_LEVELS) {
+    if (item.level <= level) best = item;
+    else break;
+  }
+  return best ? RANK_IMAGES[best.key] || "" : "";
 }
 
 function playerMessage(nucleusId: string, platform = PLATFORM_PC): Buffer {
