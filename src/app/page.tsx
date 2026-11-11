@@ -58,7 +58,7 @@ export default function HomePage() {
           <div className="px-8 py-10 sm:px-11 sm:py-11">
             <span className="inline-flex items-center gap-2 border border-[rgba(15,23,42,.14)] bg-[color:var(--surface-2)] px-3 py-1 text-xs text-[color:var(--ink2)] tracking-[1.6px]">
               <span className="w-[7px] h-[7px] rounded-full bg-[color:var(--good)] shadow-[0_0_0_4px_rgba(15,155,108,.15)]" />
-              GameTools Network
+              EA 官方 gRPC
             </span>
             <h1 className="text-[30px] sm:text-[38px] font-bold text-[color:var(--ink)] leading-tight mt-5 mb-2">
               {t("home.hero.title").includes("战绩")
@@ -276,11 +276,15 @@ function ServiceCards() {
   };
 
   const groups = [
-    { title: t("status.backendServices"), items: [{ key: "backend", label: "HK" }] },
-    { title: "GameTools", items: [
-      { key: "gtStats", label: "GT " + t("status.stats") },
-      { key: "gtProfile", label: "GT " + t("status.profile") },
-      { key: "gtSearch", label: "GT " + t("status.playerSearch") },
+    { title: t("status.backendServices"), items: [
+      { key: "backend", label: "HK" },
+      { key: "database", label: t("status.database") },
+    ] },
+    { title: t("status.eaGrpc"), items: [
+      { key: "eaAuth", label: t("status.eaAuth") },
+      { key: "eaStats", label: t("status.stats") },
+      { key: "eaSearch", label: t("status.playerSearch") },
+      { key: "eaServers", label: t("status.servers") },
     ] },
   ];
 

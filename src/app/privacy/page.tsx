@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold text-surface-800 mt-8 mb-3">{t("privacy.dataCollection")}</h2>
         <p className="text-surface-600 leading-relaxed">
           We collect only the minimum data necessary to provide our services: player game statistics
-          (publicly available via GameTools API), community submission data (suspicion reports),
+          (publicly available via EA official gRPC APIs), community submission data (suspicion reports),
           and technical data required for site operation (cookies for language preference, recent searches).
           We do not collect personal identifying information beyond what is voluntarily provided.
         </p>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
 
         <h2 className="text-xl font-semibold text-surface-800 mt-8 mb-3">{t("privacy.thirdParty")}</h2>
         <p className="text-surface-600 leading-relaxed">
-          We use the GameTools Network API (api.gametools.network) to fetch publicly available
+          We use EA official gRPC services (bf6-mp-cgw.ops.dice.se / gateway.grpc.ea.com) to fetch publicly available
           Battlefield 6 player statistics. We may use Google Analytics for anonymized traffic
           analysis (opt-in via cookie consent). We do not embed third-party trackers without
           your consent.

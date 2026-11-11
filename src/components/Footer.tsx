@@ -19,7 +19,7 @@ export default function Footer() {
               <span className="font-medium text-[color:var(--ink2)]">{mounted ? t("site.title") : "BF6 Tracker"}</span>{" "}
               <span>{APP_VERSION}</span><br />
               Powered by <a href="https://xnnserver.dpdns.org/" target="_blank" rel="noopener" className="text-[#2563eb] hover:underline">WANG</a><br />
-              <span className="text-[12.5px]">数据来源 api.gametools.network · 本站为社区非官方项目</span>
+              <span className="text-[12.5px]">数据来源 EA 官方 gRPC 接口 · 本站为社区非官方项目</span>
             </div>
             <div className="flex flex-wrap items-center gap-5 text-[13.5px] text-[color:var(--ink2)]">
               <Link href="/privacy" className="hover:text-[color:var(--acc)]">隐私政策</Link>

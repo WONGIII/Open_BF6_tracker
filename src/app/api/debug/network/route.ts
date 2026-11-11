@@ -1,61 +1,38 @@
 import { NextResponse } from "next/server";
+import { ensureJunoAccess, ensureSession } from "@/lib/ea/auth";
+import { searchPersonas } from "@/lib/ea/search";
+import { listServers } from "@/lib/ea/servers";
 
-// Quick network test - can your server reach GameTools?
+// EA 官方 gRPC 连通性自检（服务端网络出口 / TLS / 登录态）
 export async function GET() {
   const results: Record<string, unknown> = {};
 
-  // Test 1: direct fetch with short timeout
+  // 1) accounts.ea.com 登录链路 → DICE 会话
   const t1 = Date.now();
   try {
-    const r = await fetch("https://api.gametools.network/bf6/stats/?name=test&platform=pc&raw=false&format_values=true&skip_battlelog=true", {
-      headers: { Accept: "application/json", "User-Agent": "bf6-tracker/0.1.0" },
-      signal: AbortSignal.timeout(5000),
-    });
-    results.directFetch = {
-      status: r.status,
-      time: `${Date.now() - t1}ms`,
-      body: await r.text().then((t) => t.slice(0, 200)),
-    };
+    const s = await ensureSession();
+    results.eaSession = { ok: true, nucleusId: s.identity.nucleusId, time: `${Date.now() - t1}ms` };
   } catch (e) {
-    results.directFetch = {
-      error: e instanceof Error ? e.message : String(e),
-      time: `${Date.now() - t1}ms`,
-    };
+    results.eaSession = { ok: false, error: e instanceof Error ? e.message : String(e), time: `${Date.now() - t1}ms` };
   }
 
-  // Test 2: status endpoint
+  // 2) EADP 玩家搜索网关
   const t2 = Date.now();
   try {
-    const r = await fetch("https://api.gametools.network/bf6/status/", {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
-    });
-    results.statusEndpoint = {
-      status: r.status,
-      time: `${Date.now() - t2}ms`,
-    };
+    await ensureJunoAccess();
+    const rows = await searchPersonas("wangiii2");
+    results.eaSearch = { ok: true, results: rows.length, time: `${Date.now() - t2}ms` };
   } catch (e) {
-    results.statusEndpoint = {
-      error: e instanceof Error ? e.message : String(e),
-      time: `${Date.now() - t2}ms`,
-    };
+    results.eaSearch = { ok: false, error: e instanceof Error ? e.message : String(e), time: `${Date.now() - t2}ms` };
   }
 
-  // Test 3: DNS resolution
+  // 3) DICE 服务器浏览器网关
   const t3 = Date.now();
   try {
-    const r = await fetch("https://api.gametools.network/", {
-      signal: AbortSignal.timeout(5000),
-    });
-    results.rootEndpoint = {
-      status: r.status,
-      time: `${Date.now() - t3}ms`,
-    };
+    const servers = await listServers({ limit: 1 });
+    results.diceServerBrowser = { ok: true, servers: servers.length, time: `${Date.now() - t3}ms` };
   } catch (e) {
-    results.rootEndpoint = {
-      error: e instanceof Error ? e.message : String(e),
-      time: `${Date.now() - t3}ms`,
-    };
+    results.diceServerBrowser = { ok: false, error: e instanceof Error ? e.message : String(e), time: `${Date.now() - t3}ms` };
   }
 
   return NextResponse.json(results);

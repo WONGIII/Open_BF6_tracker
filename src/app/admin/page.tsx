@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-type Tab = "theme" | "sponsors" | "marks" | "streamers" | "messages" | "users" | "password";
+type Tab = "ea" | "theme" | "sponsors" | "marks" | "streamers" | "messages" | "users" | "password";
 
 type Preset = { id: string; label: string; accent: string; accent2: string };
 
@@ -44,7 +44,7 @@ export default function AdminPage() {
   );
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "theme", label: "站点外观" },
+    { id: "ea", label: "EA 账号" }, { id: "theme", label: "站点外观" },
     { id: "sponsors", label: "赞助者" }, { id: "messages", label: "留言" }, { id: "marks", label: "标记审核" },
     { id: "streamers", label: "主播管理" }, { id: "users", label: "用户管理" }, { id: "password", label: "修改密码" },
   ];
@@ -54,6 +54,7 @@ export default function AdminPage() {
       <div className="max-w-[900px] mx-auto px-4 py-8">
         <h1 className="text-xl font-bold text-[color:var(--ink)] mb-6">管理后台</h1>
         <div className="flex gap-1 mb-6">{tabs.map(t => <button key={t.id} onClick={() => setActiveTab(t.id)} className={`px-4 py-2 text-sm rounded-none font-medium transition-colors ${activeTab===t.id?"bg-[color:var(--acc)] text-white":"bg-[color:var(--surface)] text-[color:var(--ink2)] hover:bg-[color:var(--surface-3)] border border-[color:var(--line2)]"}`}>{t.label}</button>)}</div>
+        {activeTab==="ea" && <EaTab password={password}/>}
         {activeTab==="theme" && <ThemeTab password={password}/>}
         {activeTab==="sponsors" && <SponsorsTab/>}
         {activeTab==="messages" && <MessagesTab/>}
@@ -237,5 +238,105 @@ function PasswordTab() {
     <button className="btn-primary w-full" onClick={submit}>修改密码</button>
     {msg && <p className="text-xs text-[color:var(--good)] mt-2">{msg}</p>}
     {err && <p className="text-xs text-[color:var(--bad)] mt-2">{err}</p>}
+  </div>;
+}
+
+function EaTab({ password }: { password: string }) {
+  type EaStatus = {
+    configured: boolean;
+    hasSession: boolean;
+    status: string;
+    account: { displayName: string; nucleusId: string; personaId: string; namespace: string; platform: number } | null;
+    sessionExpiresAt: number | null;
+    clientSecretSource: string;
+    updatedAt: string | null;
+    lastError: string;
+  };
+  const [st, setSt] = useState<EaStatus | null>(null);
+  const [sid, setSid] = useState(""); const [remid, setRemid] = useState(""); const [secret, setSecret] = useState("");
+  const [busy, setBusy] = useState(false); const [msg, setMsg] = useState(""); const [err, setErr] = useState("");
+
+  const load = () => fetch("/api/admin/ea", { headers: { "x-admin-password": password } }).then(r => r.json()).then(setSt).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  const login = async () => {
+    if (!sid.trim() || !remid.trim()) { setErr("sid 和 remid 都必须填写"); return; }
+    setBusy(true); setErr(""); setMsg("");
+    try {
+      const r = await fetch("/api/admin/ea", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify({ sid: sid.trim(), remid: remid.trim(), clientSecret: secret.trim() || undefined }),
+      });
+      const d = await r.json();
+      setSt(d);
+      if (d.error) setErr(d.error); else {
+        setMsg("已登入：" + (d.account?.displayName || d.account?.nucleusId || "EA 账号"));
+        setSid(""); setRemid(""); setSecret("");
+      }
+    } catch (e) { setErr(String(e)); }
+    setBusy(false);
+  };
+
+  const refresh = async () => {
+    setBusy(true); setErr(""); setMsg("");
+    try {
+      const r = await fetch("/api/admin/ea", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify({ action: "refresh" }),
+      });
+      const d = await r.json();
+      setSt(d);
+      if (d.error) setErr(d.error); else setMsg("凭证已刷新");
+    } catch (e) { setErr(String(e)); }
+    setBusy(false);
+  };
+
+  const remove = async () => {
+    if (!confirm("删除后需要重新填写 sid/remid 才能查询。确认删除全部 EA 凭证？")) return;
+    setBusy(true); setErr(""); setMsg("");
+    try {
+      const r = await fetch("/api/admin/ea", { method: "DELETE", headers: { "x-admin-password": password } });
+      const d = await r.json();
+      setSt(d);
+      if (d.error) setErr(d.error); else setMsg("凭证已删除");
+    } catch (e) { setErr(String(e)); }
+    setBusy(false);
+  };
+
+  const expiry = st?.sessionExpiresAt ? new Date(st.sessionExpiresAt).toLocaleString() : "—";
+
+  return <div className="card p-5 space-y-4 max-w-[640px]">
+    <div>
+      <h3 className="font-semibold text-[color:var(--ink)]">EA 账号（官方 gRPC）</h3>
+      <p className="text-[11px] text-[color:var(--ink3)] mt-1">sid / remid / client secret 只保存在服务端加密列，前端与 API 都不会回显。</p>
+    </div>
+
+    <div className="border border-[color:var(--line2)] p-3 text-xs space-y-1">
+      {st?.configured ? <>
+        <div className="text-[color:var(--good)] font-medium">
+          已登入：{st.account?.displayName || "—"} · nucleus {st.account?.nucleusId || "—"}
+        </div>
+        <div className="text-[color:var(--ink2)]">persona：{st.account?.personaId || "—"} · namespace：{st.account?.namespace || "—"}</div>
+        <div className="text-[color:var(--ink2)]">会话到期：{expiry}</div>
+        <div className="text-[color:var(--ink3)]">client secret：{st.clientSecretSource === "custom" ? "自定义" : "内置 prod secret"}</div>
+      </> : <div className="text-[color:var(--ink3)]">尚未配置 EA 凭证，战绩 / 搜索 / 服务器列表不可用。</div>}
+      {st?.lastError && <div className="text-[color:var(--bad)] break-all">最近错误：{st.lastError}</div>}
+    </div>
+
+    <div className="space-y-2">
+      <textarea className="input w-full h-20 font-mono text-xs" placeholder="sid（EA 登录 Cookie，只填值）" value={sid} onChange={e=>setSid(e.target.value)} />
+      <textarea className="input w-full h-20 font-mono text-xs" placeholder="remid（EA 登录 Cookie，只填值）" value={remid} onChange={e=>setRemid(e.target.value)} />
+      <input className="input w-full font-mono text-xs" placeholder="client secret（留空使用内置 prod secret）" value={secret} onChange={e=>setSecret(e.target.value)} />
+      <div className="flex flex-wrap gap-2 pt-1">
+        <button className="btn-primary" onClick={login} disabled={busy}>{busy ? "登录中…" : "保存并登录"}</button>
+        <button className="px-4 py-2 text-sm border border-[color:var(--line2)] bg-[color:var(--surface-2)] text-[color:var(--ink2)]" onClick={refresh} disabled={busy || !st?.configured}>立即刷新</button>
+        <button className="px-4 py-2 text-sm border border-[color:var(--bad)] text-[color:var(--bad)]" onClick={remove} disabled={busy || !st?.configured}>删除凭证</button>
+      </div>
+      <p className="text-[11px] text-[color:var(--ink3)]">保存后会立即走完整链路：ORIGIN → JUNO → GLACIER → viaJWT，并自动保存 refresh token。</p>
+      {msg && <p className="text-xs text-[color:var(--good)]">{msg}</p>}
+      {err && <p className="text-xs text-[color:var(--bad)] break-all">{err}</p>}
+    </div>
   </div>;
 }

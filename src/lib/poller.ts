@@ -1,4 +1,4 @@
-import { fetchStatsBatchByIds, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
+import { fetchStatsBatchByIds, generateUpdateHash } from "@/lib/bf6";
 import { listProfileIdentifiers, upsertProfile, getAllSponsors } from "@/lib/db";
 import { buildTrnProfileResponse } from "@/app/api/profile/builder";
 import type { Platform } from "@/lib/types";
@@ -61,14 +61,9 @@ async function doUpsertForRow(
   if (row.update_hash && row.update_hash === newHash) return { changed: false };
 
   try {
-    const uid = (stats as any).userId as number;
     const platform = (row.platform || "origin") as Platform;
-    // 批量接口已改用 seperation=true，返回内容与 /bf6/stats/ 等价（含 perSeason），
-    // 因此不再逐玩家单查统计；只有头像/军衔仍需 profile 接口。
-    const rawProfile = await fetchProfileById(uid).catch(() => null);
-    const profileData = (rawProfile as any)?.other?.[0]?.playerProfiles?.[0]
-      || (rawProfile as any)?.playerProfiles?.[0]
-      || rawProfile || {};
+    // getStats 已经包含全部可展示数据；EA gRPC 没有头像/军衔接口。
+    const profileData = {};
     const response = buildTrnProfileResponse(stats as any, profileData, (stats as any).userName || row.name, platform, newHash);
     const identifier = String((stats as any).userId || pid);
     const deltaInfo = upsertProfile(identifier, (stats as any).userName || row.name, platform, newHash, response);

@@ -44,6 +44,9 @@ export default function Header() {
               <span className="hidden sm:inline">{modeLabel}</span>
             </button>
           )}
+          <Link href="/servers" className="btn-ghost text-xs">
+            {t("nav.servers")}
+          </Link>
           <Link href="/my" className="btn-ghost text-xs">
             {t("nav.myPage")}
           </Link>

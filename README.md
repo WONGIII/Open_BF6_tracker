@@ -4,7 +4,9 @@
 
 战地风云 6 全平台玩家战绩查询与社区反作弊标记工具。
 
-基于 Next.js 15 构建，对接 [GameTools Network](https://api.gametools.network) API，支持 Origin / Steam / PlayStation / Xbox 四大平台的全方位数据查询。
+基于 Next.js 15 构建，后端直接对接 **EA 官方 gRPC 接口**（accounts.ea.com 登录链路 + DICE `ClientStats` / `ClientPlay` / EADP `PlayerSearch`），支持 Origin / Steam / PlayStation / Xbox 四大平台的战绩查询、玩家搜索与实时服务器列表。
+
+> 不再依赖 `api.gametools.network`。接入细节见 [docs/EA-GRPC.md](docs/EA-GRPC.md)。
 
 ## 界面预览
 
@@ -23,8 +25,8 @@
 ## 功能特性
 
 ### 战绩查询
-- 按玩家名称搜索，自动并行探测四大平台（EA / Steam / PSN / Xbox）
-- **本地兜底**：上游按名搜索失败时，自动从已追踪档案中匹配，保证库内玩家一定能搜到
+- 按玩家名称搜索，走 EA 官方 EADP `PlayerSearch/SearchPlayers`（子串匹配、大小写不敏感、跨 EA / Steam / PSN / Xbox 命名空间）
+- **本地兜底**：EA 搜索失败或未配置凭证时，自动从已追踪档案中匹配，保证库内玩家一定能搜到
 - **生涯概览条**：击杀/死亡、K/D/真人 K/D、KPM/每场击杀、胜率/胜负、命中率/命中数与射击数、时长/场次
 - **最近 5 场状态**：逐场展示胜负色条与场均 K/D（从真实战报逐场计算，平局单独配色）
 - **生涯 / 战斗 / 更多数据**：共 44 项指标，每项都带百分位条
@@ -36,13 +38,17 @@
 - **近战武器**：每把刀的击杀、处决、使用次数、KPM、DPM
 - **模式分析**：各游戏模式的胜场、胜率、K/D、KPM、时长
 - **地图统计**：每张地图的胜场和败场
-- 所有图标一律使用上游返回的图片地址，**上游没有返回图片时留空**，不显示占位块
+- 所有图标来自 `src/lib/ea/item-dict.json` 的静态字典，**字典里没有的条目留空**，不显示占位块
 
-### 赛季分类
-- 支持**全面战争**和**禁区冲突**（大逃杀/试炼场）两个大类的独立展示
-- 按 **Season 1 / 2 / 3 / 4 / 5** 拆分每个赛季的数据
-- 每个赛季内可分别查看武器、载具、装备、兵种、模式、地图、近战等子分类
-- 生涯数据为全部赛季自动聚合，不硬编码赛季号
+### 服务器列表
+- `/servers` 页面 + `GET /api/servers`，走 EA 官方 `ClientPlay/GetFilteredGameServers`
+- 支持名称子串搜索、分页（默认 100 台/页）、区域 / 模式 / 地图 / 标签展示
+- 15 秒服务端缓存，避免频繁打到 EA 网关
+
+### EA 账号管理
+- 管理面板新增「EA 账号」页：填写 sid / remid（可选 client secret），保存后自动走完整登录链路
+- 自动保存并轮换 JUNO / GLACIER refresh token，会话到期自动续期
+- 凭证以 AES-256-GCM 加密存库，任何 API 不回显；可随时一键删除
 
 ### 战报系统
 - TRN segment 维度差分：逐 counter 相减全字段，衍生指标（K/D/KPM/SPM）从 delta 重新计算
@@ -54,9 +60,8 @@
 ### 后台自动轮询
 - 服务启动即开启，无需外部 cron
 - **分级策略**：赞助者每 5 分钟、近期搜索玩家每 10 分钟、24 小时内未搜索的玩家自动跳过
-- 通过 `POST /bf6/multiple/` 批量查询，**hash 与写入内容取自同一份快照**（避免哈希与数据不一致导致档案永久停更）
-- 批量接口使用 `seperation=true`，与单查接口字段完全一致（含 `perSeason` / `perGamemode`）
-- 兼容上游三种返回形态：单玩家裸对象、多玩家 `{data:[...]}`、原始数组
+- 通过 `ClientStats/getStats` 一次请求批量拉取多个玩家（`player` 字段是 repeated），默认 20 个/批
+- **hash 与写入内容取自同一份快照**（避免哈希与数据不一致导致档案永久停更）
 - 环境变量 `BF6_POLL_INTERVAL_SECONDS` 可调轮询间隔（默认 300 秒）
 
 ### 社区反作弊
@@ -85,7 +90,7 @@
 - 管理员密码修改
 
 ### 服务状态
-- 首页以表格形式显示后端服务和 GameTools API 各节点的实时健康状态
+- 首页 / `/status` 以表格形式显示后端、数据库与 EA 官方 gRPC 各节点的实时健康状态
 
 ## 设计系统
 
@@ -104,7 +109,7 @@
 | **数据库** | SQLite (better-sqlite3) |
 | **认证** | JWT (jose) + bcryptjs |
 | **字体** | Rajdhani + Noto Sans SC (Google Fonts) |
-| **数据源** | [GameTools Network API](https://api.gametools.network) |
+| **数据源** | EA 官方 gRPC（`bf6-mp-cgw.ops.dice.se` / `gateway.grpc.ea.com`） |
 | **国际化** | react-i18next (中/英) |
 
 ## 项目结构
@@ -123,6 +128,8 @@ src/
 │   │   ├── profile/     # 玩家档案 API + TRN 格式 builder
 │   │   ├── search/      # 搜索 API（含本地兜底）
 │   │   ├── stats/percentiles/  # 百分位分布 API
+│   │   ├── servers/     # 服务器列表 API（EA gRPC）
+│   │   ├── admin/ea/    # EA 凭证录入 / 登入状态 / 删除
 │   │   ├── status/      # 服务状态 API
 │   │   ├── suspicion/   # 举报 API
 │   │   └── ...
@@ -130,6 +137,7 @@ src/
 │   ├── my/              # 我的页面
 │   ├── player/          # 玩家档案页面
 │   ├── status/          # 服务状态页面
+│   ├── servers/        # 战地6 服务器列表页面
 │   └── ...
 ├── components/
 │   ├── PlayerClient.tsx  # 主玩家数据展示组件（英雄区 / 导航 / 总览 / 战报 / 明细）
@@ -141,7 +149,8 @@ src/
 │   └── ...
 └── lib/
     ├── db.ts             # SQLite 数据库层
-    ├── gametools.ts      # GameTools API 客户端
+    ├── bf6.ts            # EA gRPC 数据客户端（搜索 / 战绩 / 批量）
+    ├── ea/               # 登录链路、protobuf、gRPC、凭证存储、服务器列表
     ├── poller.ts         # 后台轮询器
     ├── delta.ts          # 战报差分引擎
     ├── percentiles.ts    # 百分位计算
@@ -162,6 +171,7 @@ src/
 - `player_suspicion_reports` — 举报记录
 - `contact_messages` — 联系我们工单
 - `settings` — 系统配置（管理员密码等）
+- `ea_credentials` — EA 登录凭证（sid/remid/secret/token，AES-256-GCM 密文列）
 - `verified_streamers` — 认证主播
 
 ## 本地开发
@@ -197,6 +207,18 @@ cp .env.example .env
 | `ADMIN_PASSWORD` | 管理后台初始密码 | `admin123` |
 | `SUSPICION_HMAC_SECRET` | 举报匿名 HMAC 密钥 | `change-me-in-production` |
 | `BF6_POLL_INTERVAL_SECONDS` | 后台轮询间隔（秒） | `300` |
+| `EA_GLACIER_CLIENT_SECRET` | 覆盖内置 GLACIER secret | 内置 prod 值 |
+| `EA_VAULT_DIR` | 凭证加密密钥目录 | 与数据库同目录 |
+
+## 首次配置 EA 凭证
+
+1. 用 EA App 登录（或启动一次 BF6），从发往 `accounts.ea.com` 的请求 Cookie 里取出 `sid`、`remid`（只取值）。
+2. 打开 `/admin`，输入管理员密码，切到「EA 账号」。
+3. 填入 `sid` / `remid`；`client secret` 留空即使用内置 prod 值。
+4. 点「保存并登录」——服务端会立刻走 ORIGIN → JUNO → GLACIER → viaJWT 全链路，并保存 refresh token。
+5. 成功后显示已登入账号、persona、namespace 与会话到期时间；随时可「删除凭证」。
+
+> 未配置凭证时，搜索会退回本地档案库，战绩与服务器列表接口返回 503。
 
 ## 部署
 
@@ -225,9 +247,16 @@ pm2 save
 
 ## API 数据源
 
-所有数据均来自 [GameTools Network 公开 API](https://api.gametools.network/bf6/stats/)。
+所有数据均来自 EA 官方 gRPC 接口：
 
-请求参数：`categories=multiplayer&raw=false&format_values=true&seperation=true&skip_battlelog=true&lang=en-us`
+| 功能 | 方法 |
+|---|---|
+| 玩家搜索 | `eadp.playersearch.grpc.search.v1.service.PlayerSearch/SearchPlayers` |
+| 玩家统计 | `santiago.client.stats.ClientStats/getStats` |
+| 服务器列表 | `santiago.client.play.ClientPlay/GetFilteredGameServers` |
+| BF6 会话 | `santiago.client.authentication.ClientAuthentication/viaJWT` |
+
+登录链路、字段映射、凭证保存方式见 [docs/EA-GRPC.md](docs/EA-GRPC.md)。
 
 数据经后端的 `buildTrnProfileResponse` 函数转换为 TRN 格式的统一结构。
 

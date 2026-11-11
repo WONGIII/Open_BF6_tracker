@@ -39,3 +39,6 @@ next-env.d.ts
 
 # data
 data/
+
+# EA credentials vault key
+ea-vault.key

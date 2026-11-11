@@ -1,25 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchStats, fetchStatsById, fetchProfileById, generateUpdateHash } from "@/lib/gametools";
+import { fetchStatsById, fetchStatsForCandidate, generateUpdateHash, searchPlayersByName } from "@/lib/bf6";
 import { getProfile, upsertProfile, touchSearchTimestamp, setProfileDisplayName, getAliases, upsertAliases } from "@/lib/db";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 
-const PLATFORMS: Platform[] = ["origin", "steam", "xbox", "psn"];
-
-function _platformParam(platform: Platform): string {
-  switch (platform) {
-    case "steam": return "steam";
-    case "psn": return "psn";
-    case "xbox": return "xbl";
-    default: return "ea";
+/** 用 EADP 搜索解析名字 → 选一个最可能的账号 → getStats */
+async function resolveStatsByName(query: string, preferred?: Platform) {
+  const candidates = await searchPlayersByName(query).catch(() => []);
+  if (!candidates.length) return null;
+  const ordered = candidates.slice().sort((a, b) => {
+    const score = (p: string) => {
+      if (preferred && p === preferred) return 3;
+      if (p === "origin") return 2;
+      if (p === "steam") return 1;
+      return 0;
+    };
+    return score(b.platform) - score(a.platform);
+  });
+  for (const c of ordered.slice(0, 3)) {
+    try {
+      const stats = await fetchStatsForCandidate(c.nucleusId, c.personaId, c.platform);
+      if (stats?.userId) return { stats, platform: (c.platform || "origin") as Platform, candidate: c };
+    } catch (e) {
+      console.error(`[resolveStatsByName] ${c.nucleusId} error:`, e instanceof Error ? e.message : String(e));
+    }
   }
-}
-
-async function tryPlatform(query: string, platform: Platform) {
-  try {
-    const stats = await fetchStats(query, platform);
-    if (stats?.userId) return { stats, platform };
-  } catch (e) { console.error(`[tryPlatform] ${platform} error:`, e instanceof Error ? e.message : String(e)); }
   return null;
 }
 
@@ -30,10 +35,8 @@ async function buildAndStore(
   displayNameOverride?: string
 ) {
   const displayName = displayNameOverride || (stats.userName as string) || displayNameFallback;
-  const rawProfile = await fetchProfileById(stats.userId as number).catch(() => null);
-  const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
-    || (rawProfile as any).playerProfiles?.[0]
-    || rawProfile || {};
+  // EA gRPC 不提供 rank / avatar / playerCard，档案只由 getStats 构建
+  const profileData = {};
   const hash = generateUpdateHash(stats as Record<string, unknown>);
   const response = buildTrnProfileResponse(stats as any, profileData, displayName, platform, hash);
   const identifier = String(stats.userId);
@@ -95,23 +98,17 @@ export async function GET(request: NextRequest) {
     // If identifier (nucleus ID) provided, go straight to ID-based lookup
     if (explicitIdentifier || /^\d{10,}$/.test(query)) {
       const ident = explicitIdentifier || query;
-      const platform = _platformParam(platformParam);
-      const fullStats = await fetchStatsById(Number(ident), platform);
+      const fullStats = await fetchStatsById(Number(ident), platformParam);
       if (fullStats?.userId) {
         return buildAndStore(fullStats as any, platformParam, query, displayNameOverride);
       }
       // Fallback to name search
     }
 
-    // Name-based: parallel search across all platforms
-    const results = await Promise.allSettled(PLATFORMS.map(p => tryPlatform(query, p)));
-    for (const r of results) {
-      if (r.status === "fulfilled" && r.value) {
-        const { stats, platform } = r.value;
-        if (stats?.userId) {
-          return buildAndStore(stats as any, platform, query, displayNameOverride);
-        }
-      }
+    // Name-based: EA 官方搜索解析 nucleus，再走原生 getStats
+    const resolved = await resolveStatsByName(query, platformParam);
+    if (resolved?.stats?.userId) {
+      return buildAndStore(resolved.stats as any, resolved.platform, query, displayNameOverride);
     }
 
     return NextResponse.json({ error: "Player not found" }, { status: 404 });
@@ -123,24 +120,15 @@ export async function GET(request: NextRequest) {
 // Background refresh (fire and forget)
 async function refreshInBackground(query: string, preferredPlatform?: Platform) {
   try {
-    const orderedPlatforms = preferredPlatform
-      ? [preferredPlatform, ...PLATFORMS.filter(p => p !== preferredPlatform)]
-      : PLATFORMS;
-    for (const p of orderedPlatforms) {
-      const result = await tryPlatform(query, p).catch(() => null);
-      if (result?.stats?.userId) {
-        const { stats, platform } = result;
-        const uid = stats.userId as number;
-        const rawProfile = await fetchProfileById(uid).catch(() => null);
-        const profileData = (rawProfile as any).other?.[0]?.playerProfiles?.[0]
-    || (rawProfile as any).playerProfiles?.[0]
-    || rawProfile || {};
-        const hash = generateUpdateHash(stats as Record<string, unknown>);
-        const response = buildTrnProfileResponse(stats as any, profileData, stats.userName || query, platform, hash);
-        const identifier = String(stats.userId || stats.userId);
-        upsertProfile(identifier, stats.userName || query, platform, hash, response);
-        return;
-      }
+    const result = await resolveStatsByName(query, preferredPlatform);
+    if (result?.stats?.userId) {
+      const { stats, platform } = result;
+      // EA gRPC 没有头像/军衔接口，档案只用 getStats 构建
+      const profileData = {};
+      const hash = generateUpdateHash(stats as Record<string, unknown>);
+      const response = buildTrnProfileResponse(stats as any, profileData, stats.userName || query, platform, hash);
+      const identifier = String(stats.userId || "");
+      upsertProfile(identifier, stats.userName || query, platform, hash, response);
     }
   } catch { /* ignore background failures */ }
 }

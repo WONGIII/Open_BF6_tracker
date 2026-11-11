@@ -39,14 +39,16 @@ export default function StatusPage() {
       label: t("status.backendServices"),
       items: [
         { key: "backend", name: "HK" },
+        { key: "database", name: t("status.database") },
       ],
     },
     {
-      label: "GameTools " + t("status.dataSource"),
+      label: t("status.eaGrpc"),
       items: [
-        { key: "gtStats", name: "GT " + t("status.stats") },
-        { key: "gtProfile", name: "GT " + t("status.profile") },
-        { key: "gtSearch", name: "GT " + t("status.search") },
+        { key: "eaAuth", name: t("status.eaAuth") },
+        { key: "eaStats", name: t("status.stats") },
+        { key: "eaSearch", name: t("status.playerSearch") },
+        { key: "eaServers", name: t("status.servers") },
       ],
     },
   ];
@@ -121,7 +123,7 @@ function StatusBadge({ status, t }: { status?: string; t: (key: string) => strin
 
   const labels: Record<string, string> = {
     healthy: t("status.healthy"),
-    degraded: t("status.degraded"),
+    degraded: t("status.degradedLabel"),
     down: t("status.down"),
     unknown: "...",
   };

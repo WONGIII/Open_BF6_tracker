@@ -13,7 +13,8 @@
     "donate": "Sponsor",
     "contact": "Contact",
     "language": "Language",
-    "myPage": "My"
+    "myPage": "My",
+    "servers": "Servers"
   },
   "cookiePreferences": "Cookie choices",
   "close": "Close",
@@ -23,7 +24,7 @@
       "subtitle": "Track player stats, view detailed career summaries, and help keep the community clean.",
       "placeholder": "Enter EA ID, Steam ID, PSN ID, or Xbox Gamertag...",
       "search": "Search",
-      "tip": "Tip: For first time search, better use EA ID.",
+      "tip": "Tip: the first query may take 5–15 seconds while EA gRPC builds the session.",
       "platforms": "Supports Origin, Steam, PSN, Xbox Live"
     },
     "topMarks": {
@@ -140,9 +141,12 @@
     "backupSource": "Backup Search Source",
     "database": "Database",
     "healthy": "Operational",
-    "degraded": "Degraded",
     "down": "Unavailable",
-    "latency": "Response time"
+    "latency": "Response time",
+    "eaGrpc": "EA official gRPC",
+    "eaAuth": "EA session",
+    "servers": "Server browser",
+    "degradedLabel": "Degraded"
   },
   "search": {
     "title": "Search Results",
