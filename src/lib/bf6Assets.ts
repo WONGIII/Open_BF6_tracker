@@ -13,7 +13,7 @@ export interface IconPair {
   imageDark: string;
 }
 
-const norm = (s: string) => s.trim().toLowerCase();
+const norm = (s: string) => s.trim().toLowerCase().replace(/[\s\-_/.,:'"]+/g, "");
 
 const ITEMS = itemDict.items as Record<string, { name: string; type: string; image: string; altImage: string }>;
 const MAP_NAMES = itemDict.maps as Record<string, string>;
@@ -109,6 +109,12 @@ const VEHICLE_GROUP_ALIASES: Record<string, string> = {
   "坦克": "veh_sur_m1a2sepv3",
   "直升机": "veh_air_ah6litbird",
   "快艇": "veh_sur_rhib",
+  "uh-06": "veh_air_ah6litbird",
+  "uh06": "veh_air_ah6litbird",
+  "mh47 chinook": "veh_air_ah6litbird",
+  mh47: "veh_air_ah6litbird",
+  "turfpro ptv royal": "veh_sur_travmark2",
+  ltv: "veh_sur_travmark2",
 };
 
 const GADGET_GROUP_ALIASES: Record<string, string> = {
@@ -120,10 +126,30 @@ const GADGET_GROUP_ALIASES: Record<string, string> = {
   "grenade launchers": "gad_gl_he",
   "deployable gadgets": "gad_deploybeacon",
   "class gadgets": "gad_tugs",
+  "air strike": "gad_callin_airstrike",
+  "airstrike": "gad_callin_airstrike",
+  "mp-aps": "gad_mpaps",
+  "mpaps": "gad_mpaps",
+  pouch: "gad_sup_pouch",
   "手雷": "gad_gren_frag",
   "榴弹": "gad_gl_he",
   "火箭筒": "gad_rl_ungui",
   "c4": "gad_c4",
+  "weapon drop": "gad_callin_wpdrop",
+  "uav overwatch": "gad_callin_uav",
+  "anti-vehicle drop": "gad_callin_antiveh",
+  "smoke screen": "gad_callin_smoke",
+  "artillery strike": "gad_callin_artstrike",
+  "goliath compact": "gad_sup_pouch",
+  dgmk4: "gad_lancet",
+  "mini grenade": "gad_gren_mfrag",
+  "incendiary grenade": "gad_gren_inc",
+  "flash grenade": "gad_gren_flash",
+  "supply crate": "gad_callin_resupply",
+  "throwing knife": "gad_tknife",
+  "sniper decoy": "gad_decoy",
+  defibrillator: "gad_defib",
+  defib: "gad_defib",
 };
 
 const MODE_ALIASES: Record<string, string> = {
@@ -150,6 +176,7 @@ const MODE_ALIASES: Record<string, string> = {
   "rapid royale trio": "gm_rr_trio",
   "spooky rush": "gm_spookyrush",
   domination: "gm_dom",
+  dom: "gm_dom",
   "征服": "gm_cq",
   "突破": "gm_bt",
   "突破模式": "gm_bt",
@@ -164,38 +191,60 @@ const MODE_ALIASES: Record<string, string> = {
   "先知行动": "gm_op",
   "航母突击": "gm_carrier",
   "制霸": "gm_dom",
+  "大逃杀双排": "gm_graniteDuo",
+  "大逃杀四排": "gm_brsquad",
+  "redsec solo": "gm_graniteSolo",
+  sabotage: "gm_sabotage",
+  "tactical obliteration": "gm_oblit",
 };
+
+function normalizeAliases(map: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(map)) out[norm(k)] = v;
+  return out;
+}
+
+const WEAPON_GROUPS = normalizeAliases(WEAPON_GROUP_ALIASES);
+const VEHICLE_GROUPS = normalizeAliases(VEHICLE_GROUP_ALIASES);
+const GADGET_GROUPS = normalizeAliases(GADGET_GROUP_ALIASES);
+const MODE_ALIASES_N = normalizeAliases(MODE_ALIASES);
 
 const MODE_EXTRA_IMAGES: Record<string, IconPair> = {
   gm_dom: { image: "/bf6/modes/light/dom.svg", imageDark: "/bf6/modes/white/dom.svg" },
 };
 
+function itemIcon(id: string | undefined): IconPair | null {
+  if (!id) return null;
+  const info = ITEMS[id];
+  return info?.image ? { image: info.image, imageDark: info.image } : null;
+}
+
 export function iconForKind(kind: string, name: string): IconPair | null {
   const key = norm(name);
   switch (kind) {
     case "weapon":
-      return weaponByName.get(key) || null;
+      return weaponByName.get(key) || itemIcon(WEAPON_GROUPS[key]);
     case "weaponGroup": {
-      const id = WEAPON_GROUP_ALIASES[key];
+      const id = WEAPON_GROUPS[key];
       const info = id ? ITEMS[id] : undefined;
       return info?.image ? { image: info.image, imageDark: info.image } : null;
     }
     case "vehicle":
-      return vehicleByName.get(key) || null;
+      return vehicleByName.get(key) || itemIcon(VEHICLE_GROUPS[key]);
     case "vehicleGroup": {
-      const id = VEHICLE_GROUP_ALIASES[key];
+      const id = VEHICLE_GROUPS[key];
       const info = id ? ITEMS[id] : undefined;
       return info?.image ? { image: info.image, imageDark: info.image } : null;
     }
     case "gadget":
-      return gadgetByName.get(key) || null;
+      return gadgetByName.get(key) || itemIcon(GADGET_GROUPS[key]);
     case "gadgetGroup": {
-      const id = GADGET_GROUP_ALIASES[key];
+      const id = GADGET_GROUPS[key];
       const info = id ? ITEMS[id] : undefined;
       return info?.image ? { image: info.image, imageDark: info.image } : null;
     }
     case "mode": {
-      const gm = MODE_ALIASES[key];
+      const gm = MODE_ALIASES_N[key];
       if (gm && MODE_EXTRA_IMAGES[gm]) return MODE_EXTRA_IMAGES[gm];
       if (gm && MODE_IMAGES[gm]) return { image: MODE_IMAGES[gm], imageDark: MODE_ALT_IMAGES[gm] || MODE_IMAGES[gm] };
       return modeByName.get(key) || null;

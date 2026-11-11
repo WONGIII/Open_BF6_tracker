@@ -587,6 +587,336 @@
    "type": "Melee Light",
    "image": "",
    "altImage": ""
+  },
+  "wp_ar_l85a3": {
+   "name": "L85A3",
+   "type": "",
+   "image": "/bf6/weapons/ar_l85a3.webp",
+   "altImage": ""
+  },
+  "wp_crb_grtbc": {
+   "name": "GRT-BC",
+   "type": "",
+   "image": "/bf6/weapons/crb_grtbc.webp",
+   "altImage": ""
+  },
+  "wp_crb_sor300sc": {
+   "name": "SOR-300SC",
+   "type": "",
+   "image": "/bf6/weapons/crb_sor300sc.webp",
+   "altImage": ""
+  },
+  "wp_dmr_svdm": {
+   "name": "SVDM",
+   "type": "",
+   "image": "/bf6/weapons/dmr_svdm.webp",
+   "altImage": ""
+  },
+  "wp_mg_drsiar": {
+   "name": "DRS-IAR",
+   "type": "",
+   "image": "/bf6/weapons/mg_drsiar.webp",
+   "altImage": ""
+  },
+  "wp_mg_kts100mk8": {
+   "name": "KTS100 MK8",
+   "type": "",
+   "image": "/bf6/weapons/mg_kts100mk8.webp",
+   "altImage": ""
+  },
+  "wp_mg_m123k": {
+   "name": "M123K",
+   "type": "",
+   "image": "/bf6/weapons/mg_m123k.webp",
+   "altImage": ""
+  },
+  "wp_mg_m240l": {
+   "name": "M240L",
+   "type": "",
+   "image": "/bf6/weapons/mg_m240l.webp",
+   "altImage": ""
+  },
+  "wp_mg_m60": {
+   "name": "M/60",
+   "type": "",
+   "image": "/bf6/weapons/mg_m60.webp",
+   "altImage": ""
+  },
+  "wp_mg_mg525btk": {
+   "name": "M121 A2",
+   "type": "",
+   "image": "/bf6/weapons/mg_mg525btk.webp",
+   "altImage": ""
+  },
+  "wp_mg_pkm": {
+   "name": "Z84M",
+   "type": "",
+   "image": "/bf6/weapons/mg_pkm.webp",
+   "altImage": ""
+  },
+  "wp_mg_rpk74m": {
+   "name": "RPK-74M",
+   "type": "",
+   "image": "/bf6/weapons/mg_rpk74m.webp",
+   "altImage": ""
+  },
+  "wp_pst_es57": {
+   "name": "ES 5.7",
+   "type": "",
+   "image": "/bf6/weapons/pst_es57.webp",
+   "altImage": ""
+  },
+  "wp_pst_ggh22": {
+   "name": "GGH-22",
+   "type": "",
+   "image": "/bf6/weapons/pst_ggh22.webp",
+   "altImage": ""
+  },
+  "wp_pst_m45a1": {
+   "name": "M45A1",
+   "type": "",
+   "image": "/bf6/weapons/pst_m45a1.webp",
+   "altImage": ""
+  },
+  "wp_pst_vz61": {
+   "name": "vz. 61",
+   "type": "",
+   "image": "/bf6/weapons/pst_vz61.webp",
+   "altImage": ""
+  },
+  "wp_sg_db12": {
+   "name": "DB-12",
+   "type": "",
+   "image": "/bf6/weapons/sg_db12.webp",
+   "altImage": ""
+  },
+  "wp_smg_pp19": {
+   "name": "PP-19",
+   "type": "",
+   "image": "/bf6/weapons/smg_pp19.webp",
+   "altImage": ""
+  },
+  "wp_snp_hti": {
+   "name": "Interdictor",
+   "type": "",
+   "image": "/bf6/weapons/snp_hti.webp",
+   "altImage": ""
+  },
+  "wp_snp_psr": {
+   "name": "PSR",
+   "type": "",
+   "image": "/bf6/weapons/snp_psr.webp",
+   "altImage": ""
+  },
+  "wp_snp_sv98": {
+   "name": "SV-98",
+   "type": "",
+   "image": "/bf6/weapons/snp_sv98.webp",
+   "altImage": ""
+  },
+  "veh_sur_ptv": {
+   "name": "高尔夫球车",
+   "type": "Ground Transport",
+   "image": "",
+   "altImage": ""
+  },
+  "gad_callin_airstrike": {
+   "name": "空袭",
+   "type": "",
+   "image": "/bf6/gadgets/callin_airstrike.webp",
+   "altImage": ""
+  },
+  "gad_callin_antiveh": {
+   "name": "反载具投放",
+   "type": "",
+   "image": "/bf6/gadgets/callin_antiveh.webp",
+   "altImage": ""
+  },
+  "gad_callin_armor": {
+   "name": "护甲空投",
+   "type": "",
+   "image": "/bf6/gadgets/callin_armor.webp",
+   "altImage": ""
+  },
+  "gad_callin_artstrike": {
+   "name": "火炮攻击",
+   "type": "",
+   "image": "/bf6/gadgets/callin_artstrike.webp",
+   "altImage": ""
+  },
+  "gad_callin_jagm": {
+   "name": "导弹打击",
+   "type": "",
+   "image": "/bf6/gadgets/callin_jagm.webp",
+   "altImage": ""
+  },
+  "gad_callin_mobresp": {
+   "name": "移动重生",
+   "type": "",
+   "image": "/bf6/gadgets/callin_mobresp.webp",
+   "altImage": ""
+  },
+  "gad_callin_resupply": {
+   "name": "补给空投",
+   "type": "",
+   "image": "/bf6/gadgets/callin_resupply.webp",
+   "altImage": ""
+  },
+  "gad_callin_smoke": {
+   "name": "烟幕",
+   "type": "",
+   "image": "/bf6/gadgets/callin_smoke.webp",
+   "altImage": ""
+  },
+  "gad_callin_uav": {
+   "name": "无人机监查",
+   "type": "",
+   "image": "/bf6/gadgets/callin_uav.webp",
+   "altImage": ""
+  },
+  "gad_callin_wpdrop": {
+   "name": "武器投放",
+   "type": "",
+   "image": "/bf6/gadgets/callin_wpdrop.webp",
+   "altImage": ""
+  },
+  "gad_decoy": {
+   "name": "狙击手诱饵",
+   "type": "",
+   "image": "/bf6/gadgets/decoy.webp",
+   "altImage": ""
+  },
+  "gad_defib": {
+   "name": "除颤器",
+   "type": "",
+   "image": "/bf6/gadgets/defib.webp",
+   "altImage": ""
+  },
+  "gad_deploymortar": {
+   "name": "LWCMS",
+   "type": "",
+   "image": "/bf6/gadgets/deploymortar.webp",
+   "altImage": ""
+  },
+  "gad_eodbot": {
+   "name": "CSB IV",
+   "type": "",
+   "image": "/bf6/gadgets/eodbot.webp",
+   "altImage": ""
+  },
+  "gad_eodbot_demine": {
+   "name": "CSB IV 排雷",
+   "type": "",
+   "image": "/bf6/gadgets/eodbot_demine.webp",
+   "altImage": ""
+  },
+  "gad_gl_tb": {
+   "name": "M320A1 THRM",
+   "type": "",
+   "image": "/bf6/gadgets/gl_tb.webp",
+   "altImage": ""
+  },
+  "gad_gren_flash": {
+   "name": "闪光弹",
+   "type": "",
+   "image": "/bf6/gadgets/gren_flash.webp",
+   "altImage": ""
+  },
+  "gad_gren_inc": {
+   "name": "燃烧手雷",
+   "type": "",
+   "image": "/bf6/gadgets/gren_inc.webp",
+   "altImage": ""
+  },
+  "gad_gren_mfrag": {
+   "name": "迷你手雷",
+   "type": "",
+   "image": "/bf6/gadgets/gren_mfrag.webp",
+   "altImage": ""
+  },
+  "gad_il_airburst": {
+   "name": "Sich G1 WP",
+   "type": "",
+   "image": "/bf6/gadgets/il_airburst.webp",
+   "altImage": ""
+  },
+  "gad_lancet": {
+   "name": "DGMK4 军备压制系统",
+   "type": "",
+   "image": "/bf6/gadgets/lancet.webp",
+   "altImage": ""
+  },
+  "gad_mine_mosen": {
+   "name": "PTKM-1R",
+   "type": "",
+   "image": "/bf6/gadgets/mine_mosen.webp",
+   "altImage": ""
+  },
+  "gad_mobilejammer": {
+   "name": "移动式干扰器",
+   "type": "",
+   "image": "/bf6/gadgets/mobilejammer.webp",
+   "altImage": ""
+  },
+  "gad_mpaps": {
+   "name": "MP-APS",
+   "type": "",
+   "image": "/bf6/gadgets/mpaps.webp",
+   "altImage": ""
+  },
+  "gad_rl_autogui": {
+   "name": "自动制导发射器",
+   "type": "",
+   "image": "/bf6/gadgets/rl_autogui.webp",
+   "altImage": ""
+  },
+  "gad_rl_autoguide": {
+   "name": "自动制导发射器",
+   "type": "",
+   "image": "/bf6/gadgets/rl_autoguide.webp",
+   "altImage": ""
+  },
+  "gad_rl_aimgui": {
+   "name": "M136 AT",
+   "type": "",
+   "image": "/bf6/gadgets/rl_aimgui.webp",
+   "altImage": ""
+  },
+  "gad_rl_igla": {
+   "name": "9K38 IGLA",
+   "type": "",
+   "image": "/bf6/gadgets/rl_igla.webp",
+   "altImage": ""
+  },
+  "gad_rl_longra": {
+   "name": "MAS 148 Glaive",
+   "type": "",
+   "image": "/bf6/gadgets/rl_longra.webp",
+   "altImage": ""
+  },
+  "gad_rl_surtoair": {
+   "name": "SLM-93A",
+   "type": "",
+   "image": "/bf6/gadgets/rl_surtoair.webp",
+   "altImage": ""
+  },
+  "gad_sup_pouch": {
+   "name": "Goliath 紧凑型",
+   "type": "",
+   "image": "/bf6/gadgets/sup_pouch.webp",
+   "altImage": ""
+  },
+  "gad_tknife": {
+   "name": "飞刀",
+   "type": "",
+   "image": "/bf6/gadgets/tknife.webp",
+   "altImage": ""
+  },
+  "gad_ubsg_incen": {
+   "name": "SS26",
+   "type": "",
+   "image": "/bf6/gadgets/ubsg_incen.webp",
+   "altImage": ""
   }
  },
  "maps": {
@@ -663,7 +993,10 @@
   "gm_granitebr": "Redsec Battle Royale",
   "gm_all": "All",
   "gm_mp": "Multiplayer",
-  "gm_rr_all": "Rapid Royale"
+  "gm_rr_all": "Rapid Royale",
+  "gm_dom": "Domination",
+  "gm_graniteSolo": "Redsec Solo",
+  "gm_sabotage": "Sabotage"
  },
  "modeImages": {
   "gm_esc": "/bf6/modes/light/esc.svg",
@@ -686,7 +1019,10 @@
   "gm_spookyrush": "/bf6/modes/light/spookyrush.svg",
   "gm_granite": "/bf6/modes/light/granite.svg",
   "gm_granitebr": "/bf6/modes/light/granitebr.svg",
-  "gm_rr_all": "/bf6/modes/light/rr_all.svg"
+  "gm_rr_all": "/bf6/modes/light/rr_all.svg",
+  "gm_dom": "/bf6/modes/light/dom.svg",
+  "gm_graniteSolo": "/bf6/modes/light/graniteSolo.svg",
+  "gm_sabotage": "/bf6/modes/light/sabotage.svg"
  },
  "rankImages": {
   "100": "/bf6/ranks/t_ui_rank_100_sm.png",
@@ -812,7 +1148,10 @@
   "gm_spookyrush": "/bf6/modes/white/spookyrush.svg",
   "gm_granite": "/bf6/modes/white/granite.svg",
   "gm_granitebr": "/bf6/modes/white/granitebr.svg",
-  "gm_rr_all": "/bf6/modes/white/rr_all.svg"
+  "gm_rr_all": "/bf6/modes/white/rr_all.svg",
+  "gm_dom": "/bf6/modes/white/dom.svg",
+  "gm_graniteSolo": "/bf6/modes/white/graniteSolo.svg",
+  "gm_sabotage": "/bf6/modes/white/sabotage.svg"
  },
  "classes": {
   "assault": {
