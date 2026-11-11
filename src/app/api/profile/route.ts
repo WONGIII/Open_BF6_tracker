@@ -4,15 +4,25 @@ import { getProfile, upsertProfile, touchSearchTimestamp, setProfileDisplayName,
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
 
-/** 旧档案里可能还留着 gametools CDN 图片，命中时强制用新数据重建 */
-function hasGametoolsAssets(profile: Record<string, unknown>): boolean {
+/**
+ * 旧档案里可能还留着 gametools CDN 图片，或上一轮本地化时的白色兵种/模式图标。
+ * 命中这些旧资源时强制用新数据重建，避免继续显示错误图标。
+ */
+function needsProfileRebuild(profile: Record<string, unknown>): boolean {
   const segs = (profile.data as Record<string, unknown> | undefined)?.segments as
     | Array<Record<string, unknown>>
     | undefined;
   if (!Array.isArray(segs)) return false;
   return segs.some((s) => {
     const url = (s.metadata as Record<string, unknown> | undefined)?.imageUrl;
-    return typeof url === "string" && url.includes("cdn.gametools.network");
+    if (typeof url !== "string" || !url) return false;
+    if (url.includes("cdn.gametools.network")) return true;
+    const type = String(s.type || "");
+    if ((type === "kit" || type === "season-class") && url.startsWith("/bf6/classes/")
+        && !url.includes("/black/") && !url.includes("/white/")) return true;
+    if ((type === "gamemode" || type === "season-mode" || type === "gamemode-category")
+        && url.startsWith("/bf6/modes/") && !url.includes("/light/") && !url.includes("/white/")) return true;
+    return false;
   });
 }
 
@@ -79,7 +89,7 @@ export async function GET(request: NextRequest) {
     const { lookupByName } = await import("@/lib/db");
     cached = forceRefresh ? null : lookupByName(query);
   }
-  if (cached && hasGametoolsAssets(cached as Record<string, unknown>)) cached = null;
+  if (cached && needsProfileRebuild(cached as Record<string, unknown>)) cached = null;
   if (cached) {
     const storedPlatform = ((cached as any).data?.platformInfo?.platformSlug) as Platform | undefined;
     const pid = ((cached as any).data?.platformInfo?.platformUserIdentifier) as string | undefined;
