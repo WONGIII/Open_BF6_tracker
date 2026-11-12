@@ -36,6 +36,14 @@ const CLASS_ICONS = (itemDict as Record<string, unknown>).classes as Record<
   { image: string; altImage: string }
 >;
 
+/** 载具聚合 ID → 代表单件（用于拿 light / white 两套图） */
+const VEHICLE_GROUP_ITEMS: Record<string, string> = {
+  veh_air: "veh_air_panthera",
+  veh_air_jets: "veh_air_fa18f",
+  veh_sur: "veh_sur_leoa4",
+  veh_nav: "veh_sur_rhib",
+};
+
 /** 载具聚合 ID（veh_air_jets 等）没有单件图标，用同组代表图 */
 const VEHICLE_GROUP_IMAGES: Record<string, string> = {
   veh_air: "/bf6/vehicles/air_panthera.webp",
@@ -438,7 +446,10 @@ export function mapToLegacyStats(
     const killsV = num(v, `kw_${id}`);
     if (killsV <= 0) continue;
     const info = itemOf(id, "veh_");
-    const image = info.image || VEHICLE_GROUP_IMAGES[id] || "";
+    const repId = VEHICLE_GROUP_ITEMS[id];
+    const rep = repId ? ITEMS[repId] : undefined;
+    const image = info.image || rep?.image || VEHICLE_GROUP_IMAGES[id] || "";
+    const altImage = info.altImage || rep?.altImage || "";
     const time = num(v, `tp_${id}`);
     vehicles.push({
       id,
