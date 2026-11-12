@@ -48,6 +48,16 @@ const VEHICLE_GROUP_IMAGES: Record<string, string> = {
   veh_sur_ptv: "/bf6/vehicles/sur_travmark2.webp",
 };
 
+/** 装备聚合 ID → 代表单件（用于拿 light / white 两套图标） */
+const GADGET_GROUP_ITEMS: Record<string, string> = {
+  gad_gl: "gad_gl_he",
+  gad_grenades: "gad_gren_frag",
+  gad_mine: "gad_mine_press",
+  gad_rl: "gad_rl_ungui",
+  gad_temp: "gad_c4",
+  gad_deployable: "gad_deplocover",
+};
+
 /** 装备聚合 ID（gad_grenades / gad_rl 等）没有单件图标，用同组代表图 */
 const GADGET_GROUP_IMAGES: Record<string, string> = {
   gad_gl: "/bf6/gadgets/gl_he.webp",
@@ -578,14 +588,17 @@ export function mapToLegacyStats(
     const gtime = num(v, `tp_${id}`);
     if (!uses && !gkills && !gtime) continue;
     const info = itemOf(id, "gad_");
-    const image = info.image || GADGET_GROUP_IMAGES[id] || "";
+    const repId = GADGET_GROUP_ITEMS[id];
+    const rep = repId ? ITEMS[repId] : undefined;
+    const image = info.image || rep?.image || GADGET_GROUP_IMAGES[id] || "";
+    const altImage = info.altImage || rep?.altImage || "";
     gadgets.push({
       id,
       name: info.name,
       gadgetName: info.name,
       type: info.type,
       image,
-      altImage: info.altImage,
+      altImage,
       kills: gkills,
       damage: num(v, `dmg_${id}`),
       assistsDamage: num(v, `assdmg_${id}`),

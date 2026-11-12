@@ -32,7 +32,7 @@ const kitByName = new Map<string, IconPair>();
 const mapByName = new Map<string, IconPair>();
 
 for (const [id, info] of Object.entries(ITEMS)) {
-  const pair: IconPair = { image: info.image, imageDark: info.image };
+  const pair: IconPair = { image: info.image, imageDark: info.altImage || info.image };
   if (!info.image) continue;
   if (id.startsWith("wp_")) weaponByName.set(norm(info.name), pair);
   else if (id.startsWith("veh_")) vehicleByName.set(norm(info.name), pair);
@@ -225,7 +225,7 @@ const MODE_EXTRA_IMAGES: Record<string, IconPair> = {
 function itemIcon(id: string | undefined): IconPair | null {
   if (!id) return null;
   const info = ITEMS[id];
-  return info?.image ? { image: info.image, imageDark: info.image } : null;
+  return info?.image ? { image: info.image, imageDark: info.altImage || info.image } : null;
 }
 
 export function iconForKind(kind: string, name: string): IconPair | null {
