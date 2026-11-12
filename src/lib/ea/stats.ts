@@ -48,6 +48,9 @@ const RAW_MODE_KEYS: Record<string, string> = {
   "GraniteDuo0": "gm_graniteDuo",
   "GraniteRapidTrio0": "gm_rr_trio",
   "GraniteRapidSolo0": "gm_rr_solo",
+  "GraniteSolo0": "gm_graniteSolo",
+  "MP_Domination0": "gm_dom",
+  "MP_Sabotage0": "gm_sabotage",
   "ModBuilderCustom0": "gm_modbuilder0",
   "MP_SpookyRush0": "gm_spookyrush",
   "MP_Operations0": "gm_op",
@@ -747,8 +750,11 @@ function buildPerSeason(raw: Bf6RawStats, fallbackName: string): Record<string, 
     for (const [mode, values] of groups.get(season) as Map<string, Record<string, number>>) {
       const subset: Bf6RawStats = { ...raw, values, dimensioned: [] };
       const legacy = mapToLegacyStats(subset, fallbackName, { withSeasons: false });
+      const gmKey = RAW_MODE_KEYS[mode];
       seasonData[mode] = {
         gamemodeName: modeDisplayName(mode),
+        image: gmKey ? MODE_IMAGES[gmKey] || "" : "",
+        altImage: gmKey ? MODE_ALT_IMAGES[gmKey] || "" : "",
         ...legacy,
       };
     }

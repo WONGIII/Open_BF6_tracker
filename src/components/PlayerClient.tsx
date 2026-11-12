@@ -805,6 +805,9 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
       mKits = _onlyUsed(asSeg(ovMeta.kits, "kit"));
       mModes = asSeg(ovMeta.gamemodes, "gamemode");
       mMaps = asSeg(ovMeta.levels, "level");
+      if (!mMaps.length) {
+        mMaps = mSegments.filter(s => s.type === "level" && String(s.metadata?.name || "").toLowerCase() !== "all");
+      }
       mGadgets = _onlyUsed(asSeg(ovMeta.gadgets, "gadget"));
       mMelee = [];
     } else {
@@ -905,6 +908,13 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
               {(md.stats as any)?.kpm?.displayValue != null && <span>KPM <b>{(md.stats as any).kpm.displayValue}</b></span>}
             </div>
           </div>)}</section>}
+        {mMaps.length > 0 && <section className="sect"><div className="sec-t">地图</div>
+          {mMaps.map((mp, i) => <div key={((mp.metadata?.name as string) || "map") + "-" + i} className="row">
+            {icon(mp) && <img className="ic" src={icon(mp)} alt="" />}
+            <span className="nm">{mp.metadata?.name}</span>
+            <span className="val">{_segFacts(mp.stats, [["胜", "wins"], ["负", "losses"], ["场次", "matchesPlayed"], ["时长", "timePlayed"], ["时长", "secondsPlayed"]])}</span>
+          </div>)}
+        </section>}
         {mKits.length > 0 && <section className="sect"><div className="sec-t">兵种</div>
           <div className="mkits">
             {mKits.map(k => {
