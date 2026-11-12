@@ -45,10 +45,10 @@ export default function Header() {
             </button>
           )}
           <Link href="/servers" className="btn-ghost text-xs">
-            {t("nav.servers")}
+            {mounted ? t("nav.servers") : "服务器"}
           </Link>
           <Link href="/my" className="btn-ghost text-xs">
-            {t("nav.myPage")}
+            {mounted ? t("nav.myPage") : "我的"}
           </Link>
           {mounted && (
             <button

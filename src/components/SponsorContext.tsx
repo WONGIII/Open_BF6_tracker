@@ -41,7 +41,7 @@ export function SponsorProvider({ children }: { children: ReactNode }) {
 
   return (
     <SponsorContext.Provider value={{ sponsors, getLevel, loading }}>
-      <style>{SPONSOR_STYLES}</style>
+      <style suppressHydrationWarning>{SPONSOR_STYLES}</style>
       {children}
     </SponsorContext.Provider>
   );

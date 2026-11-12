@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-type Tab = "ea" | "theme" | "sponsors" | "marks" | "streamers" | "messages" | "users" | "password";
+type Tab = "ea" | "site" | "theme" | "sponsors" | "marks" | "streamers" | "messages" | "users" | "password";
 
 type Preset = { id: string; label: string; accent: string; accent2: string };
 
@@ -44,7 +44,7 @@ export default function AdminPage() {
   );
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "ea", label: "EA 账号" }, { id: "theme", label: "站点外观" },
+    { id: "ea", label: "EA 账号" }, { id: "site", label: "站点设置" }, { id: "theme", label: "站点外观" },
     { id: "sponsors", label: "赞助者" }, { id: "messages", label: "留言" }, { id: "marks", label: "标记审核" },
     { id: "streamers", label: "主播管理" }, { id: "users", label: "用户管理" }, { id: "password", label: "修改密码" },
   ];
@@ -55,6 +55,7 @@ export default function AdminPage() {
         <h1 className="text-xl font-bold text-[color:var(--ink)] mb-6">管理后台</h1>
         <div className="flex gap-1 mb-6">{tabs.map(t => <button key={t.id} onClick={() => setActiveTab(t.id)} className={`px-4 py-2 text-sm rounded-none font-medium transition-colors ${activeTab===t.id?"bg-[color:var(--acc)] text-white":"bg-[color:var(--surface)] text-[color:var(--ink2)] hover:bg-[color:var(--surface-3)] border border-[color:var(--line2)]"}`}>{t.label}</button>)}</div>
         {activeTab==="ea" && <EaTab password={password}/>}
+        {activeTab==="site" && <SiteTab password={password}/>}
         {activeTab==="theme" && <ThemeTab password={password}/>}
         {activeTab==="sponsors" && <SponsorsTab/>}
         {activeTab==="messages" && <MessagesTab/>}
@@ -338,5 +339,48 @@ function EaTab({ password }: { password: string }) {
       {msg && <p className="text-xs text-[color:var(--good)]">{msg}</p>}
       {err && <p className="text-xs text-[color:var(--bad)] break-all">{err}</p>}
     </div>
+  </div>;
+}
+
+function SiteTab({ password }: { password: string }) {
+  const [base, setBase] = useState("");
+  const [msg, setMsg] = useState(""); const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/settings/site").then(r => r.json()).then(d => setBase(d.publicBaseUrl || "")).catch(() => {});
+  }, []);
+
+  const save = async () => {
+    setBusy(true); setMsg(""); setErr("");
+    try {
+      const r = await fetch("/api/settings/site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, publicBaseUrl: base.trim() }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) setErr(d.error || "保存失败");
+      else { setBase(d.publicBaseUrl || ""); setMsg(d.publicBaseUrl ? "已保存公开站点地址" : "已清空，文档将显示占位地址"); }
+    } catch (e) { setErr(String(e)); }
+    setBusy(false);
+  };
+
+  return <div className="card p-5 max-w-[640px] space-y-3">
+    <div>
+      <h3 className="font-semibold text-[color:var(--ink)]">公开站点地址</h3>
+      <p className="text-[11px] text-[color:var(--ink3)] mt-1">用于 API 文档里的示例域名和 OpenAPI servers 字段。留空则显示 https://&lt;your-domain&gt;。</p>
+    </div>
+    <input
+      className="input w-full font-mono text-xs"
+      placeholder="https://bf6.example.com"
+      value={base}
+      onChange={e=>setBase(e.target.value)}
+    />
+    <div className="flex items-center gap-2">
+      <button className="btn-primary" onClick={save} disabled={busy}>{busy ? "保存中…" : "保存"}</button>
+      <button className="px-4 py-2 text-sm border border-[color:var(--line2)] bg-[color:var(--surface-2)] text-[color:var(--ink2)]" onClick={()=>setBase("")} disabled={busy}>清空</button>
+    </div>
+    {msg && <p className="text-xs text-[color:var(--good)]">{msg}</p>}
+    {err && <p className="text-xs text-[color:var(--bad)] break-all">{err}</p>}
   </div>;
 }

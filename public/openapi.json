@@ -1,0 +1,1213 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenBF6Tracker Public API",
+    "version": "1.0.0",
+    "summary": "Read-only Battlefield 6 player, match, server and system data.",
+    "description": "OpenBF6Tracker Public API v1. Data is retrieved from EA official gRPC services. Public read endpoints require no authentication.",
+    "contact": {
+      "name": "OpenBF6Tracker",
+      "url": "https://github.com/WONGIII/Open_BF6_tracker"
+    },
+    "license": {
+      "name": "MIT (site code)",
+      "url": "https://github.com/WONGIII/Open_BF6_tracker/blob/master/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development. Replace with your deployment origin when self-hosting."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Players",
+      "description": "Player search, career profiles and player card details."
+    },
+    {
+      "name": "Matches",
+      "description": "Per-session match delta records."
+    },
+    {
+      "name": "Servers",
+      "description": "Live Battlefield 6 server browser."
+    },
+    {
+      "name": "System",
+      "description": "Health, counts and percentile distributions."
+    },
+    {
+      "name": "Community",
+      "description": "Sponsors, marks and verified streamers."
+    }
+  ],
+  "paths": {
+    "/api/search": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "operationId": "searchPlayers",
+        "summary": "Search players by display name",
+        "description": "Searches the EA EADP player directory by display-name substring, then merges tracked local profiles and aliases. EA returns at most 10 candidates per request.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "Display-name substring, minimum 2 characters.",
+            "schema": {
+              "type": "string",
+              "minLength": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidate players.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "operationId": "getPlayerProfile",
+        "summary": "Get a player's career profile",
+        "description": "Returns the stored TRN-compatible career profile. Cached profiles are served immediately and refreshed in the background; refresh=1 forces an upstream refresh.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Display name or nucleusId. Values with 10+ digits are treated as IDs.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": false,
+            "description": "EA nucleusId; takes precedence over query.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Display-name override for ID-only lookups.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "origin",
+                "steam",
+                "psn",
+                "xbox"
+              ],
+              "default": "origin"
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "description": "Set to 1 to bypass cache.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player career profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/matches": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "operationId": "getPlayerMatches",
+        "summary": "List recent match delta records",
+        "description": "Returns locally stored match deltas. A record is the difference between two profile snapshots and may aggregate multiple rounds.",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "query",
+            "required": true,
+            "description": "EA nucleusId.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match delta records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/player/{playerId}/details": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "operationId": "getPlayerDetails",
+        "summary": "Get player card, rank, badges and highlights",
+        "description": "Reads EA player card and public profile data for any nucleusId. Results are cached in-process for 60 seconds.",
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "description": "EA nucleusId, at least 6 digits.",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{6,}$"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player card and profile details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/servers": {
+      "get": {
+        "tags": [
+          "Servers"
+        ],
+        "operationId": "listServers",
+        "summary": "Browse live Battlefield 6 servers",
+        "description": "Returns the EA server browser page. Results are cached server-side for 15 seconds.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Server-name substring, case-insensitive.",
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "map",
+            "in": "query",
+            "required": false,
+            "description": "Raw level name, e.g. MP_Limestone.",
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerListResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "operationId": "getServiceStatus",
+        "summary": "Get service health",
+        "description": "Runs a lightweight authenticated session check and returns health for the backend, database and EA gRPC services.",
+        "responses": {
+          "200": {
+            "description": "Service status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status/counts": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "operationId": "getTrackedCounts",
+        "summary": "Get tracked player and match counts",
+        "responses": {
+          "200": {
+            "description": "Tracked counts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stats/percentiles": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "operationId": "getStatPercentiles",
+        "summary": "Get P10-P90 distributions for career stats",
+        "description": "Computes percentiles across all tracked profiles. Stats with fewer than 3 samples are omitted.",
+        "responses": {
+          "200": {
+            "description": "Map of stat key to percentile object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/Percentile"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/players": {
+      "get": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "getCommunityPlayers",
+        "summary": "Get top-marked players or verified streamers",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "top-marked",
+                "streamers"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Reserved; currently returns all-time data.",
+            "schema": {
+              "type": "string",
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top-marked players or verified streamers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TopMarkedPlayer"
+                      }
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/VerifiedStreamer"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/sponsors": {
+      "get": {
+        "tags": [
+          "Community"
+        ],
+        "operationId": "getSponsors",
+        "summary": "Get sponsor account levels",
+        "description": "Map of nucleusId to sponsor level used for profile name styling.",
+        "responses": {
+          "200": {
+            "description": "Sponsor level map.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": [
+                      "owner",
+                      "contributor",
+                      "tier1",
+                      "tier2",
+                      "tier3",
+                      "tier4",
+                      "none"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid or missing parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Player not found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UpstreamError": {
+        "description": "EA upstream request failed.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ServiceUnavailable": {
+        "description": "EA credentials are not configured or the session is invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Platform": {
+        "type": "string",
+        "enum": [
+          "origin",
+          "steam",
+          "psn",
+          "xbox"
+        ]
+      },
+      "PlayerCandidate": {
+        "type": "object",
+        "required": [
+          "displayName",
+          "nucleusId",
+          "platform"
+        ],
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "username": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "platformId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nucleusId": {
+            "type": "string"
+          },
+          "personaId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "tracked": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "avatarUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerCandidate"
+            }
+          },
+          "upstreamError": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "StatValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "displayValue": {
+            "type": "string"
+          },
+          "displayType": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "displayCategory": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Segment": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": "string"
+              },
+              "imageUrlDark": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "gamemodeName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "stats": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StatValue"
+            }
+          }
+        }
+      },
+      "ProfileData": {
+        "type": "object",
+        "properties": {
+          "platformInfo": {
+            "type": "object",
+            "properties": {
+              "platformSlug": {
+                "type": "string"
+              },
+              "platformUserId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "platformUserHandle": {
+                "type": "string"
+              },
+              "platformUserIdentifier": {
+                "type": "string"
+              },
+              "avatarUrl": {
+                "type": "string"
+              }
+            }
+          },
+          "userInfo": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Segment"
+            }
+          },
+          "availableSegments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiryDate": {
+            "type": "string"
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProfileData"
+          },
+          "deltaInfo": {
+            "type": "object",
+            "properties": {
+              "changed": {
+                "type": "boolean"
+              },
+              "firstSeen": {
+                "type": "boolean"
+              },
+              "profileSaved": {
+                "type": "boolean"
+              },
+              "matchSaved": {
+                "type": "boolean"
+              }
+            }
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GroupItem": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": "string"
+              },
+              "imageUrlDark": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "stats": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StatValue"
+            }
+          }
+        }
+      },
+      "Match": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "MatchesResponse": {
+        "type": "object",
+        "required": [
+          "matches",
+          "totalCount"
+        ],
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Match"
+            }
+          },
+          "totalCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "Server": {
+        "type": "object",
+        "required": [
+          "serverId",
+          "name"
+        ],
+        "properties": {
+          "serverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "modeName": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "levelName": {
+            "type": "string"
+          },
+          "maxPlayers": {
+            "type": "integer"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "f18": {
+            "type": "integer"
+          }
+        }
+      },
+      "ServerListResponse": {
+        "type": "object",
+        "properties": {
+          "servers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Server"
+            }
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PlayerDetails": {
+        "type": "object",
+        "required": [
+          "nucleusId",
+          "rank"
+        ],
+        "properties": {
+          "nucleusId": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "integer"
+          },
+          "rank": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "card": {
+            "type": "object",
+            "properties": {
+              "guids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "badges": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "tier": {
+                      "type": "integer"
+                    },
+                    "progress": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "competitive": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "backend": {
+            "type": "string",
+            "enum": [
+              "healthy"
+            ]
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "down"
+            ]
+          },
+          "eaAuth": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "down"
+            ]
+          },
+          "eaStats": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "down"
+            ]
+          },
+          "eaSearch": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "down"
+            ]
+          },
+          "eaServers": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "down"
+            ]
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "lastChecked": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latencyMs": {
+            "type": "integer"
+          }
+        }
+      },
+      "CountsResponse": {
+        "type": "object",
+        "properties": {
+          "playersTracked": {
+            "type": "integer"
+          },
+          "matchesTracked": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Percentile": {
+        "type": "object",
+        "properties": {
+          "p10": {
+            "type": "number"
+          },
+          "p20": {
+            "type": "number"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p80": {
+            "type": "number"
+          },
+          "p90": {
+            "type": "number"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "TopMarkedPlayer": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "string"
+          },
+          "playerName": {
+            "type": "string"
+          },
+          "playerLevel": {
+            "type": "integer"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "totalMarks": {
+            "type": "integer"
+          },
+          "typeBreakdown": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "credibility": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "hack_sus",
+              "community"
+            ]
+          }
+        }
+      },
+      "VerifiedStreamer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "platformId": {
+            "type": "integer"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

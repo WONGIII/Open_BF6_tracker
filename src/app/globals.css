@@ -945,3 +945,32 @@ html.dark .pct .knob{border-color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
   .prow .av,.prow .xt{display:none}
   .sponsors .srow{gap:9px 16px}
 }
+
+/* ============================================================
+   页脚超大字标
+   ============================================================ */
+.footer-mega{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:calc(clamp(52px, 14.85vw, 370px) * 1.12);
+  min-height:84px;
+  overflow:hidden;
+  background:var(--acc);
+  border-top:1px solid rgba(15,23,42,.16);
+  font-family:var(--f-num);
+}
+.footer-mega-word{
+  width:100%;
+  padding:0 0.4%;
+  text-align:center;
+  white-space:nowrap;
+  color:#ffffff;
+  font-weight:800;
+  font-size:clamp(52px, 14.85vw, 370px);
+  line-height:1;
+  letter-spacing:-.055em;
+  transform:translateY(0.045em) scaleY(1.5);
+  transform-origin:center;
+}
