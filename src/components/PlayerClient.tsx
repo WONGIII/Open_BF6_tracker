@@ -908,13 +908,14 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
               {(md.stats as any)?.kpm?.displayValue != null && <span>KPM <b>{(md.stats as any).kpm.displayValue}</b></span>}
             </div>
           </div>)}</section>}
-        {mMaps.length > 0 && <section className="sect"><div className="sec-t">地图</div>
+        <section className="sect"><div className="sec-t">地图</div>
+          {mMaps.length === 0 && <p className="text-[color:var(--ink3)] text-xs">本局未记录地图数据</p>}
           {mMaps.map((mp, i) => <div key={((mp.metadata?.name as string) || "map") + "-" + i} className="row">
             {icon(mp) && <img className="ic" src={icon(mp)} alt="" />}
             <span className="nm">{mp.metadata?.name}</span>
-            <span className="val">{_segFacts(mp.stats, [["胜", "wins"], ["负", "losses"], ["场次", "matchesPlayed"], ["时长", "timePlayed"], ["时长", "secondsPlayed"]])}</span>
+            <span className="val">{_segFacts(mp.stats, [["胜", "wins"], ["负", "losses"], ["场次", "matchesPlayed"], ["时长", "timePlayed"]])}</span>
           </div>)}
-        </section>}
+        </section>
         {mKits.length > 0 && <section className="sect"><div className="sec-t">兵种</div>
           <div className="mkits">
             {mKits.map(k => {
