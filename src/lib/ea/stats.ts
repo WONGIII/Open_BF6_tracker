@@ -39,7 +39,7 @@ const CLASS_ICONS = (itemDict as Record<string, unknown>).classes as Record<
 /** 载具聚合 ID（veh_air_jets 等）没有单件图标，用同组代表图 */
 const VEHICLE_GROUP_IMAGES: Record<string, string> = {
   veh_air: "/bf6/vehicles/air_panthera.webp",
-  veh_air_jets: "/bf6/vehicles/air_fa18f.webp",
+  veh_air_jets: "/bf6/vehicles/air_m77efalchion.webp",
   veh_sur: "/bf6/vehicles/sur_leoa4.webp",
   veh_nav: "/bf6/vehicles/sur_rhib.webp",
   veh_air_uh06: "/bf6/vehicles/air_ah6litbird.webp",

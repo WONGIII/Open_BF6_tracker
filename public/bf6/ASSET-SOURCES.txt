@@ -1,0 +1,12 @@
+BF6 asset sources / notices
+===========================
+
+- Weapons / vehicles / gadgets / classes / modes / maps:
+  g1331/bf-manager (MIT License) — see bf-manager-LICENSE.txt
+
+- UH-06 vehicle image and melee knife icons:
+  downloaded from trackercdn.com (Tracker Network) for missing items.
+
+All Battlefield 6 game art is copyright Electronic Arts Inc.
+This is a non-commercial community fan project; assets are used only to
+display in-game stats. Rights holders may request removal at any time.

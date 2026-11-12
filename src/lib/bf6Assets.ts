@@ -90,8 +90,8 @@ const WEAPON_GROUP_ALIASES: Record<string, string> = {
 };
 
 const VEHICLE_GROUP_ALIASES: Record<string, string> = {
-  jets: "veh_air_fa18f",
-  jet: "veh_air_fa18f",
+  jets: "veh_air_m77efalchion",
+  jet: "veh_air_m77efalchion",
   tanks: "veh_sur_m1a2sepv3",
   tank: "veh_sur_m1a2sepv3",
   helicopters: "veh_air_ah6litbird",

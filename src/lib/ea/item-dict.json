@@ -501,74 +501,74 @@
   "gad_gren_frag": {
    "name": "Frag Grenade",
    "type": "Grenade",
-   "image": "/bf6/gadgets/gren_frag.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_frag.webp",
+   "altImage": "/bf6/gadgets/white/gren_frag.webp"
   },
   "gad_repair": {
    "name": "Repair Tool",
    "type": "",
-   "image": "/bf6/gadgets/repair.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/repair.webp",
+   "altImage": "/bf6/gadgets/white/repair.webp"
   },
   "gad_sup_bag": {
    "name": "Supply Bag",
    "type": "",
-   "image": "/bf6/gadgets/sup_bag.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/sup_bag.webp",
+   "altImage": "/bf6/gadgets/white/sup_bag.webp"
   },
   "gad_deplocover": {
    "name": "Deployable Cover",
    "type": "",
-   "image": "/bf6/gadgets/deplocover.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/deplocover.webp",
+   "altImage": "/bf6/gadgets/white/deplocover.webp"
   },
   "gad_gren_stun": {
    "name": "Stun Grenade",
    "type": "",
-   "image": "/bf6/gadgets/gren_stun.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_stun.webp",
+   "altImage": "/bf6/gadgets/white/gren_stun.webp"
   },
   "gad_gren_smoke": {
    "name": "Smoke Grenade",
    "type": "",
-   "image": "/bf6/gadgets/gren_smoke.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_smoke.webp",
+   "altImage": "/bf6/gadgets/white/gren_smoke.webp"
   },
   "gad_recondrone": {
    "name": "Recon Drone",
    "type": "",
-   "image": "/bf6/gadgets/recondrone.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/recondrone.webp",
+   "altImage": "/bf6/gadgets/white/recondrone.webp"
   },
   "gad_laserdes": {
    "name": "Laser Designator",
    "type": "",
-   "image": "/bf6/gadgets/laserdes.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/laserdes.webp",
+   "altImage": "/bf6/gadgets/white/laserdes.webp"
   },
   "gad_adren": {
    "name": "Adrenaline Injector",
    "type": "",
-   "image": "/bf6/gadgets/adren.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/adren.webp",
+   "altImage": "/bf6/gadgets/white/adren.webp"
   },
   "gad_msensor": {
    "name": "Proximity Detector",
    "type": "",
-   "image": "/bf6/gadgets/msensor.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/msensor.webp",
+   "altImage": "/bf6/gadgets/white/msensor.webp"
   },
   "gad_deployable": {
    "name": "Deployable Cover",
    "type": "",
-   "image": "/bf6/gadgets/deplocover.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/deplocover.webp",
+   "altImage": "/bf6/gadgets/white/deplocover.webp"
   },
   "gad_gasmask": {
    "name": "Gas mask",
    "type": "",
-   "image": "/bf6/gadgets/gasmask.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gasmask.webp",
+   "altImage": "/bf6/gadgets/white/gasmask.webp"
   },
   "melee_light_combatknife": {
    "name": "KBR Mark II",
@@ -723,74 +723,74 @@
   "gad_callin_airstrike": {
    "name": "空袭",
    "type": "",
-   "image": "/bf6/gadgets/callin_airstrike.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_airstrike.webp",
+   "altImage": "/bf6/gadgets/white/callin_airstrike.webp"
   },
   "gad_callin_antiveh": {
    "name": "反载具投放",
    "type": "",
-   "image": "/bf6/gadgets/callin_antiveh.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_antiveh.webp",
+   "altImage": "/bf6/gadgets/white/callin_antiveh.webp"
   },
   "gad_callin_armor": {
    "name": "护甲空投",
    "type": "",
-   "image": "/bf6/gadgets/callin_armor.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_armor.webp",
+   "altImage": "/bf6/gadgets/white/callin_armor.webp"
   },
   "gad_callin_artstrike": {
    "name": "火炮攻击",
    "type": "",
-   "image": "/bf6/gadgets/callin_artstrike.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_artstrike.webp",
+   "altImage": "/bf6/gadgets/white/callin_artstrike.webp"
   },
   "gad_callin_jagm": {
    "name": "导弹打击",
    "type": "",
-   "image": "/bf6/gadgets/callin_jagm.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_jagm.webp",
+   "altImage": "/bf6/gadgets/white/callin_jagm.webp"
   },
   "gad_callin_mobresp": {
    "name": "移动重生",
    "type": "",
-   "image": "/bf6/gadgets/callin_mobresp.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_mobresp.webp",
+   "altImage": "/bf6/gadgets/white/callin_mobresp.webp"
   },
   "gad_callin_resupply": {
    "name": "补给空投",
    "type": "",
-   "image": "/bf6/gadgets/callin_resupply.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_resupply.webp",
+   "altImage": "/bf6/gadgets/white/callin_resupply.webp"
   },
   "gad_callin_smoke": {
    "name": "烟幕",
    "type": "",
-   "image": "/bf6/gadgets/callin_smoke.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_smoke.webp",
+   "altImage": "/bf6/gadgets/white/callin_smoke.webp"
   },
   "gad_callin_uav": {
    "name": "无人机监查",
    "type": "",
-   "image": "/bf6/gadgets/callin_uav.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_uav.webp",
+   "altImage": "/bf6/gadgets/white/callin_uav.webp"
   },
   "gad_callin_wpdrop": {
    "name": "武器投放",
    "type": "",
-   "image": "/bf6/gadgets/callin_wpdrop.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/callin_wpdrop.webp",
+   "altImage": "/bf6/gadgets/white/callin_wpdrop.webp"
   },
   "gad_decoy": {
    "name": "狙击手诱饵",
    "type": "",
-   "image": "/bf6/gadgets/decoy.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/decoy.webp",
+   "altImage": "/bf6/gadgets/white/decoy.webp"
   },
   "gad_defib": {
    "name": "除颤器",
    "type": "",
-   "image": "/bf6/gadgets/defib.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/defib.webp",
+   "altImage": "/bf6/gadgets/white/defib.webp"
   },
   "gad_deploymortar": {
    "name": "LWCMS",
@@ -819,20 +819,20 @@
   "gad_gren_flash": {
    "name": "闪光弹",
    "type": "",
-   "image": "/bf6/gadgets/gren_flash.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_flash.webp",
+   "altImage": "/bf6/gadgets/white/gren_flash.webp"
   },
   "gad_gren_inc": {
    "name": "燃烧手雷",
    "type": "",
-   "image": "/bf6/gadgets/gren_inc.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_inc.webp",
+   "altImage": "/bf6/gadgets/white/gren_inc.webp"
   },
   "gad_gren_mfrag": {
    "name": "迷你手雷",
    "type": "",
-   "image": "/bf6/gadgets/gren_mfrag.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/gren_mfrag.webp",
+   "altImage": "/bf6/gadgets/white/gren_mfrag.webp"
   },
   "gad_il_airburst": {
    "name": "Sich G1 WP",
@@ -843,8 +843,8 @@
   "gad_lancet": {
    "name": "DGMK4 军备压制系统",
    "type": "",
-   "image": "/bf6/gadgets/lancet.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/lancet.webp",
+   "altImage": "/bf6/gadgets/white/lancet.webp"
   },
   "gad_mine_mosen": {
    "name": "PTKM-1R",
@@ -855,8 +855,8 @@
   "gad_mobilejammer": {
    "name": "移动式干扰器",
    "type": "",
-   "image": "/bf6/gadgets/mobilejammer.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/mobilejammer.webp",
+   "altImage": "/bf6/gadgets/white/mobilejammer.webp"
   },
   "gad_mpaps": {
    "name": "MP-APS",
@@ -867,14 +867,14 @@
   "gad_rl_autogui": {
    "name": "自动制导发射器",
    "type": "",
-   "image": "/bf6/gadgets/rl_autogui.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/rl_autogui.webp",
+   "altImage": "/bf6/gadgets/white/rl_autogui.webp"
   },
   "gad_rl_autoguide": {
    "name": "自动制导发射器",
    "type": "",
-   "image": "/bf6/gadgets/rl_autoguide.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/rl_autoguide.webp",
+   "altImage": "/bf6/gadgets/white/rl_autoguide.webp"
   },
   "gad_rl_aimgui": {
    "name": "M136 AT",
@@ -885,8 +885,8 @@
   "gad_rl_igla": {
    "name": "9K38 IGLA",
    "type": "",
-   "image": "/bf6/gadgets/rl_igla.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/rl_igla.webp",
+   "altImage": "/bf6/gadgets/white/rl_igla.webp"
   },
   "gad_rl_longra": {
    "name": "MAS 148 Glaive",
@@ -909,8 +909,8 @@
   "gad_tknife": {
    "name": "飞刀",
    "type": "",
-   "image": "/bf6/gadgets/tknife.webp",
-   "altImage": ""
+   "image": "/bf6/gadgets/light/tknife.webp",
+   "altImage": "/bf6/gadgets/white/tknife.webp"
   },
   "gad_ubsg_incen": {
    "name": "SS26",

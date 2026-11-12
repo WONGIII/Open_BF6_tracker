@@ -276,7 +276,8 @@ pm2 save
 
 本项目战报差分和后台轮询的实现方式参考了 [jo4rchy/battlefield_6_tracker_gametools](https://github.com/jo4rchy/battlefield_6_tracker_gametools) 的源码思路。该仓库未附带开源协议，本项目仅借鉴其架构设计。
 
-BF6 武器 / 载具 / 装备 / 兵种 / 模式 / 地图图片来自 [g1331/bf-manager](https://github.com/g1331/bf-manager)（MIT License）。等级图标与个别缺失地图图从 gametools CDN 一次性下载到本地，运行期不再请求该 CDN。
+BF6 武器 / 载具 / 装备 / 兵种 / 模式 / 地图图片来自 [g1331/bf-manager](https://github.com/g1331/bf-manager)（MIT License）。等级图标、European Casino 地图、UH-06 载具与三把近战图标分别从 gametools / Tracker Network CDN 一次性下载到本地，运行期不再请求这些 CDN。
+游戏素材版权归 Electronic Arts Inc.；本项目为非商业社区项目，仅用于展示游戏内数据，版权方要求时可随时移除。素材来源说明见 `public/bf6/ASSET-SOURCES.txt`。
 
 ## 许可证
 
