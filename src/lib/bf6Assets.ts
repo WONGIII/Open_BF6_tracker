@@ -298,10 +298,6 @@ function kindOfNode(node: Record<string, unknown>): string | null {
   return null;
 }
 
-function isLocalImage(value: unknown): boolean {
-  return typeof value === "string" && value.startsWith("/bf6/");
-}
-
 /**
  * 递归给战报里的 segment / overview 分组填回本地图片。
  * 旧的 gametools CDN 地址会被本地路径覆盖。
@@ -328,7 +324,7 @@ function dropAggregateGadgets(value: unknown): void {
   for (const child of Object.values(node)) dropAggregateGadgets(child);
 }
 
-export function enrichMatchImages<T>(root: T): T {
+function enrichImages<T>(root: T, dropAggregates: boolean): T {
   const walk = (value: unknown): void => {
     if (Array.isArray(value)) {
       for (const item of value) walk(item);
@@ -343,8 +339,10 @@ export function enrichMatchImages<T>(root: T): T {
         const kind = kindOfNode(node);
         const icon = kind ? iconForKind(kind, md.name) : null;
         if (icon) {
-          if (!isLocalImage(md.imageUrl)) md.imageUrl = icon.image;
-          if (icon.imageDark && !isLocalImage(md.imageUrlDark)) md.imageUrlDark = icon.imageDark;
+          // 字典是图片的唯一来源；旧档案里缓存的 light/white 或 CDN 地址
+          // 都在读取时替换成当前本地原图。
+          md.imageUrl = icon.image;
+          md.imageUrlDark = icon.imageDark || icon.image;
         }
       }
       if (typeof md.mapName === "string") {
@@ -356,6 +354,57 @@ export function enrichMatchImages<T>(root: T): T {
     for (const child of Object.values(node)) walk(child);
   };
   walk(root);
-  dropAggregateGadgets(root);
+  if (dropAggregates) dropAggregateGadgets(root);
+  return root;
+}
+
+/** 战报是差分数据，读取时补回本地图片并清掉历史聚合装备行 */
+export function enrichMatchImages<T>(root: T): T {
+  return enrichImages(root, true);
+}
+
+/** 生涯档案是缓存数据，读取时只补图片，不删除任何装备行 */
+export function enrichProfileImages<T>(root: T): T {
+  return enrichImages(root, false);
+}
+
+/**
+ * 展示名本地化：底层 metadata.name 保持英文，作为差分匹配键，避免改名
+ * 导致旧快照对不上、把生涯累计误当成单局数据。
+ */
+const DISPLAY_NAME_OVERRIDES: Record<string, string> = {
+  adrenalineinjector: "肾上腺素注射器",
+  devgru: "NSW4",
+};
+
+const ITEM_NODE_TYPES = new Set([
+  "weapon", "weapon-category", "vehicle", "vehicle-category", "gadget", "gadget-category", "melee",
+]);
+
+export function localizeItemNames<T>(root: T): T {
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    const node = value as Record<string, unknown>;
+    const md = node.metadata as Record<string, unknown> | undefined;
+
+    if (md && typeof md.name === "string") {
+      const type = String(node.type || "").replace(/^season-/, "");
+      const key = String(node.key || "");
+      const isItemNode =
+        ITEM_NODE_TYPES.has(type) ||
+        /^(w_|gad_|veh_|melee_)/.test(key);
+      if (isItemNode) {
+        const display = DISPLAY_NAME_OVERRIDES[norm(md.name)];
+        if (display) md.name = display;
+      }
+    }
+
+    for (const child of Object.values(node)) walk(child);
+  };
+  walk(root);
   return root;
 }

@@ -1,8 +1,17 @@
 BF6 asset sources / notices
 ===========================
 
-- Weapons / vehicles / gadgets / classes / modes / maps:
+- Weapons / classes / modes / maps:
   g1331/bf-manager (MIT License) — see bf-manager-LICENSE.txt
+
+- Vehicles and gadgets:
+  re-fetched as original color images from Tracker.gg's public
+  Battlefield 6 image CDN. No black/white recolored variants are
+  generated for these item images. Items without a Tracker.gg asset
+  fall back to the bf-manager assets above.
+
+- Devgru (NSW4) weapon icon:
+  one-time download from the GameTools CDN for the missing item.
 
 - UH-06 vehicle image and melee knife icons:
   downloaded from trackercdn.com (Tracker Network) for missing items.

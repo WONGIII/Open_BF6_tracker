@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchStatsById, fetchStatsForCandidate, generateUpdateHash, searchPlayersByName } from "@/lib/bf6";
 import { getProfile, upsertProfile, touchSearchTimestamp, setProfileDisplayName, getAliases, upsertAliases } from "@/lib/db";
+import { enrichProfileImages, localizeItemNames } from "@/lib/bf6Assets";
 import type { Platform } from "@/lib/types";
 import { buildTrnProfileResponse } from "./builder";
+
+/** 读取档案时补图片并本地化展示名；写库前保持原始英文名，保证差分匹配稳定 */
+function finalizeProfileResponse(response: Record<string, unknown>) {
+  enrichProfileImages(response);
+  localizeItemNames(response);
+  return response;
+}
 
 /**
  * 旧档案里可能还留着 gametools CDN 图片，或上一轮本地化时的白色兵种/模式图标。
@@ -73,7 +81,7 @@ async function buildAndStore(
     // 写别名失败不影响档案返回
   }
   const aliases = getAliases(identifier).filter((a) => a !== displayName);
-  return NextResponse.json({ ...response, aliases });
+  return NextResponse.json({ ...finalizeProfileResponse(response), aliases });
 }
 
 export async function GET(request: NextRequest) {
@@ -113,7 +121,7 @@ export async function GET(request: NextRequest) {
 
     // 附带该账号记录过的别名（其它平台上的显示名），用于前端展示
     const aliases = pid ? getAliases(String(pid)).filter((a) => a !== String((cached as any).data?.platformInfo?.platformUserHandle || "")) : [];
-    return NextResponse.json({ ...cached, aliases });
+    return NextResponse.json({ ...finalizeProfileResponse(cached as Record<string, unknown>), aliases });
   }
 
   try {

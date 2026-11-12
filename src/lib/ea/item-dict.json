@@ -114,6 +114,12 @@
    "image": "/bf6/weapons/crb_m4a1.webp",
    "altImage": ""
   },
+  "wp_crb_devgru": {
+   "name": "Devgru",
+   "type": "Carbines",
+   "image": "/bf6/weapons/crb_devgru.webp",
+   "altImage": ""
+  },
   "wp_smg_kv9": {
    "name": "KV9",
    "type": "SMG-PDWs",
@@ -405,7 +411,7 @@
   "veh_air_uh06": {
    "name": "UH-06",
    "type": "Air Transport",
-   "image": "/bf6/vehicles/air_uh06.png",
+   "image": "/bf6/vehicles/air_uh06.webp",
    "altImage": ""
   },
   "veh_air_mh47": {
@@ -501,62 +507,62 @@
   "gad_gren_frag": {
    "name": "Frag Grenade",
    "type": "Grenade",
-   "image": "/bf6/gadgets/light/gren_frag.webp",
-   "altImage": "/bf6/gadgets/white/gren_frag.webp"
+   "image": "/bf6/gadgets/gren_frag.webp",
+   "altImage": ""
   },
   "gad_repair": {
    "name": "Repair Tool",
    "type": "",
-   "image": "/bf6/gadgets/light/repair.webp",
-   "altImage": "/bf6/gadgets/white/repair.webp"
+   "image": "/bf6/gadgets/repair.webp",
+   "altImage": ""
   },
   "gad_sup_bag": {
    "name": "Supply Bag",
    "type": "",
-   "image": "/bf6/gadgets/light/sup_bag.webp",
-   "altImage": "/bf6/gadgets/white/sup_bag.webp"
+   "image": "/bf6/gadgets/sup_bag.webp",
+   "altImage": ""
   },
   "gad_deplocover": {
    "name": "Deployable Cover",
    "type": "",
-   "image": "/bf6/gadgets/light/deplocover.webp",
-   "altImage": "/bf6/gadgets/white/deplocover.webp"
+   "image": "/bf6/gadgets/deplocover.webp",
+   "altImage": ""
   },
   "gad_gren_stun": {
    "name": "Stun Grenade",
    "type": "",
-   "image": "/bf6/gadgets/light/gren_stun.webp",
-   "altImage": "/bf6/gadgets/white/gren_stun.webp"
+   "image": "/bf6/gadgets/gren_stun.webp",
+   "altImage": ""
   },
   "gad_gren_smoke": {
    "name": "Smoke Grenade",
    "type": "",
-   "image": "/bf6/gadgets/light/gren_smoke.webp",
-   "altImage": "/bf6/gadgets/white/gren_smoke.webp"
+   "image": "/bf6/gadgets/gren_smoke.webp",
+   "altImage": ""
   },
   "gad_recondrone": {
    "name": "Recon Drone",
    "type": "",
-   "image": "/bf6/gadgets/light/recondrone.webp",
-   "altImage": "/bf6/gadgets/white/recondrone.webp"
+   "image": "/bf6/gadgets/recondrone.webp",
+   "altImage": ""
   },
   "gad_laserdes": {
    "name": "Laser Designator",
    "type": "",
-   "image": "/bf6/gadgets/light/laserdes.webp",
-   "altImage": "/bf6/gadgets/white/laserdes.webp"
+   "image": "/bf6/gadgets/laserdes.webp",
+   "altImage": ""
   },
   "gad_adren": {
    "name": "Adrenaline Injector",
    "type": "",
-   "image": "/bf6/gadgets/light/adren.webp",
-   "altImage": "/bf6/gadgets/white/adren.webp"
+   "image": "/bf6/gadgets/adren.webp",
+   "altImage": ""
   },
   "gad_msensor": {
    "name": "Proximity Detector",
    "type": "",
-   "image": "/bf6/gadgets/light/msensor.webp",
-   "altImage": "/bf6/gadgets/white/msensor.webp"
+   "image": "/bf6/gadgets/msensor.webp",
+   "altImage": ""
   },
   "gad_deployable": {
    "name": "Deployable Cover",
@@ -567,8 +573,8 @@
   "gad_gasmask": {
    "name": "Gas mask",
    "type": "",
-   "image": "/bf6/gadgets/light/gasmask.webp",
-   "altImage": "/bf6/gadgets/white/gasmask.webp"
+   "image": "/bf6/gadgets/gasmask.webp",
+   "altImage": ""
   },
   "melee_light_combatknife": {
    "name": "KBR Mark II",
@@ -783,14 +789,14 @@
   "gad_decoy": {
    "name": "狙击手诱饵",
    "type": "",
-   "image": "/bf6/gadgets/light/decoy.webp",
-   "altImage": "/bf6/gadgets/white/decoy.webp"
+   "image": "/bf6/gadgets/decoy.webp",
+   "altImage": ""
   },
   "gad_defib": {
    "name": "除颤器",
    "type": "",
-   "image": "/bf6/gadgets/light/defib.webp",
-   "altImage": "/bf6/gadgets/white/defib.webp"
+   "image": "/bf6/gadgets/defib.webp",
+   "altImage": ""
   },
   "gad_deploymortar": {
    "name": "LWCMS",
@@ -819,20 +825,20 @@
   "gad_gren_flash": {
    "name": "闪光弹",
    "type": "",
-   "image": "/bf6/gadgets/light/gren_flash.webp",
-   "altImage": "/bf6/gadgets/white/gren_flash.webp"
+   "image": "/bf6/gadgets/gren_flash.webp",
+   "altImage": ""
   },
   "gad_gren_inc": {
    "name": "燃烧手雷",
    "type": "",
-   "image": "/bf6/gadgets/light/gren_inc.webp",
-   "altImage": "/bf6/gadgets/white/gren_inc.webp"
+   "image": "/bf6/gadgets/gren_inc.webp",
+   "altImage": ""
   },
   "gad_gren_mfrag": {
    "name": "迷你手雷",
    "type": "",
-   "image": "/bf6/gadgets/light/gren_mfrag.webp",
-   "altImage": "/bf6/gadgets/white/gren_mfrag.webp"
+   "image": "/bf6/gadgets/gren_mfrag.webp",
+   "altImage": ""
   },
   "gad_il_airburst": {
    "name": "Sich G1 WP",
@@ -843,8 +849,8 @@
   "gad_lancet": {
    "name": "DGMK4 军备压制系统",
    "type": "",
-   "image": "/bf6/gadgets/light/lancet.webp",
-   "altImage": "/bf6/gadgets/white/lancet.webp"
+   "image": "/bf6/gadgets/lancet.webp",
+   "altImage": ""
   },
   "gad_mine_mosen": {
    "name": "PTKM-1R",
@@ -862,6 +868,18 @@
    "name": "MP-APS",
    "type": "",
    "image": "/bf6/gadgets/mpaps.webp",
+   "altImage": ""
+  },
+  "gad_tdart": {
+   "name": "Tracer Dart",
+   "type": "",
+   "image": "/bf6/gadgets/tdart.webp",
+   "altImage": ""
+  },
+  "gad_vehsupcra": {
+   "name": "Supply Crate",
+   "type": "",
+   "image": "/bf6/gadgets/vehsupcra.webp",
    "altImage": ""
   },
   "gad_rl_autogui": {
@@ -885,8 +903,8 @@
   "gad_rl_igla": {
    "name": "9K38 IGLA",
    "type": "",
-   "image": "/bf6/gadgets/light/rl_igla.webp",
-   "altImage": "/bf6/gadgets/white/rl_igla.webp"
+   "image": "/bf6/gadgets/rl_igla.webp",
+   "altImage": ""
   },
   "gad_rl_longra": {
    "name": "MAS 148 Glaive",
@@ -909,8 +927,8 @@
   "gad_tknife": {
    "name": "飞刀",
    "type": "",
-   "image": "/bf6/gadgets/light/tknife.webp",
-   "altImage": "/bf6/gadgets/white/tknife.webp"
+   "image": "/bf6/gadgets/tknife.webp",
+   "altImage": ""
   },
   "gad_ubsg_incen": {
    "name": "SS26",

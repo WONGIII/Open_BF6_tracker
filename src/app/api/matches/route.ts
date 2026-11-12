@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listMatches } from "@/lib/db";
+import { localizeItemNames } from "@/lib/bf6Assets";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -12,5 +13,8 @@ export async function GET(request: NextRequest) {
   }
 
   const { matches, total } = listMatches(identifier, limit, offset);
-  return NextResponse.json({ matches, totalCount: total });
+  return NextResponse.json({
+    matches: matches.map((match) => localizeItemNames(match)),
+    totalCount: total,
+  });
 }
