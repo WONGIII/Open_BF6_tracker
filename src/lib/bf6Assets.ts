@@ -90,8 +90,8 @@ const WEAPON_GROUP_ALIASES: Record<string, string> = {
 };
 
 const VEHICLE_GROUP_ALIASES: Record<string, string> = {
-  jets: "veh_air_m77efalchion",
-  jet: "veh_air_m77efalchion",
+  jets: "veh_air_fa18f",
+  jet: "veh_air_fa18f",
   tanks: "veh_sur_m1a2sepv3",
   tank: "veh_sur_m1a2sepv3",
   helicopters: "veh_air_ah6litbird",
@@ -306,6 +306,28 @@ function isLocalImage(value: unknown): boolean {
  * 递归给战报里的 segment / overview 分组填回本地图片。
  * 旧的 gametools CDN 地址会被本地路径覆盖。
  */
+const AGG_GADGET_NAMES = new Set(["temp", "grenades", "gl", "rl", "mine"]);
+
+/** 老战报里会残留 Temp/Grenades/Gl 这类聚合装备，读取时去掉 */
+function dropAggregateGadgets(value: unknown): void {
+  if (Array.isArray(value)) {
+    for (const item of value) dropAggregateGadgets(item);
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  const node = value as Record<string, unknown>;
+  if (Array.isArray(node.gadgets)) {
+    node.gadgets = (node.gadgets as Array<Record<string, unknown>>).filter((g) => {
+      const name = String((g.metadata as Record<string, unknown> | undefined)?.name || "");
+      const key = String(g.key || "");
+      if (AGG_GADGET_NAMES.has(norm(name))) return false;
+      if (/gad_gadget::(Temp|Grenades|Gl|Rl|Mine)$/i.test(key)) return false;
+      return true;
+    });
+  }
+  for (const child of Object.values(node)) dropAggregateGadgets(child);
+}
+
 export function enrichMatchImages<T>(root: T): T {
   const walk = (value: unknown): void => {
     if (Array.isArray(value)) {
@@ -334,5 +356,6 @@ export function enrichMatchImages<T>(root: T): T {
     for (const child of Object.values(node)) walk(child);
   };
   walk(root);
+  dropAggregateGadgets(root);
   return root;
 }

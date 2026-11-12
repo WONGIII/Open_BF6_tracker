@@ -22,6 +22,8 @@ function needsProfileRebuild(profile: Record<string, unknown>): boolean {
         && !url.includes("/black/") && !url.includes("/white/")) return true;
     if ((type === "gamemode" || type === "season-mode" || type === "gamemode-category")
         && url.startsWith("/bf6/modes/") && !url.includes("/light/") && !url.includes("/white/")) return true;
+    const name = String((s.metadata as Record<string, unknown> | undefined)?.name || "").trim().toLowerCase();
+    if (type === "gadget" && ["temp", "grenades", "gl", "rl", "mine", "deployable"].includes(name)) return true;
     return false;
   });
 }

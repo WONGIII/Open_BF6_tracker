@@ -599,9 +599,9 @@ function ModesDetail({ gamemodes }: { gamemodes: Segment[] }) {
 }
 function GadgetsDetail({ gadgets }: { gadgets: Segment[] }) {
   const sorted = [...gadgets].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
-  return <div className="space-y-3">{sorted.map((g, i) => (
+  return <div className="space-y-3"><p className="text-[11px] text-[color:var(--ink3)]">仅统计本账号使用与造成的数据，不包含被敌方命中的记录。</p>{sorted.map((g, i) => (
     <DetailCard key={(g.metadata?.name as string) + "-" + i} seg={g} category={g.metadata?.category as string} fields={[
-      ["kills", "击杀"], ["damage", "伤害"], ["uses", "使用次数"], ["assists", "助攻"], ["assistsDamage", "助攻伤害"],
+      ["kills", "装备击杀"], ["damage", "造成伤害"], ["uses", "使用次数"], ["assists", "助攻"], ["assistsDamage", "助攻伤害"],
       ["spots", "发现敌人"], ["spotAssists", "索敌助攻"], ["multiKills", "多杀"], ["repairs", "修理"],
       ["vehiclesDestroyedWith", "摧毁载具"], ["spawns", "部署"], ["timePlayed", "时长"],
     ]} />
@@ -952,7 +952,8 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
           {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{icon(v) && <img className="ic" src={icon(v)} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val">{_segFacts(v.stats, [["击杀", "kills"], ["摧毁", "destroyed"], ["伤害", "damageTo"], ["行驶", "distanceTraveled"], ["携带", "spawns"]])}</span></div>)}
         </section>}
         {mGadgets.length > 0 && <section className="sect"><div className="sec-t">装备</div>
-          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["击杀", "kills"], ["索敌", "spots"], ["使用", "uses"], ["携带", "spawns"], ["伤害", "damage"]], false)}</span></div>)}
+          <p className="text-[11px] text-[color:var(--ink3)] mb-2">仅统计本账号使用与造成的数据，不包含被敌方命中。</p>
+          {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["装备击杀", "kills"], ["索敌", "spots"], ["使用次数", "uses"], ["部署", "spawns"], ["造成伤害", "damage"]], false)}</span></div>)}
         </section>}
         {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
           {mMelee.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}

@@ -321,8 +321,8 @@
   "veh_air_f61v": {
    "name": "F-61V",
    "type": "Air Combat",
-   "image": "/bf6/vehicles/air_f61v.webp",
-   "altImage": ""
+   "image": "/bf6/vehicles/light/air_f61v.webp",
+   "altImage": "/bf6/vehicles/white/air_f61v.webp"
   },
   "veh_air_f39e": {
    "name": "F-39E",
@@ -357,8 +357,8 @@
   "veh_air_f97kes": {
    "name": "F-97 Kestrel",
    "type": "Air Combat",
-   "image": "/bf6/vehicles/air_f97kes.webp",
-   "altImage": ""
+   "image": "/bf6/vehicles/light/air_f97kes.webp",
+   "altImage": "/bf6/vehicles/white/air_f97kes.webp"
   },
   "veh_sur_rhib": {
    "name": "7.7m NSW RHIB",
@@ -399,8 +399,8 @@
   "veh_air_fa18f": {
    "name": "F/A-81F Super Spectre",
    "type": "Air Combat",
-   "image": "/bf6/vehicles/air_fa18f.webp",
-   "altImage": ""
+   "image": "/bf6/vehicles/light/air_fa18f.webp",
+   "altImage": "/bf6/vehicles/white/air_fa18f.webp"
   },
   "veh_air_uh06": {
    "name": "UH-06",

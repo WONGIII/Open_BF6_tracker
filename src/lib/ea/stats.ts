@@ -39,7 +39,7 @@ const CLASS_ICONS = (itemDict as Record<string, unknown>).classes as Record<
 /** 载具聚合 ID（veh_air_jets 等）没有单件图标，用同组代表图 */
 const VEHICLE_GROUP_IMAGES: Record<string, string> = {
   veh_air: "/bf6/vehicles/air_panthera.webp",
-  veh_air_jets: "/bf6/vehicles/air_m77efalchion.webp",
+  veh_air_jets: "/bf6/vehicles/light/air_fa18f.webp",
   veh_sur: "/bf6/vehicles/sur_leoa4.webp",
   veh_nav: "/bf6/vehicles/sur_rhib.webp",
   veh_air_uh06: "/bf6/vehicles/air_ah6litbird.webp",
@@ -49,6 +49,16 @@ const VEHICLE_GROUP_IMAGES: Record<string, string> = {
 };
 
 /** 装备聚合 ID → 代表单件（用于拿 light / white 两套图标） */
+/** 聚合装备 ID：不进战报/档案列表，避免与单件重复 */
+const GADGET_AGGREGATES = new Set([
+  "gad_temp",
+  "gad_grenades",
+  "gad_gl",
+  "gad_mine",
+  "gad_rl",
+  "gad_deployable",
+]);
+
 const GADGET_GROUP_ITEMS: Record<string, string> = {
   gad_gl: "gad_gl_he",
   gad_grenades: "gad_gren_frag",
@@ -583,6 +593,7 @@ export function mapToLegacyStats(
   for (const name of Object.keys(v)) {
     if (!name.startsWith("uses_gad_")) continue;
     const id = name.slice("uses_".length); // gad_gpdis
+    if (GADGET_AGGREGATES.has(id)) continue;
     const uses = num(v, `uses_${id}`);
     const gkills = num(v, `kw_${id}`);
     const gtime = num(v, `tp_${id}`);
