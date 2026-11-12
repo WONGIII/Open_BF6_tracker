@@ -23,7 +23,7 @@ function needsProfileRebuild(profile: Record<string, unknown>): boolean {
     if ((type === "gamemode" || type === "season-mode" || type === "gamemode-category")
         && url.startsWith("/bf6/modes/") && !url.includes("/light/") && !url.includes("/white/")) return true;
     const name = String((s.metadata as Record<string, unknown> | undefined)?.name || "").trim().toLowerCase();
-    if (type === "gadget" && ["temp", "grenades", "gl", "rl", "mine", "deployable"].includes(name)) return true;
+    if (type === "gadget" && ["temp", "grenades", "gl", "rl", "mine", "deployable", "自动制导发射器"].includes(name)) return true;
     return false;
   });
 }

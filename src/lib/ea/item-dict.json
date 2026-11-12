@@ -865,13 +865,13 @@
    "altImage": ""
   },
   "gad_rl_autogui": {
-   "name": "自动制导发射器",
+   "name": "Auto-Guided Launcher (GUI)",
    "type": "",
    "image": "/bf6/gadgets/light/rl_autogui.webp",
    "altImage": "/bf6/gadgets/white/rl_autogui.webp"
   },
   "gad_rl_autoguide": {
-   "name": "自动制导发射器",
+   "name": "Auto-Guided Launcher (GUIDE)",
    "type": "",
    "image": "/bf6/gadgets/light/rl_autoguide.webp",
    "altImage": "/bf6/gadgets/white/rl_autoguide.webp"
