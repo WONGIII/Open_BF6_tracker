@@ -36,6 +36,40 @@ const CLASS_ICONS = (itemDict as Record<string, unknown>).classes as Record<
   { image: string; altImage: string }
 >;
 
+/** 载具聚合 ID（veh_air_jets 等）没有单件图标，用同组代表图 */
+const VEHICLE_GROUP_IMAGES: Record<string, string> = {
+  veh_air: "/bf6/vehicles/air_panthera.webp",
+  veh_air_jets: "/bf6/vehicles/air_fa18f.webp",
+  veh_sur: "/bf6/vehicles/sur_leoa4.webp",
+  veh_nav: "/bf6/vehicles/sur_rhib.webp",
+  veh_air_uh06: "/bf6/vehicles/air_ah6litbird.webp",
+  veh_air_mh47: "/bf6/vehicles/air_ah6litbird.webp",
+  veh_sur_ltv: "/bf6/vehicles/sur_travmark2.webp",
+  veh_sur_ptv: "/bf6/vehicles/sur_travmark2.webp",
+};
+
+/** 装备聚合 ID（gad_grenades / gad_rl 等）没有单件图标，用同组代表图 */
+const GADGET_GROUP_IMAGES: Record<string, string> = {
+  gad_gl: "/bf6/gadgets/gl_he.webp",
+  gad_grenades: "/bf6/gadgets/gren_frag.webp",
+  gad_mine: "/bf6/gadgets/mine_press.webp",
+  gad_rl: "/bf6/gadgets/rl_ungui.webp",
+  gad_temp: "/bf6/gadgets/c4.webp",
+  gad_deployable: "/bf6/gadgets/deplocover.webp",
+};
+
+const WEAPON_GROUP_IMAGES: Record<string, string> = {
+  ar: "/bf6/weapons/ar_m433.webp",
+  crb: "/bf6/weapons/crb_m4a1.webp",
+  smg: "/bf6/weapons/smg_scw10.webp",
+  sg: "/bf6/weapons/sg_m87a1.webp",
+  mg: "/bf6/weapons/mg_l110.webp",
+  dmr: "/bf6/weapons/dmr_svk86.webp",
+  snp: "/bf6/weapons/snp_m2010.webp",
+  pst: "/bf6/weapons/pst_p18.webp",
+  temp: "/bf6/weapons/ar_m433.webp",
+};
+
 /** getStats 维度里的原始 GameMode 名 → gametools 模式 id（gm_*） */
 const RAW_MODE_KEYS: Record<string, string> = {
   "Conquest0": "gm_cq",
@@ -305,7 +339,7 @@ export function mapToLegacyStats(
     const seg = id.split("_");
     if (seg.length < 3) continue; // 跳过 wp_ar 这类聚合项
     const kind = seg[1] || "";
-    if (kind === "temp") continue;
+    if (kind === "temp" || id.endsWith("_temp")) continue;
     const killsW = num(v, `kw_${id}`);
     if (killsW <= 0) continue;
     const info = itemOf(id, "wp_");
@@ -368,6 +402,8 @@ export function mapToLegacyStats(
       headshots: pctString(headG, killsG),
       killsPerMinute: time > 0 ? parseFloat((killsG / (time / 60)).toFixed(2)) : 0,
       timeEquipped: time,
+      image: WEAPON_GROUP_IMAGES[kind] || "",
+      altImage: "",
     });
   }
   weaponGroups.sort((a, b) => Number(b.kills) - Number(a.kills));
@@ -382,13 +418,14 @@ export function mapToLegacyStats(
     const killsV = num(v, `kw_${id}`);
     if (killsV <= 0) continue;
     const info = itemOf(id, "veh_");
+    const image = info.image || VEHICLE_GROUP_IMAGES[id] || "";
     const time = num(v, `tp_${id}`);
     vehicles.push({
       id,
       name: info.name,
       vehicleName: info.name,
       type: info.type || (seg[1] === "air" ? "Air Combat" : "Ground Combat"),
-      image: info.image,
+      image,
       altImage: info.altImage,
       kills: killsV,
       damage: num(v, `dmg_${id}`),
@@ -541,12 +578,13 @@ export function mapToLegacyStats(
     const gtime = num(v, `tp_${id}`);
     if (!uses && !gkills && !gtime) continue;
     const info = itemOf(id, "gad_");
+    const image = info.image || GADGET_GROUP_IMAGES[id] || "";
     gadgets.push({
       id,
       name: info.name,
       gadgetName: info.name,
       type: info.type,
-      image: info.image,
+      image,
       altImage: info.altImage,
       kills: gkills,
       damage: num(v, `dmg_${id}`),
@@ -581,6 +619,8 @@ export function mapToLegacyStats(
       name: info.name,
       meleeName: info.name,
       type: info.type || "Melee Light",
+      image: info.image,
+      altImage: info.altImage,
       kills: mkills,
       damage: num(v, `dmg_${id}`),
       takedowns: num(v, `tkdw_${id}`),

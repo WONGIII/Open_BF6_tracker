@@ -955,7 +955,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
           {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["击杀", "kills"], ["索敌", "spots"], ["使用", "uses"], ["携带", "spawns"], ["伤害", "damage"]], false)}</span></div>)}
         </section>}
         {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
-          {mMelee.map(g => <div key={g.metadata?.name as string} className="row"><span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
+          {mMelee.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val"><b>{g.stats?.kills?.displayValue}</b> 击杀</span></div>)}
         </section>}
       </div></div>}
     </article>;

@@ -26,6 +26,7 @@ const CLASSES = (itemDict as Record<string, unknown>).classes as Record<string, 
 const weaponByName = new Map<string, IconPair>();
 const vehicleByName = new Map<string, IconPair>();
 const gadgetByName = new Map<string, IconPair>();
+const meleeByName = new Map<string, IconPair>();
 const modeByName = new Map<string, IconPair>();
 const kitByName = new Map<string, IconPair>();
 const mapByName = new Map<string, IconPair>();
@@ -36,6 +37,7 @@ for (const [id, info] of Object.entries(ITEMS)) {
   if (id.startsWith("wp_")) weaponByName.set(norm(info.name), pair);
   else if (id.startsWith("veh_")) vehicleByName.set(norm(info.name), pair);
   else if (id.startsWith("gad_")) gadgetByName.set(norm(info.name), pair);
+  else if (id.startsWith("melee_")) meleeByName.set(norm(info.name), pair);
 }
 
 for (const [key, name] of Object.entries(MODE_NAMES)) {
@@ -258,6 +260,8 @@ export function iconForKind(kind: string, name: string): IconPair | null {
     }
     case "kit":
       return kitByName.get(key) || null;
+    case "melee":
+      return meleeByName.get(key) || null;
     case "map":
       return mapByName.get(key) || null;
     default:
@@ -277,6 +281,7 @@ const TYPE_KIND: Record<string, string> = {
   kit: "kit",
   level: "map",
   map: "map",
+  melee: "melee",
 };
 
 function kindOfNode(node: Record<string, unknown>): string | null {

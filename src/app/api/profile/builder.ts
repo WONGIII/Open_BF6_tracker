@@ -213,7 +213,7 @@ export function buildTrnProfileResponse(
   for (const wg of (stats.weaponGroups || []) as Record<string, unknown>[]) {
     const n = (wg.groupName || wg.name || "") as string;
     if (!n || n === "All") continue;
-    segments.push({ type: "weapon-category", attributes: {}, metadata: { name: n, imageUrl: "" }, stats: { kills: _stat(_n(wg.kills),"Number","Kills","WeaponGroup"), killsPerMinute: _stat(_n(wg.killsPerMinute),"NumberPrecision2","KPM","WeaponGroup"), accuracy: _stat(_p(wg.accuracy),"Percentage","Acc","WeaponGroup"), headshots: _stat(_p(wg.headshots),"Percentage","HS%","WeaponGroup") } });
+    segments.push({ type: "weapon-category", attributes: {}, metadata: { name: n, imageUrl: _img(wg), imageUrlDark: _darkImg(wg) }, stats: { kills: _stat(_n(wg.kills),"Number","Kills","WeaponGroup"), killsPerMinute: _stat(_n(wg.killsPerMinute),"NumberPrecision2","KPM","WeaponGroup"), accuracy: _stat(_p(wg.accuracy),"Percentage","Acc","WeaponGroup"), headshots: _stat(_p(wg.headshots),"Percentage","HS%","WeaponGroup") } });
   }
 
   // Vehicles
@@ -319,7 +319,7 @@ export function buildTrnProfileResponse(
     segments.push({
       type: "melee",
       attributes: {},
-      metadata: { name: String(m.meleeName || m.name || ""), imageUrl: "", category: (m.type as string) || "" },
+      metadata: { name: String(m.meleeName || m.name || ""), imageUrl: _img(m), imageUrlDark: _darkImg(m), category: (m.type as string) || "" },
       stats: {
         kills: _stat(mk, "Number", "Kills", "Melee"),
         damage: _stat(_n(m.damage), "Number", "Damage", "Melee"),
@@ -388,7 +388,7 @@ export function buildTrnProfileResponse(
       for (const wp of (modeData.weaponGroups || []) as Record<string, unknown>[]) {
         const n = String(wp.groupName || wp.name || ""); if (!n || n === "All") continue;
         const kk = _n(wp.kills); if (kk <= 0) continue;
-        segments.push({ type: "season-weapon", attributes: attr, metadata: { name: n, imageUrl: "", gamemodeName: gzh },
+        segments.push({ type: "season-weapon", attributes: attr, metadata: { name: n, imageUrl: _img(wp), imageUrlDark: _darkImg(wp), gamemodeName: gzh },
           stats: { kills: _stat(kk,"Number","Kills","SWpn"), kpm: _stat(_n(wp.killsPerMinute),"NumberPrecision2","KPM","SWpn"), accuracy: _stat(_p(wp.accuracy),"Percentage","ACC","SWpn"), headshots: _stat(_p(wp.headshots),"Percentage","HS%","SWpn") } });
       }
 
@@ -444,7 +444,7 @@ export function buildTrnProfileResponse(
       for (const m of (modeData.melee || []) as Record<string, unknown>[]) {
         const mk = _n(m.kills); if (mk <= 0) continue;
         const mn = String(m.meleeName || m.name || "");
-        segments.push({ type: "season-melee", attributes: attr, metadata: { name: mn, imageUrl: "", gamemodeName: gzh },
+        segments.push({ type: "season-melee", attributes: attr, metadata: { name: mn, imageUrl: _img(m), imageUrlDark: _darkImg(m), gamemodeName: gzh },
           stats: { kills: _stat(mk,"Number","Kills","SMel"), takedowns: _stat(_n(m.takedowns),"Number","Takedowns","SMel"), kpm: _stat(_n(m.killsPerMinute),"NumberPrecision2","KPM","SMel"), uses: _stat(_n(m.uses),"Number","Uses","SMel") } });
       }
     }

@@ -405,19 +405,19 @@
   "veh_air_uh06": {
    "name": "UH-06",
    "type": "Air Transport",
-   "image": "",
+   "image": "/bf6/vehicles/air_uh06.png",
    "altImage": ""
   },
   "veh_air_mh47": {
    "name": "MH47 Chinook",
    "type": "Air Transport",
-   "image": "",
+   "image": "/bf6/vehicles/air_ah6litbird.webp",
    "altImage": ""
   },
   "veh_sur_ltv": {
    "name": "LTV",
    "type": "Ground Transport",
-   "image": "",
+   "image": "/bf6/vehicles/sur_travmark2.webp",
    "altImage": ""
   },
   "gad_gpdis": {
@@ -561,7 +561,7 @@
   "gad_deployable": {
    "name": "Deployable Cover",
    "type": "",
-   "image": "",
+   "image": "/bf6/gadgets/deplocover.webp",
    "altImage": ""
   },
   "gad_gasmask": {
@@ -573,19 +573,19 @@
   "melee_light_combatknife": {
    "name": "KBR Mark II",
    "type": "Melee Light",
-   "image": "",
+   "image": "/bf6/melee/melee_light_combatknife.png",
    "altImage": ""
   },
   "melee_light_gekoknife": {
    "name": "Bighorn HK-16",
    "type": "Melee Light",
-   "image": "",
+   "image": "/bf6/melee/melee_light_gekoknife.png",
    "altImage": ""
   },
   "melee_light_icecaxe": {
    "name": "Nomad CX-12",
    "type": "Melee Light",
-   "image": "",
+   "image": "/bf6/melee/melee_light_icecaxe.png",
    "altImage": ""
   },
   "wp_ar_l85a3": {
@@ -717,7 +717,7 @@
   "veh_sur_ptv": {
    "name": "高尔夫球车",
    "type": "Ground Transport",
-   "image": "",
+   "image": "/bf6/vehicles/sur_travmark2.webp",
    "altImage": ""
   },
   "gad_callin_airstrike": {
@@ -1024,7 +1024,8 @@
   "gm_dom": "/bf6/modes/light/dom.svg",
   "gm_graniteSolo": "/bf6/modes/light/graniteSolo.svg",
   "gm_sabotage": "/bf6/modes/light/sabotage.svg",
-  "gm_sqdoblit": "/bf6/modes/light/sqdoblit.svg"
+  "gm_sqdoblit": "/bf6/modes/light/sqdoblit.svg",
+  "gm_rr_trio": "/bf6/modes/light/rr_all.svg"
  },
  "rankImages": {
   "100": "/bf6/ranks/t_ui_rank_100_sm.png",
@@ -1154,7 +1155,8 @@
   "gm_dom": "/bf6/modes/white/dom.svg",
   "gm_graniteSolo": "/bf6/modes/white/graniteSolo.svg",
   "gm_sabotage": "/bf6/modes/white/sabotage.svg",
-  "gm_sqdoblit": "/bf6/modes/white/sqdoblit.svg"
+  "gm_sqdoblit": "/bf6/modes/white/sqdoblit.svg",
+  "gm_rr_trio": "/bf6/modes/white/rr_all.svg"
  },
  "classes": {
   "assault": {
