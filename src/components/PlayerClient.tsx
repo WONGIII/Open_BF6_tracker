@@ -599,7 +599,7 @@ function ModesDetail({ gamemodes }: { gamemodes: Segment[] }) {
 }
 function GadgetsDetail({ gadgets }: { gadgets: Segment[] }) {
   const sorted = [...gadgets].sort((a, b) => (b.stats.kills?.value || 0) - (a.stats.kills?.value || 0));
-  return <div className="space-y-3"><p className="text-[11px] text-[color:var(--ink3)]">本账号使用该装备的次数、击杀与造成伤害；EA 官方接口不提供按装备的「被命中」分项统计。</p>{sorted.map((g, i) => (
+  return <div className="space-y-3">{sorted.map((g, i) => (
     <DetailCard key={(g.metadata?.name as string) + "-" + i} seg={g} category={g.metadata?.category as string} fields={[
       ["kills", "装备击杀"], ["damage", "造成伤害"], ["uses", "使用次数"], ["assists", "助攻"], ["assistsDamage", "助攻伤害"],
       ["spots", "发现敌人"], ["spotAssists", "索敌助攻"], ["multiKills", "多杀"], ["repairs", "修理"],
@@ -952,7 +952,7 @@ function MatchesDetail({ matches, expanded, onToggle }: { matches: TrnMatch[]; e
           {mVehicles.map(v => <div key={v.metadata?.name as string} className="row">{icon(v) && <img className="ic" src={icon(v)} alt="" />}<span className="nm">{v.metadata?.name}</span><span className="val">{_segFacts(v.stats, [["击杀", "kills"], ["摧毁", "destroyed"], ["伤害", "damageTo"], ["行驶", "distanceTraveled"], ["携带", "spawns"]])}</span></div>)}
         </section>}
         {mGadgets.length > 0 && <section className="sect"><div className="sec-t">装备</div>
-          <p className="text-[11px] text-[color:var(--ink3)] mb-2">本账号使用该装备的次数、击杀与造成伤害；EA 官方接口不提供按装备的「被命中」分项统计。若本局未使用某装备，可能是账号其他使用者或轮询合并了多局。</p>
+
           {mGadgets.map(g => <div key={g.metadata?.name as string} className="row">{icon(g) && <img className="ic" src={icon(g)} alt="" />}<span className="nm">{g.metadata?.name}</span><span className="val">{_segFacts(g.stats, [["装备击杀", "kills"], ["索敌", "spots"], ["使用次数", "uses"], ["部署", "spawns"], ["造成伤害", "damage"]], false)}</span></div>)}
         </section>}
         {mMelee.length > 0 && <section className="sect"><div className="sec-t">近战</div>
