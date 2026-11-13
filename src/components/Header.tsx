@@ -24,15 +24,16 @@ export default function Header() {
 
   return (
     <header className="app-header border-b sticky top-0 z-50">
-      <div className="max-w-[1320px] mx-auto px-5 h-16 flex items-center justify-between">
+      <div className="header-in max-w-[1320px] mx-auto px-5 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 shrink-0 no-underline">
           <img src="/favicon.png" alt="OpenBF6Tracker" className="w-9 h-9 object-contain shrink-0" />
-          <span className="en-name text-xl leading-none whitespace-nowrap">
+          <span className="header-brand-word en-name text-xl leading-none whitespace-nowrap">
             <span className="text-[color:var(--acc)]">OPEN</span><span className="text-[color:var(--ink)]">BF6</span><span className="text-[color:var(--ink3)] ml-1.5 text-base tracking-[1px] font-semibold">TRACKER</span>
           </span>
+          <span className="header-brand-compact">BF6</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="header-actions flex items-center gap-2">
           {mounted && (
             <button
               onClick={nextMode}

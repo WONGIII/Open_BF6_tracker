@@ -500,7 +500,7 @@ function OverviewMain({ ov, topW, topV, topK, topM, kits, seasonGm, title }: { o
 const combS = [{k:"headShots",l:"爆头"},{k:"damageDealt",l:"总伤害"},{k:"headshotsPercent",l:"爆头率"},{k:"killAssists",l:"击杀助攻"},{k:"revives",l:"急救"},{k:"repairs",l:"修复"},{k:"wins",l:"胜利"},{k:"losses",l:"战败"}];
   return <div className="space-y-6">
     {title && <h3 className="text-sm font-semibold text-[color:var(--ink2)]">{title}</h3>}
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="best-grid grid grid-cols-2 sm:grid-cols-4 gap-3">
       {topW[0]&&<BestCard label="最佳武器" name={topW[0].metadata?.name as string} seg={topW[0]} value={topW[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
       {topV[0]&&<BestCard label="最佳载具" name={topV[0].metadata?.name as string} seg={topV[0]} value={topV[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
       {topK[0]&&<BestCard label="最佳兵种" name={_cn(topK[0].metadata?.name as string)} seg={topK[0]} value={topK[0].stats.kills?.displayValue||"0"} unit="击杀"/>}
